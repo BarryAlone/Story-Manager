@@ -1,0 +1,68 @@
+### Pobieranie projektów (Test GET)
+GET http://127.0.0.1:8000/api/projects
+Accept: application/json
+
+### Tworzenie projektu (Test POST)
+POST http://127.0.0.1:8000/api/projects
+Content-Type: application/json
+Accept: application/json
+
+{
+  "user_id": 1,
+  "name": "Mroczne Wieki",
+  "description": "Mój pierwszy projekt testowy",
+  "project_image": null
+}
+
+### Pobieranie rozdziałów (Test GET)
+GET http://127.0.0.1:8000/api/chapters
+Accept: application/json
+
+### Tworzenie rozdziału (Test POST)
+POST http://127.0.0.1:8000/api/chapters
+Content-Type: application/json
+Accept: application/json
+
+{
+  "project_id": 1,
+  "chapter_number": 2,
+  "name": "Kupa 2",
+  "description": "Początek wielkiej kupy DWA!",
+  "chapter_image": null,
+  "timeline_point_start": null,
+  "timeline_point_end": null,
+  "display_label": null
+}
+
+### Pobieranie postaci (Test GET)
+GET http://127.0.0.1:8000/api/characters
+Accept: application/json
+
+### Tworzenie postaci (Test POST)
+POST http://127.0.0.1:8000/api/characters
+Content-Type: application/json
+Accept: application/json
+
+{
+  "project_id": 1,
+  "chapter_id": null,
+  "name": "Gandalf Szary",
+  "description": "Czarodziej",
+  "character_image": null,
+  "attributes": []
+}
+
+### Pobieranie atrybutów projektu (Test GET)
+GET http://127.0.0.1:8000/api/project-attributes
+Accept: application/json
+
+### Tworzenie atrybutów projektu (Test POST)
+POST http://127.0.0.1:8000/api/project-attributes
+Content-Type: application/json
+Accept: application/json
+
+{
+  "project_id": 1,
+  "name": "Siła Magiczna",
+  "type": "integer"
+}
