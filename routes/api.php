@@ -14,6 +14,8 @@ Route::get('/projects', [ProjectController::class, 'index']);
 
 Route::post('/projects', [ProjectController::class, 'store']);
 
+Route::get('/projects/{project}/characters', [CharacterController::class, 'index']);
+
 //Chapter
 Route::get('/chapters', [ChapterController::class, 'index']);
 

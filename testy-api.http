@@ -9,8 +9,8 @@ Accept: application/json
 
 {
   "user_id": 1,
-  "name": "Mroczne Wieki",
-  "description": "Mój pierwszy projekt testowy",
+  "name": "Benkaty 2",
+  "description": "Mój trzeci projekt testowy",
   "project_image": null
 }
 
@@ -44,9 +44,9 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "project_id": 1,
+  "project_id": 2,
   "chapter_id": null,
-  "name": "Gandalf Szary",
+  "name": "Inny typek",
   "description": "Czarodziej",
   "character_image": null,
   "attributes": []

@@ -8,9 +8,9 @@ use Illuminate\Validation\Rule;
 
 class CharacterController extends Controller
 {
-    public function index()
+    public function index($projectId)
     {
-        $characters = Character::all();
+        $characters = Character::where('project_id', $projectId)->get();
         return response()->json($characters, 200);
     }
 
@@ -27,7 +27,7 @@ class CharacterController extends Controller
             'max:255',
             Rule::unique('characters')->where('project_id', $request->project_id)
             ],
-
+        'group_name' => 'nullable|string|max:128',
         'description' =>'nullable|string',
         'character_image' => 'nullable|string',
         'attributes' => 'nullable|array' 

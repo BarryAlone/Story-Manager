@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->foreignId('chapter_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
+            $table->string('group_name')->nullable();
             $table->string('description')->nullable();
             $table->string('character_image')->nullable();
             $table->json('attributes')->nullable();

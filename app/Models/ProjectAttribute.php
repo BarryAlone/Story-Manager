@@ -13,7 +13,7 @@ class ProjectAttribute extends Model
         'type'
     ];
 
-    public function Project(): BelongsTo
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
