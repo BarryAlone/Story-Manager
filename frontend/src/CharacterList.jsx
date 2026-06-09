@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
+import moreIcon from './assets/icons/more.png';
+import deleteIcon from './assets/icons/trash-can.png';
+import editIcon from './assets/icons/pencil.png';
+import FABIcon from './assets/icons/plus.png';
+
 function CharacterList() {
   const { projectId } = useParams();
   const [characters, setCharacters] = useState([]);
@@ -97,9 +102,28 @@ function CharacterList() {
         <h1 style={{ margin: 0 }}>Postacie</h1>
         <button 
           onClick={() => { closeModal(); setIsModalOpen(true); }}
-          style={{ padding: '10px 20px', backgroundColor: '#4B5563', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+          style={{ 
+            position: 'fixed',
+            bottom: '40px',
+            right: '40px',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            border: 'none',
+            cursor: 'pointer',
+            backgroundColor: '#6c7683',
+            opacity: 0.9, // przeźroczystość
+            boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            transition: 'transform 0.2s'
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         >
-          + Nowa postać
+          <img src={FABIcon} alt="Dodaj postać" style={{ width: '24px', height: '24px' }} />
         </button>
       </div>
 
@@ -142,25 +166,33 @@ function CharacterList() {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}
             >
-              {/* Opcje akcji (na razie emotki, potem zmienić na ikony) */}
+              {/* Opcje akcji (ikony edycji i usuwania) */}
               <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px', zIndex: 10 }}>
                 <button 
                   onClick={() => openEditModal(character)} 
                   title="Edytuj"
-                  style={{ width: '35px', height: '35px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255, 255, 255, 0.8)', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '16px' }}
+                  style={{ width: '35px', height: '35px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.8)', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', opacity: 0.7 }}
                 >
-                  ✏️
+                  <img
+                    src={editIcon}
+                    alt="Edytuj"
+                    style={{ width: '20px', height: '20px', opacity: 0.8 }} 
+                  />
                 </button>
                 <button 
                   onClick={() => handleDelete(character.id)} 
                   title="Usuń"
-                  style={{ width: '35px', height: '35px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255, 0, 0, 0.8)', color: 'white', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '16px' }}
+                  style={{ width: '35px', height: '35px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.8)', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', opacity: 0.7 }}
                 >
-                  🗑️
+                  <img
+                    src={deleteIcon}
+                    alt="Usuń"
+                    style={{ width: '20px', height: '20px', opacity: 0.8 }}
+                  />
                 </button>
               </div>
 
-              {/* Dolny obszar z tekstem i przyciemnieniem*/}
+              {/* Obszar z tekstem i przyciemnieniem*/}
               <div style={{ 
                 position: 'absolute', 
                 bottom: 0, 

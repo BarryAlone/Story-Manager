@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, NavLink, useParams } from 'react-router-dom';
 
+import logoIcon from './assets/icons/logo.png';
+import charactersIcon from "./assets/icons/woman.png"; 
+import chaptersIcon from './assets/icons/chapter.png';
+import relationshipsIcon from './assets/icons/relationship.png';
+import moreIcon from './assets/icons/more.png';
+import deleteIcon from './assets/icons/trash-can.png';
+import editIcon from './assets/icons/pencil.png';
+import FABIcon from './assets/icons/plus.png';
+
 function ProjectLayout() {
   const { projectId } = useParams();
   const [projectName, setProjectName] = useState('Ładowanie...');
@@ -50,26 +59,37 @@ function ProjectLayout() {
         
         {/* ICONA LOGA PROJEKTU / POWRÓT DO STRONY GŁÓWNEJ */}
         <Link to="/" title="Strona główna" style={{ textDecoration: 'none', marginBottom: '40px' }}>
-          <span style={{ fontSize: '28px' }}>📖</span>
+            <img src={logoIcon} alt="Logo" style={{ width: '70px', height: '70px' }} />
         </Link>
 
         {/* LINKI Z IKONAMI (Zastosowanie NavLink dla stanu active) */}
         <NavLink to={`/project/${projectId}/characters`} title="Postacie" className="sidebar-icon">
           {({ isActive }) => (
-
-            <span style={{ fontSize: '24px', opacity: isActive ? 1 : 0.4 }}>👤</span>
+            <img
+             src={charactersIcon}
+            alt="Postacie"
+            style={{ fontSize: '48px', opacity: isActive ? 1 : 0.4, width: '32px', height: '32px' }}
+            />
           )}
         </NavLink>
 
         <NavLink to={`/project/${projectId}/chapters`} title="Rozdziały" className="sidebar-icon">
           {({ isActive }) => (
-            <span style={{ fontSize: '24px', opacity: isActive ? 1 : 0.4 }}>📚</span>
+            <img
+             src={chaptersIcon}
+            alt="Rozdziały"
+            style={{ fontSize: '48px', opacity: isActive ? 1 : 0.4, width: '32px', height: '32px' }}
+            />
           )}
         </NavLink>
 
         <NavLink to={`/project/${projectId}/relationships`} title="Relacje" className="sidebar-icon">
         {({ isActive }) => (
-            <span style={{ fontSize: '24px', opacity: isActive ? 1 : 0.4 }}>🔗</span>
+            <img
+             src={relationshipsIcon}
+            alt="Relacje"
+            style={{ fontSize: '48px', opacity: isActive ? 1 : 0.4, width: '32px', height: '32px' }}
+            />
         )}
         </NavLink>
         

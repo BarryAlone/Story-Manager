@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+import moreIcon from './assets/icons/more.png';
+import deleteIcon from './assets/icons/trash-can.png';
+import editIcon from './assets/icons/pencil.png';
+import FABIcon from './assets/icons/plus.png';
+
 function ProjectList() {
 
 
@@ -73,12 +78,32 @@ function ProjectList() {
             <h1>Twoje Projekty</h1>
         </div>
             <div style={{ display: 'flex', justifyContent: 'right', alignItems: 'center' }}>
-            <button onClick={() => setIsModalOpen(true)}
-                style={{ padding: '10px 20px', backgroundColor: '#4B5563', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
-            >
-                + Nowy projekt
-            </button>
-            </div>
+              <button 
+                onClick={() => { setIsModalOpen(true); }}
+                style={{ 
+                  position: 'fixed',
+                  bottom: '40px',
+                  right: '40px',
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: '#6c7683',
+                  opacity: 0.9, // przeźroczystość
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 1000,
+                  transition: 'transform 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <img src={FABIcon} alt="Dodaj postać" style={{ width: '24px', height: '24px' }} />
+              </button>
+          </div>  
           
         
         {/* formularz dodawania projektu*/}

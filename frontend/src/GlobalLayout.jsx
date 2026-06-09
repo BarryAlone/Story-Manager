@@ -1,4 +1,5 @@
 import { Outlet, Link } from 'react-router-dom';
+import logoIcon from './assets/icons/logo.png';
 
 function GlobalLayout() {
   return (
@@ -19,7 +20,7 @@ function GlobalLayout() {
         {/* LOGO Z TOOLTIPEM */}
         <Link to="/" title="Strona główna" style={{ textDecoration: 'none', color: 'black', display: 'flex', alignItems: 'center', gap: '10px' }}>
           {/* MIEJSCE NA LOGO (na razie emotikonka) */}
-          <span style={{ fontSize: '28px' }}>📖</span> 
+          <span style={{ fontSize: '70px' }}><img src={logoIcon} alt="Logo" style={{ width: '70px', height: '70px' }} /></span> 
           <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Story Manager</span>
         </Link>
 
