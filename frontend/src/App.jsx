@@ -1,26 +1,31 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import Layout from './Layout';
-
+// Importujemy nasze ramki i strony
+import GlobalLayout from './GlobalLayout';
+import ProjectLayout from './ProjectLayout';
 import ProjectList from './ProjectList';
 import CharacterList from './CharacterList';
-// --- KOMPONENTY (WIDOKI) ---
+import ChapterList from './ChapterList';
+import RelationshipList from './RelationshipList';
 
-function App(){
-const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
+function App() {
   return (
     <Router>
-      <Layout>
-
-        <Routes>
+      <Routes>
+        
+        {/* --- STREFA GLOBALNA (Z GlobalLayout) --- */}
+        <Route element={<GlobalLayout />}>
           <Route path="/" element={<ProjectList />} />
-          <Route path="/project/:projectId" element={<CharacterList />} />
-          {/* W przyszłości dodamy tu więcej tras, np. do widoku konkretnego projektu */}
-        </Routes>
+        </Route>
 
-      </Layout>
+        {/* --- STREFA PROJEKTU (Z ProjectLayout) --- */}
+        <Route path="/project/:projectId" element={<ProjectLayout />}>
+          <Route path="characters" element={<CharacterList />} />
+          <Route path="chapters" element={<ChapterList />} />
+          <Route path="relationships" element={<RelationshipList />} />
+        </Route>
+
+      </Routes>
     </Router>
   );
 }

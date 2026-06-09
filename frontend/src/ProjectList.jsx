@@ -11,6 +11,8 @@ function ProjectList() {
     const [newDescription, setNewDescription] = useState('');
     const [newProjectImage, setNewProjectImage] = useState('');
 
+    
+
     //stan okna pop-up
     const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -67,16 +69,19 @@ function ProjectList() {
 
   return (
     <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <h1>Twoje Projekty</h1>
+        </div>
+            <div style={{ display: 'flex', justifyContent: 'right', alignItems: 'center' }}>
             <button onClick={() => setIsModalOpen(true)}
                 style={{ padding: '10px 20px', backgroundColor: '#4B5563', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
             >
                 + Nowy projekt
             </button>
-        </div>    
+            </div>
+          
         
-        {/* formularz dodawania projektu (modal)*/}
+        {/* formularz dodawania projektu*/}
 
         {isModalOpen && (
             <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -99,7 +104,7 @@ function ProjectList() {
 
     <div>
         {projects.map(project => (
-            <Link to={`/project/${project.id}`} key={project.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to={`/project/${project.id}/characters`} key={project.id} style={{ textDecoration: 'none', color: 'inherit' }}>
             <h2>{project.name}</h2>
             <p>{project.description}</p>
             <p>{project.project_image}</p>
