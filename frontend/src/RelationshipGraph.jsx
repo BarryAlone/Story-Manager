@@ -14,12 +14,13 @@ function RelationshipGraph() {
       try {
         const charsResponse = await fetch(`http://localhost:8000/api/projects/${projectId}/characters`);
         const charsData = await charsResponse.json();
+        const characters = Array.isArray(charsData?.characters) ? charsData.characters : [];
 
         const relsResponse = await fetch(`http://localhost:8000/api/projects/${projectId}/character-relationships`);
         const relsData = await relsResponse.json();
 
         // 1. Tworzymy węzły (Postacie)
-        const nodes = charsData.map(char => ({
+        const nodes = characters.map(char => ({
           id: char.id,
           name: char.name,
           val: 20 // Rozmiar kółka

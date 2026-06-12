@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-
-import moreIcon from './assets/icons/more.png';
-import deleteIcon from './assets/icons/trash-can.png';
-import editIcon from './assets/icons/pencil.png';
 import FABIcon from './assets/icons/plus.png';
 
 import RelationshipGraph from './RelationshipGraph';
@@ -27,7 +23,7 @@ function RelationshipList() {
     // 1. Pobieramy postacie (do list rozwijanych)
     fetch(`http://localhost:8000/api/projects/${projectId}/characters`)
       .then(res => res.json())
-      .then(data => setCharacters(data))
+      .then(data => setCharacters(Array.isArray(data.characters) ? data.characters : []))
       .catch(err => console.error('Błąd pobierania postaci:', err));
 
     // 2. Pobieramy relacje dla tego projektu
@@ -94,7 +90,11 @@ function RelationshipList() {
 
   // Funkcja pomocnicza do wyświetlania imienia postaci na podstawie ID
   const getCharacterName = (id) => {
-    const char = characters.find(c => c.id === parseInt(id));
+    if (!Array.isArray(characters)) {
+      return `Nieznana postać (ID: ${id})`;
+    }
+    const parsedId = Number(id);
+    const char = characters.find(c => c.id === parsedId || c.id === id);
     return char ? char.name : `Nieznana postać (ID: ${id})`;
   };
 
