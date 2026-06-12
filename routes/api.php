@@ -32,6 +32,10 @@ Route::delete('/characters/{id}', [CharacterController::class, 'destroy']);
 
 Route::put('/characters/{id}', [CharacterController::class, 'update']);
 
+Route::get('/projects/{project}/characters/{id}', [CharacterController::class, 'index']);
+
+Route::get('/characters/{id}', [CharacterController::class, 'show']);
+
 //ProjectAttribute
 Route::get('/project-attributes', [ProjectAttributeController::class, 'index']);
 

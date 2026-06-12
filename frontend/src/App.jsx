@@ -5,6 +5,7 @@ import GlobalLayout from './GlobalLayout';
 import ProjectLayout from './ProjectLayout';
 import ProjectList from './ProjectList';
 import CharacterList from './CharacterList';
+import CharacterDetail from './CharacterDetail';
 import ChapterList from './ChapterList';
 import RelationshipList from './RelationshipList';
 
@@ -21,6 +22,7 @@ function App() {
         {/* --- STREFA PROJEKTU (Z ProjectLayout) --- */}
         <Route path="/project/:projectId" element={<ProjectLayout />}>
           <Route path="characters" element={<CharacterList />} />
+          <Route path="characters/:characterId" element={<CharacterDetail />} />
           <Route path="chapters" element={<ChapterList />} />
           <Route path="relationships" element={<RelationshipList />} />
         </Route>

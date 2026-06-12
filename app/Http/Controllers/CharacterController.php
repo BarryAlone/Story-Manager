@@ -47,7 +47,7 @@ class CharacterController extends Controller
         $character = Character::findOrFail($id);
 
         $validated = $request->validate([
-            'chapter_id' => 'nullable|integer|exists:chapters,id',
+            'character_id' => 'nullable|integer|exists:characters,id',
             'name' => [
                 'required',
                 'string',
@@ -84,5 +84,12 @@ class CharacterController extends Controller
         $character->delete();
 
         return response()->json(['message' => 'Postać usunięta'], 200);
+    }
+
+    public function show($id)
+    {
+        $character = Character::findOrFail($id);
+        
+        return response()->json($character, 200);
     }
 }

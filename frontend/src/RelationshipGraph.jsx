@@ -72,7 +72,7 @@ function RelationshipGraph() {
             // Rysowanie kółka (potem zmienić na obrazek postaci)
             ctx.beginPath();
             ctx.arc(node.x, node.y, 6, 0, 2 * Math.PI, false);
-            ctx.fillStyle = '#4B5563';
+            ctx.fillStyle = '#2c5692';
             ctx.fill();
 
             // Rysowanie imienia pod kółkiem

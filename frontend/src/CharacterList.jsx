@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import moreIcon from './assets/icons/more.png';
 import deleteIcon from './assets/icons/trash-can.png';
@@ -8,6 +8,7 @@ import FABIcon from './assets/icons/plus.png';
 
 function CharacterList() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const [characters, setCharacters] = useState([]);
 
   // Formularz
@@ -154,7 +155,10 @@ function CharacterList() {
           return (
             <div 
               key={character.id} 
+              onClick={() => navigate(`/project/${projectId}/characters/${character.id}`)}
               style={{ 
+                textDecoration: 'none', // WAŻNE: żeby link nie podkreślił nam tekstu wewnątrz kafelka
+                color: 'inherit',       // żeby kolory tekstów się nie popsuły
                 position: 'relative',
                 height: '380px',
                 borderRadius: '10px',
@@ -163,13 +167,15 @@ function CharacterList() {
                 backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                display: 'block', // Link musi zachowywać się jak div blockowy
+                cursor: 'pointer'
               }}
             >
               {/* Opcje akcji (ikony edycji i usuwania) */}
               <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px', zIndex: 10 }}>
                 <button 
-                  onClick={() => openEditModal(character)} 
+                  onClick={(e) => { e.stopPropagation(); openEditModal(character); }} 
                   title="Edytuj"
                   style={{ width: '35px', height: '35px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.8)', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', opacity: 0.7 }}
                 >
@@ -180,7 +186,7 @@ function CharacterList() {
                   />
                 </button>
                 <button 
-                  onClick={() => handleDelete(character.id)} 
+                  onClick={(e) => { e.stopPropagation(); handleDelete(character.id); }} 
                   title="Usuń"
                   style={{ width: '35px', height: '35px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.8)', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', opacity: 0.7 }}
                 >
