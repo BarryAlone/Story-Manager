@@ -5,12 +5,16 @@ function CharacterDetail() {
   // Pobieramy z adresu URL zarówno ID projektu, jak i ID postaci
   const { projectId, characterId } = useParams();
   const [character, setCharacter] = useState(null);
+  const [projectAttributes, setProjectAttributes] = useState([]);
 
   useEffect(() => {
     // Zapytanie do Laravela o tę JEDNĄ konkretną postać
     fetch(`http://localhost:8000/api/characters/${characterId}`)
       .then(response => response.json())
-      .then(data => setCharacter(data))
+      .then(data => {
+        setCharacter(data.character || data);
+        setProjectAttributes(data.attributes || []);
+      })
       .catch(error => console.error('Błąd pobierania profilu:', error));
   }, [characterId]);
 
@@ -51,6 +55,25 @@ function CharacterDetail() {
           <p style={{ lineHeight: '1.6', color: '#4b5563', whiteSpace: 'pre-wrap' }}>
             {character.description || 'Ta postać nie ma jeszcze opisu.'}
           </p>
+
+            {/* SEKCJA ATRYBUTÓW */}
+            {projectAttributes && projectAttributes.length > 0 && (
+              <>
+                <h3 style={{ marginTop: '30px', marginBottom: '15px', color: '#374151' }}>Atrybuty</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+                  {projectAttributes.map(attr => (
+                    <div key={attr.id} style={{ padding: '12px', backgroundColor: '#f3f4f6', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                      <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', fontWeight: '600', color: '#374151' }}>
+                        {attr.name}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '1.1rem', color: '#4b5563', fontWeight: '500' }}>
+                        {character.attributes && character.attributes[attr.id] ? character.attributes[attr.id] : '—'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
         </div>
       </div>
     </div>

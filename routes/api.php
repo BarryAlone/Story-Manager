@@ -41,6 +41,12 @@ Route::get('/project-attributes', [ProjectAttributeController::class, 'index']);
 
 Route::post('/project-attributes', [ProjectAttributeController::class, 'store']);
 
+Route::get('/projects/{projectId}/attributes', [ProjectAttributeController::class, 'index']);
+
+Route::put('/project-attributes/{id}', [ProjectAttributeController::class, 'update']);
+
+Route::delete('/project-attributes/{id}', [ProjectAttributeController::class, 'destroy']);
+
 //CharacterRelationship
 
 Route::get('/projects/{project}/character-relationships', [CharacterRelationshipController::class, 'index']);

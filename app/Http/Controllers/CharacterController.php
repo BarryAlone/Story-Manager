@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Character;
+use App\Models\ProjectAttribute;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,11 +13,27 @@ class CharacterController extends Controller
     public function index($projectId)
     {
         $characters = Character::where('project_id', $projectId)->get();
-        return response()->json($characters, 200);
+        $attributes = ProjectAttribute::where('project_id', $projectId)->get();
+        
+        return response()->json([
+            'characters' => $characters,
+            'attributes' => $attributes
+        ], 200);
     }
 
     public function store(Request $request)
     {
+        $attributesInput = $request->input('attributes');
+
+        if (!is_null($attributesInput) && !is_array($attributesInput)) {
+            $decoded = json_decode($attributesInput, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $request->merge(['attributes' => $decoded]);
+            } else {
+                $request->merge(['attributes' => null]);
+            }
+        }
+
         $validated = $request->validate([
             'project_id' => 'required|integer|exists:projects,id',
             'chapter_id' => 'nullable|integer|exists:chapters,id',
@@ -29,7 +46,7 @@ class CharacterController extends Controller
             'group_name' => 'nullable|string|max:128',
             'description' => 'nullable|string',
             'character_image' => 'nullable|image|max:2048', 
-            'attributes' => 'nullable|array' 
+            'attributes' => 'nullable' 
         ]);
 
         if ($request->hasFile('character_image')) {
@@ -45,6 +62,16 @@ class CharacterController extends Controller
     public function update(Request $request, $id)
     {
         $character = Character::findOrFail($id);
+        $attributesInput = $request->input('attributes');
+
+        if (!is_null($attributesInput) && !is_array($attributesInput)) {
+            $decoded = json_decode($attributesInput, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $request->merge(['attributes' => $decoded]);
+            } else {
+                $request->merge(['attributes' => null]);
+            }
+        }
 
         $validated = $request->validate([
             'character_id' => 'nullable|integer|exists:characters,id',
@@ -57,7 +84,7 @@ class CharacterController extends Controller
             'group_name' => 'nullable|string|max:128',
             'description' => 'nullable|string',
             'character_image' => 'nullable|image|max:2048',
-            'attributes' => 'nullable|array'
+            'attributes' => 'nullable'
         ]);
 
         if ($request->hasFile('character_image')) {
@@ -89,7 +116,11 @@ class CharacterController extends Controller
     public function show($id)
     {
         $character = Character::findOrFail($id);
+            $projectAttributes = ProjectAttribute::where('project_id', $character->project_id)->get();
         
-        return response()->json($character, 200);
+            return response()->json([
+                'character' => $character,
+                'attributes' => $projectAttributes
+            ], 200);
     }
 }
