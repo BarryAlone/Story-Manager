@@ -11,6 +11,7 @@ class Character extends Model
         'project_id',
         'chapter_id',
         'name',
+        'group_name',
         'description',
         'character_image',
         'attributes'

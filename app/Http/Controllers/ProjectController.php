@@ -13,14 +13,16 @@ class ProjectController extends Controller
         return response()->json($projects, 200); // format json($zmienna Request, komunikat HTTP: 200 - OK)
     }
 
-    public function store(Request $request)
+    public function store(Request $user_id)
     {
-        $validated = $request->validate([
-        'user_id' => 'required|integer',
+        $validated = $user_id->validate([
         'name' => 'required|string|unique:projects|max:255',
         'description' => 'nullable',
         'project_image' => 'nullable|string|max:255'
         ]);
+
+        //tymczasowo przypisuję user_id na sztywno, docelowo będzie pobierane z tokena autoryzacyjnego
+        $validated['user_id'] = 1;
 
         $project = Project::create($validated);
 
