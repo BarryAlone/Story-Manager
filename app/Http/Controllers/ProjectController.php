@@ -13,11 +13,12 @@ class ProjectController extends Controller
         return response()->json($projects, 200); // format json($zmienna Request, komunikat HTTP: 200 - OK)
     }
 
-    public function store(Request $user_id)
+    public function store(Request $request)
     {
-        $validated = $user_id->validate([
+        $validated = $request->validate([
         'name' => 'required|string|unique:projects|max:255',
         'description' => 'nullable',
+        'description_long' => 'nullable',
         'project_image' => 'nullable|string|max:255'
         ]);
 

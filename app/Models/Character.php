@@ -30,4 +30,10 @@ class Character extends Model
     {
         return $this->belongsTo(Chapter::class);
     }
+
+    // Relacja Polimorficzna: Postać ma wiele obrazów
+    public function images()
+    {
+        return $this->morphMany(Image::class, 'imageable');
+    }
 }

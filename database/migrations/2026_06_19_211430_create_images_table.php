@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('name');
-            $table->string('description')->nullable();
-            $table->text('desctiption_long')->nullable();
-            $table->string('project_image')->nullable();
+            $table->morphs('imageable'); // morphs to skrót w laraverze tworzący 2 tabele (imageable_id, oraz imageable_type)
+            $table->string('file_path');
+            $table->string('caption')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('projects');
+        Schema::dropIfExists('images');
     }
 };

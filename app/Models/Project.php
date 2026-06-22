@@ -11,6 +11,7 @@ class Project extends Model
         'user_id',
         'name',
         'description',
+        'description_long',
         'project_image'
     ];
 
@@ -33,5 +34,11 @@ class Project extends Model
     public function events(): HasMany
     {
         return $this->hasMany(Event::class);
+    }
+
+    // Relacja polimorficzna pozwalająca przypisać wiele obrazów.
+    public function images()
+    {
+        return $this->morphMany(Image::class, 'imageable');
     }
 }
