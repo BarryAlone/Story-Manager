@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('description')->nullable();
+            $table->text('description_long')->nullable();
             $table->string('chapter_image')->nullable();
             $table->integer('timeline_point_start')->nullable();
             $table->integer('timeline_point_end')->nullable();

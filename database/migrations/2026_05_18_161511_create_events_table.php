@@ -17,8 +17,9 @@ return new class extends Migration
             $table->foreignId('chapter_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->string('description')->nullable();
+            $table->text('description_long')->nullable();
             $table->string('event_image')->nullable();
-            $table->integer('timeline_point_start')->default(0);
+            $table->integer('timeline_point_start')->nullable();
             $table->integer('timeline_point_end')->nullable();
             $table->string('display_label')->nullable();
             $table->timestamps();

@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Character extends Model
 {
     protected $fillable = [
         'project_id',
-        'chapter_id',
         'name',
         'group_name',
         'description',
@@ -26,12 +26,12 @@ class Character extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function chapter(): BelongsTo
+    public function chapter(): BelongsToMany
     {
-        return $this->belongsTo(Chapter::class);
+        return $this->belongsToMany(Chapter::class);
     }
-
-    // Relacja Polimorficzna: Postać ma wiele obrazów
+    
+    // Relacja polimorficzna pozwalająca przypisać wiele obrazów.
     public function images()
     {
         return $this->morphMany(Image::class, 'imageable');
