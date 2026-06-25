@@ -1,58 +1,123 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Story Manager
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Status](https://img.shields.io/badge/Status-In_Development_(MVP)-orange)
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=flat&logo=laravel&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
 
-## About Laravel
+Zaawansowane narzędzie dla pisarzy i twórców do zarządzania światem przedstawionym, postaciami oraz linią czasu wydarzeń. Projekt realizowany jako część pracy inżynierskiej oraz osobisty projekt MVP.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Spis treści
+1. [O projekcie](#-o-projekcie)
+2. [Architektura i Technologie](#-architektura-i-technologie)
+3. [Status Projektu i Roadmapa](#-status-projektu-i-roadmapa)
+4. [Uruchomienie Lokalne (Development)](#-uruchomienie-lokalne-development)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## O projekcie
+Story Manager to aplikacja webowa rozwiązująca problem zarządzania skomplikowaną strukturą opowieści i światów fikcyjnych. Zastępuje dziesiątki luźnych notatek i plików tekstowych jednym, spójnym systemem relacyjnym. 
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**Główne możliwości (Core Features):**
+* Zarządzanie wieloma projektami (światami) i ich rozdziałami.
+* Rozbudowane profile postaci z konfigurowalnymi atrybutami, globalnymi dla danego projektu.
+* Dodawanie avatara do danego elementu projektu, oraz obrazów pomocniczych pełniących funkcję galerii.
+* Moduł Osi Czasu pozwalający na chronologiczne układanie wydarzeń.
+* Graf relaci postaci reprezentujący typy relacji między postaciami. 
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Architektura i Technologie
+Aplikacja została zbudowana w architekturze rozdzielonej (Headless/API-First).
 
-## Agentic Development
+* **Frontend:** React.js
+* **Backend:** Laravel (PHP) działający jako REST API
+* **Baza danych:** SQLite (wersja deweloperska)
+* **Autoryzacja:** Laravel Sanctum (Token-based authentication - *W trakcie wdrażania*)
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
 
+## Status Projektu i Roadmapa
+Projekt jest w fazie aktywnego rozwoju. Obecna wersja to MVP 1.0 skupiająca się na architekturze bazy danych oraz dowiezieniem minimalnej wersji frontendu.
+
+- [x] Projekt relacyjnej bazy danych i wdrożenie migracji (Laravel).
+- [x] Opracowanie logiki relacji Wiele-do-Wielu oraz powiązań między elementami projektu.
+- [x] Wstępne połączenie backendu z frontendem, aby móc działać na danych z bazy oraz testować API.
+- [x] Wprowadzenie seederów do generowania danych testowych.  
+- [ ] Zmiana statycznego przypisywania `user_id` na uwierzytelnianie przez tokeny (Sanctum).
+- [ ] Pełna integracja formularzy React z nowymi endpointami API.
+- [ ] Stworzenie funkcjonalnej i skalowalnej wersji grafu relacji.
+- [ ] Stworzenie w pełni funkcjonalnej (zgodnej z założeniami projektu) wersji osi czasu.
+- [ ] Deployment wersji demonstracyjnej.
+
+> **Ważna uwaga dla testujących:** Obecnie system logowania jest wstrzymany na rzecz prac nad architekturą. Interfejs automatycznie przypisuje testowego użytkownika o ID 1.
+
+---
+
+## Uruchomienie Lokalne (Development)
+
+Instrukcja uruchomienia dwóch osobnych środowisk na maszynie deweloperskiej.
+
+### Wymagania (Prerequisites)
+* Node.js & npm
+* PHP (min. 8.1) & Composer
+
+### Krok 1: Backend (Laravel API)
 ```bash
-composer require laravel/boost --dev
+# Sklonuj repozytorium i przejdź do folderu backendu
+git clone [https://github.com/TwojaNazwa/Story-Manager.git](https://github.com/TwojaNazwa/Story-Manager.git)
+cd Story-Manager/backend
 
-php artisan boost:install
+# Zainstaluj zależności i przygotuj plik środowiskowy
+composer install
+cp .env.example .env
+php artisan key:generate
+
+# Zbuduj i zasiej bazę danych testowymi danymi
+php artisan migrate:fresh --seed
+
+# Uruchom serwer API
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Skrypty w aplikacji
+*Sekcja zostanie w pełni uzupełniona po ostatecznej konfiguracji środowiska.*
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Frontend (React):**
+* `npm start` - Uruchamia aplikację w trybie deweloperskim.
+* `npm run build` - Buduje zoptymalizowaną aplikację gotową na produkcję.
+* `npm run dev` - Uruchamia frontend. NALEŻY GO URUCHOMIĆ BĘDĄC W FOLDERZE 'frontend' PROJEKTU
 
-## Code of Conduct
+**Backend (Laravel):**
+* `php artisan serve` - Uruchamia lokalny serwer testowy.
+* `php artisan migrate:fresh --seed` - Resetuje bazę danych i wypełnia ją danymi testowymi.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+> **SEKCJE W PRZYGOTOWANIU (Wdrożenie po fazie MVP)** 🚧
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Wersja Live (Live Demo)
+Wersja demonstracyjna (produkcyjna) nie jest jeszcze dostępna publicznie. Link pojawi się tutaj po zakończeniu prac nad integracją API i bezpiecznym systemem autoryzacji (Sanctum).
 
-## License
+## Dostępy (Test Credentials)
+Gdy aplikacja zostanie opublikowana, w tym miejscu znajdą się dane do specjalnego konta testowego (Demo User), które umożliwi rekruterom i testerom szybkie sprawdzenie funkcjonalności bez konieczności rejestracji.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Co zostało zrobione?
+*(Zostanie zaktualizowane przed publikacją. Obecnie postęp prac można śledzić w sekcji "Status Projektu i Roadmapa").*
+
+## Plany na przyszłość (Future Features)
+Poza realizacją głównych celów MVP z Roadmapy, w przyszłości rozważane jest dodanie:
+* Unowoczesnienie i aktualizacja UX/UI
+* Dodanie modułu AI do rozpoznawania obrazów w celu automatycznej kategoryzacji atrybutów/opisów
+* Automatyczne generowanie konspektu/edycja tekstu (krok w stronę klasycznych managerów tekstowych dla podonych projektów)
+---
+
+## Kontakt
+Projekt tworzony z pasją. Jeśli masz pytania, sugestie lub chcesz porozmawiać o kodzie, zapraszam do kontaktu:
+
+* **GitHub:** [@BarryAlone](https://github.com/BarryAlone) 
+* **LinkedIn:** [Kacper Chwałkowski](https://www.linkedin.com/in/kacper-chwalkowski-836148337/)
+* **Email:** kac.chw.1994@gmail.com
