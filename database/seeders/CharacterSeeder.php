@@ -25,7 +25,7 @@ class CharacterSeeder extends Seeder
         ]);
 
         Character::create([
-            'project_id' => 2,
+            'project_id' => 1,
             'name' => 'Thorin Dębowa Tarcza',
             'group_name' => 'Drużyna pierścienia',
             'description' => 'Książe Ereboru',
@@ -35,7 +35,7 @@ class CharacterSeeder extends Seeder
         ]);
 
          Character::create([
-            'project_id' => 2,
+            'project_id' => 1,
             'name' => 'Gandalf Szary',
             'group_name' => 'Drużyna pierścienia',
             'description' => 'Potężny mag',
