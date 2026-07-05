@@ -16,6 +16,7 @@ function CharacterList() {
   const [newName, setNewName] = useState('');
   const [newGroupName, setNewGroupName] = useState('');
   const [newDescription, setNewDescription] = useState('');
+  const [newDescriptionLong, setNewDescriptionLong] = useState('');
   const [newCharacterImage, setNewCharacterImage] = useState(null);
   const [characterAttributes, setCharacterAttributes] = useState({});
 
@@ -87,6 +88,7 @@ function CharacterList() {
     formData.append('name', newName);
     formData.append('group_name', newGroupName || '');
     formData.append('description', newDescription || '');
+    formData.append('description_long', newDescriptionLong || '');
 
     Object.entries(characterAttributes).forEach(([key, value]) => {
       formData.append(`attributes[${key}]`, value);
@@ -142,6 +144,7 @@ function CharacterList() {
     setNewName(character.name);
     setNewGroupName(character.group_name || '');
     setNewDescription(character.description || '');
+    setNewDescriptionLong(character.description_long || '');
     setCharacterAttributes(character.attributes || {});
     setNewCharacterImage(null);
     setShowAttributeForm(false);
@@ -155,6 +158,7 @@ function CharacterList() {
     setNewName('');
     setNewGroupName('');
     setNewDescription('');
+    setNewDescriptionLong('');
     setCharacterAttributes({});
     setNewCharacterImage(null);
     setShowAttributeForm(false);
@@ -201,7 +205,6 @@ function CharacterList() {
             <h2 style={{ marginTop: 0 }}>{editingCharacterId ? 'Edytuj Postać' : 'Nowa Postać'}</h2>
             <input type="text" placeholder="Imię postaci" value={newName} onChange={(e) => setNewName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
             <input type="text" placeholder="Frakcja / Grupa (opcjonalnie)" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
-            <textarea placeholder="Opis postaci" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', minHeight: '80px' }} />
             <input type="file" accept="image/*" onChange={(e) => setNewCharacterImage(e.target.files[0])} style={{ width: '100%', padding: '10px', marginBottom: '15px', boxSizing: 'border-box' }} />
 
             {/* SEKCJA ATRYBUTÓW */}
@@ -329,6 +332,9 @@ function CharacterList() {
                 </div>
               </div>
             )}
+
+            <textarea placeholder="Krótki opis postaci" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', minHeight: '80px' }} />
+            <textarea placeholder="Długi opis postaci" value={newDescriptionLong} onChange={(e) => setNewDescriptionLong(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', minHeight: '80px' }} />
 
             {/* Przyciski akcji */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '15px' }}>

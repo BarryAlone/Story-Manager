@@ -45,6 +45,7 @@ class CharacterController extends Controller
             ],
             'group_name' => 'nullable|string|max:128',
             'description' => 'nullable|string',
+            'description_long' => 'nullable|string',
             'character_image' => 'nullable|image|max:2048', 
             'attributes' => 'nullable' 
         ]);
@@ -83,6 +84,7 @@ class CharacterController extends Controller
             ],
             'group_name' => 'nullable|string|max:128',
             'description' => 'nullable|string',
+            'description_long' => 'nullable|string',
             'character_image' => 'nullable|image|max:2048',
             'attributes' => 'nullable'
         ]);
