@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Editor } from '@tinymce/tinymce-react';
 import editIcon from './assets/icons/pencil.png';
 
 function CharacterDetail() {
@@ -10,6 +11,7 @@ function CharacterDetail() {
     name: '',
     group_name: '',
     description: '',
+    description_long: '',
     attributes: {},
     imageFile: null,
   });
@@ -17,6 +19,7 @@ function CharacterDetail() {
     name: false,
     group_name: false,
     description: false,
+    description_long: false,
     image: false,
     attributes: {},
   });
@@ -34,6 +37,7 @@ function CharacterDetail() {
           name: characterData.name || '',
           group_name: characterData.group_name || '',
           description: characterData.description || '',
+          description_long: characterData.description_long || '',
           attributes: characterData.attributes || {},
           imageFile: null,
         });
@@ -83,6 +87,7 @@ function CharacterDetail() {
     formData.append('name', form.name);
     formData.append('group_name', form.group_name || '');
     formData.append('description', form.description || '');
+    formData.append('description_long', form.description_long || '');
     Object.entries(form.attributes).forEach(([key, value]) => {
       formData.append(`attributes[${key}]`, value);
     });
@@ -107,7 +112,7 @@ function CharacterDetail() {
       .then(updatedCharacter => {
         setCharacter(updatedCharacter);
         setForm(prev => ({ ...prev, imageFile: null }));
-        setEditingFields({ name: false, group_name: false, description: false, image: false, attributes: {} });
+        setEditingFields({ name: false, group_name: false, description: false, description_long: false, image: false, attributes: {} });
       })
       .catch(err => {
         console.error('Błąd zapisu postaci:', err);
@@ -120,10 +125,11 @@ function CharacterDetail() {
       name: character.name || '',
       group_name: character.group_name || '',
       description: character.description || '',
+      description_long: character.description_long || '',
       attributes: character.attributes || {},
       imageFile: null,
     });
-    setEditingFields({ name: false, group_name: false, description: false, image: false, attributes: {} });
+    setEditingFields({ name: false, group_name: false, description: false, description_long: false, image: false, attributes: {} });
     setError(null);
   };
 
@@ -203,31 +209,6 @@ function CharacterDetail() {
             </button>
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h3 style={{ margin: 0, color: '#374151' }}>Biografia / Opis</h3>
-              <button
-                onClick={() => setEditingFields(prev => ({ ...prev, description: true }))}
-                title="Edytuj opis"
-                style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-              >
-                <img src={editIcon} alt="Edytuj" style={{ width: '18px', height: '18px' }} />
-              </button>
-            </div>
-            {editingFields.description ? (
-              <textarea
-                value={form.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={6}
-                style={{ width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #d1d5db', resize: 'vertical' }}
-              />
-            ) : (
-              <p style={{ lineHeight: '1.6', color: '#4b5563', whiteSpace: 'pre-wrap' }}>
-                {character.description || 'Ta postać nie ma jeszcze opisu.'}
-              </p>
-            )}
-          </div>
-
           {projectAttributes && projectAttributes.length > 0 && (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -270,6 +251,31 @@ function CharacterDetail() {
             </>
           )}
 
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h3 style={{ margin: 0, color: '#374151' }}>Biografia / Opis</h3>
+              <button
+                onClick={() => setEditingFields(prev => ({ ...prev, description: true }))}
+                title="Edytuj opis"
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
+              >
+                <img src={editIcon} alt="Edytuj" style={{ width: '18px', height: '18px' }} />
+              </button>
+            </div>
+            {editingFields.description ? (
+              <textarea
+                value={form.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                rows={6}
+                style={{ width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #d1d5db', resize: 'vertical' }}
+              />
+            ) : (
+              <p style={{ lineHeight: '1.6', color: '#4b5563', whiteSpace: 'pre-wrap' }}>
+                {character.description || 'Ta postać nie ma jeszcze opisu.'}
+              </p>
+            )}
+          </div>
+
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '25px', gap: '10px' }}>
             <button
               onClick={handleReset}
@@ -286,6 +292,52 @@ function CharacterDetail() {
             </button>
           </div>
         </div>
+      </div>
+
+      <div style={{ marginTop: '32px', padding: '24px', borderRadius: '18px', backgroundColor: '#f8fafc', border: '1px solid #e5e7eb' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '14px' }}>
+          <div>
+            <h2 style={{ margin: 0, color: '#1f2937', fontSize: '1.25rem' }}>Historia postaci</h2>
+          </div>
+          <button
+            onClick={() => setEditingFields(prev => ({ ...prev, description_long: true }))}
+            title="Edytuj rozbudowany opis"
+            style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
+          >
+            <img src={editIcon} alt="Edytuj" style={{ width: '18px', height: '18px' }} />
+          </button>
+        </div>
+
+        {editingFields.description_long ? (
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', overflow: 'hidden', width: '100%', minHeight: 'calc(65vh)', maxHeight: 'calc(100vh - 220px)' }}>
+            <Editor
+              value={form.description_long}
+              onEditorChange={(content) => handleInputChange('description_long', content)}
+              init={{
+                height: 'calc(100vh - 260px)',
+                menubar: false,
+                plugins: [
+                  'advlist autolink lists link charmap preview anchor',
+                  'searchreplace visualblocks code fullscreen',
+                  'insertdatetime table code help wordcount',
+                ],
+                toolbar:
+                  'undo redo | formatselect | bold italic underline strikethrough | ' +
+                  'alignleft aligncenter alignright | bullist numlist outdent indent | ' +
+                  'blockquote | link | removeformat | code',
+                content_style: 'body { font-family: Inter, system-ui, sans-serif; font-size: 14px; }',
+              }}
+            />
+          </div>
+        ) : (
+          <div style={{ minHeight: '220px', maxHeight: '420px', overflowY: 'auto', padding: '18px', backgroundColor: 'white', borderRadius: '14px', border: '1px solid #e5e7eb', color: '#334155' }}>
+            {character.description_long ? (
+              <div dangerouslySetInnerHTML={{ __html: character.description_long }} />
+            ) : (
+              <p style={{ margin: 0, color: '#94a3b8' }}>Brak rozbudowanego opisu. Kliknij ikonę edycji, aby dodać tekst.</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

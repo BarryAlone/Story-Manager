@@ -202,7 +202,7 @@ function CharacterList() {
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, overflowY: 'auto' }}>
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '5px', width: '400px', margin: '20px 0', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{ marginTop: 0 }}>{editingCharacterId ? 'Edytuj Postać' : 'Nowa Postać'}</h2>
+            <h2 style={{ marginTop: 0 }}>{editingCharacterId ? 'Edytuj postać' : 'Nowa postać'}</h2>
             <input type="text" placeholder="Imię postaci" value={newName} onChange={(e) => setNewName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
             <input type="text" placeholder="Frakcja / Grupa (opcjonalnie)" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
             <input type="file" accept="image/*" onChange={(e) => setNewCharacterImage(e.target.files[0])} style={{ width: '100%', padding: '10px', marginBottom: '15px', boxSizing: 'border-box' }} />
@@ -210,7 +210,7 @@ function CharacterList() {
             {/* SEKCJA ATRYBUTÓW */}
             <hr style={{ margin: '15px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h3 style={{ margin: 0, fontSize: '1rem', color: '#374151' }}>Atrybuty Postaci</h3>
+              <h3 style={{ margin: 0, fontSize: '1rem', color: '#374151' }}>Atrybuty postaci</h3>
               <button
                 onClick={() => setShowAttributeForm(true)}
                 style={{
@@ -261,7 +261,7 @@ function CharacterList() {
                           justifyContent: 'center'
                         }}
                       >
-                        ×
+
                       </button>
                     </label>
                     <input 
@@ -333,6 +333,7 @@ function CharacterList() {
               </div>
             )}
 
+            {/* Pole na krótki i długi opis */}
             <textarea placeholder="Krótki opis postaci" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', minHeight: '80px' }} />
             <textarea placeholder="Długi opis postaci" value={newDescriptionLong} onChange={(e) => setNewDescriptionLong(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', minHeight: '80px' }} />
 
