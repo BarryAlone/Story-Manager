@@ -309,8 +309,9 @@ function CharacterDetail() {
         </div>
 
         {editingFields.description_long ? (
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', overflow: 'hidden', width: '100%', minHeight: 'calc(65vh)', maxHeight: 'calc(100vh - 220px)' }}>
+          <div style={{ backgroundColor: '}#ffffff', borderRadius: '14px', overflow: 'hidden', width: '100%', minHeight: 'calc(65vh)', maxHeight: 'calc(100vh - 220px)' }}>
             <Editor
+              apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
               value={form.description_long}
               onEditorChange={(content) => handleInputChange('description_long', content)}
               init={{
