@@ -50,9 +50,7 @@ function RelationshipGraph() {
   return (
     <div style={{ backgroundColor: '#f9fafb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
       
-      <div style={{ padding: '15px', backgroundColor: 'white', borderBottom: '1px solid #e5e7eb' }}>
-        <h2 style={{ margin: 0 }}>Wizualizacja Relacji</h2>
-      </div>
+      
 
       {graphData.nodes.length > 0 ? (
         <ForceGraph2D

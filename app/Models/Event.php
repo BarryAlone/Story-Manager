@@ -12,6 +12,7 @@ class Event extends Model
     'chapter_id',
     'name',
     'description',
+    'description_long',
     'event_image',
     'timeline_point_start',
     'timeline_point_end',

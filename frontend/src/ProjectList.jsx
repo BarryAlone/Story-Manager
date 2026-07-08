@@ -75,7 +75,7 @@ function ProjectList() {
   return (
     <div>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <h1>Twoje Projekty</h1>
+            <h1>Twoje projekty</h1>
         </div>
             <div style={{ display: 'flex', justifyContent: 'right', alignItems: 'center' }}>
               <button 
@@ -90,7 +90,7 @@ function ProjectList() {
                   border: 'none',
                   cursor: 'pointer',
                   backgroundColor: '#6c7683',
-                  opacity: 0.9, // przeźroczystość
+                  opacity: 0.8, // przeźroczystość
                   boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
                   display: 'flex',
                   justifyContent: 'center',
@@ -120,7 +120,7 @@ function ProjectList() {
                             Anuluj
                         </button>
                         <button onClick={handleAddProject} style={{ padding: '10px 20px', backgroundColor: '#4B5563', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-                            Zapisz Projekt
+                            Zapisz projekt
                         </button>
                     </div>
                 </div>
