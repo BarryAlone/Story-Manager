@@ -8,6 +8,7 @@ import CharacterList from './CharacterList';
 import CharacterDetail from './CharacterDetail';
 import ChapterList from './ChapterList';
 import RelationshipList from './RelationshipList';
+import ChapterDetail from './ChapterDetail'; // dostosuj ścieżkę
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="characters" element={<CharacterList />} />
           <Route path="characters/:characterId" element={<CharacterDetail />} />
           <Route path="chapters" element={<ChapterList />} />
+          <Route path="chapters/:chapterId" element={<ChapterDetail />} />
           <Route path="relationships" element={<RelationshipList />} />
         </Route>
 

@@ -23,6 +23,8 @@ Route::post('/chapters', [ChapterController::class, 'store']);
 
 Route::get('/chapters/{project}/chapters', [ChapterController::class, 'index']);
 
+Route::get('/chapters/{id}', [ChapterController::class, 'show']);
+
 //Character
 Route::get('/characters', [CharacterController::class, 'index']);
 
