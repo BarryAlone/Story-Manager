@@ -5,6 +5,7 @@ import logoIcon from './assets/icons/logo.png';
 import charactersIcon from "./assets/icons/woman.png"; 
 import chaptersIcon from './assets/icons/chapter.png';
 import relationshipsIcon from './assets/icons/relationship.png';
+import attributesIcon from './assets/icons/attribute.png';
 import moreIcon from './assets/icons/more.png';
 import deleteIcon from './assets/icons/trash-can.png';
 import editIcon from './assets/icons/pencil.png';
@@ -88,6 +89,16 @@ function ProjectLayout() {
             <img
              src={relationshipsIcon}
             alt="Relacje"
+            style={{ fontSize: '48px', opacity: isActive ? 1 : 0.4, width: '32px', height: '32px' }}
+            />
+        )}
+        </NavLink>
+
+        <NavLink to={`/project/${projectId}/attributes`} title="Atrybuty" className="sidebar-icon">
+        {({ isActive }) => (
+            <img
+             src={attributesIcon}
+            alt="Atrybuty"
             style={{ fontSize: '48px', opacity: isActive ? 1 : 0.4, width: '32px', height: '32px' }}
             />
         )}

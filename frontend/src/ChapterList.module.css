@@ -1,0 +1,257 @@
+.chapterList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0 0 5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.fabButton {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  box-shadow: 0 10px 25px rgba(17, 24, 39, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fabButton:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.3);
+}
+
+.fabIcon {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
+}
+
+.section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.sectionSubtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.accordionButton {
+  border: none;
+  background: #f9fafb;
+  color: #374151;
+  border-radius: 999px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.accordionContent {
+  margin-top: 0.9rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #111827 0%, #374151 100%);
+  color: #f9fafb;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.14);
+  cursor: pointer;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+}
+
+.cardContent {
+  padding: 1rem 1rem 1rem;
+  background: linear-gradient(to top, rgba(17, 24, 39, 0.97), rgba(17, 24, 39, 0.68), transparent);
+}
+
+.cardTitle {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.cardMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.55rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.cardDescription {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #e5e7eb;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardActions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.iconButton {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(17, 24, 39, 0.12);
+}
+
+.iconButton img {
+  width: 16px;
+  height: 16px;
+}
+
+.emptyState {
+  padding: 1rem;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  color: #6b7280;
+  background: #f9fafb;
+  text-align: center;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modalCard {
+  width: min(100%, 420px);
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.2rem;
+  box-shadow: 0 12px 35px rgba(17, 24, 39, 0.2);
+}
+
+.modalTitle {
+  margin: 0 0 0.9rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.modalField {
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  margin-bottom: 0.8rem;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.buttonSecondary,
+.buttonPrimary {
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.buttonSecondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.buttonPrimary {
+  background: #4b5563;
+  color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
