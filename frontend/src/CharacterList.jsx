@@ -355,21 +355,22 @@ function CharacterList() {
             <div 
               key={character.id} 
               onClick={() => navigate(`/project/${projectId}/characters/${character.id}`)}
-              style={{ 
-                textDecoration: 'none',
-                color: 'inherit',
-                position: 'relative',
-                height: '380px',
-                borderRadius: '10px',
-                overflow: 'hidden',
-                backgroundColor: '#374151',
-                backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                display: 'block',
-                cursor: 'pointer'
-              }}
+              style={{ textDecoration: 'none',
+                       color: 'inherit',
+                       position: 'relative',
+                       height: '380px',
+                       borderRadius: '10px',
+                       overflow: 'hidden',
+                       backgroundColor: '#374151',
+                       backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
+                       backgroundSize: 'cover',
+                       backgroundPosition: 'center',
+                       boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                       display: 'block',
+                       cursor: 'pointer',
+                       transition: 'transform 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
             >
               {/* Opcje akcji */}
               <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px', zIndex: 10 }}>
