@@ -54,7 +54,7 @@ class ProjectController extends Controller
         ],
         'description' => 'nullable|string',
         'description_long' => 'nullable|string',
-        'project_image' => 'nullable|image|max:255'
+        'project_image' => 'nullable|image|max:2048'
         ]);
 
         if ($request->hasFile('project_image')) {

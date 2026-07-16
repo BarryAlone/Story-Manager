@@ -16,6 +16,10 @@ Route::post('/projects', [ProjectController::class, 'store']);
 
 Route::get('/projects/{project}/characters', [CharacterController::class, 'index']);
 
+Route::put('/projects/{id}', [ProjectController::class, 'update']);
+
+Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
+
 //Chapter
 Route::get('/chapters', [ChapterController::class, 'index']);
 
