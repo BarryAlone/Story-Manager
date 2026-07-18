@@ -27,7 +27,13 @@ Route::post('/chapters', [ChapterController::class, 'store']);
 
 Route::get('/chapters/{project}/chapters', [ChapterController::class, 'index']);
 
+Route::put('/chapters/{id}', [ChapterController::class, 'update']);
+
 Route::get('/chapters/{id}', [ChapterController::class, 'show']);
+
+Route::delete('/chapters/{id}', [ChapterController::class, 'destroy']);
+
+Route::post('/chapters/{chapter}/swap', [ChapterController::class, 'swap']);
 
 //Character
 Route::get('/characters', [CharacterController::class, 'index']);

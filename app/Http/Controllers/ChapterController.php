@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Chapter;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ChapterController extends Controller
 {
@@ -113,4 +114,53 @@ class ChapterController extends Controller
                 'chapter' => $chapter,
             ], 200);
     }
+
+    public function swap(Request $request, Chapter $chapter)
+{
+    $validated = $request->validate([
+        'target_id' => 'nullable|exists:chapters,id',
+        'direction' => 'nullable|in:up,down',
+    ]);
+
+    // Sprawdzamy, czy w ogóle jest numer do zamiany (nie przesuwamy szkiców)
+    if (!$chapter->chapter_number) {
+        return response()->json(['message' => 'Szkiców nie można przesuwać.'], 400);
+    }
+
+    $targetChapter = null;
+
+    // SCENARIUSZ A: Wybrano konkretny rozdział do zamiany (Z modala Swap)
+    if ($request->filled('target_id')) {
+        $targetChapter = Chapter::where('project_id', $chapter->project_id)
+                                ->where('id', $validated['target_id'])
+                                ->first();
+    } 
+    // SCENARIUSZ B: Kliknięto strzałkę w górę (szukamy sąsiada wyżej)
+    elseif ($request->input('direction') === 'up') {
+        $targetChapter = Chapter::where('project_id', $chapter->project_id)
+                                ->where('chapter_number', '<', $chapter->chapter_number)
+                                ->orderBy('chapter_number', 'desc')
+                                ->first();
+    } 
+    // SCENARIUSZ C: Kliknięto strzałkę w dół (szukamy sąsiada niżej)
+    elseif ($request->input('direction') === 'down') {
+        $targetChapter = Chapter::where('project_id', $chapter->project_id)
+                                ->where('chapter_number', '>', $chapter->chapter_number)
+                                ->orderBy('chapter_number', 'asc')
+                                ->first();
+    }
+
+    if (!$targetChapter || !$targetChapter->chapter_number) {
+        return response()->json(['message' => 'Nie znaleziono rozdziału do zamiany.'], 400);
+    }
+
+    // Dokonujemy zamiany numerów w bezpiecznej transakcji
+    DB::transaction(function () use ($chapter, $targetChapter) {
+        $tempNumber = $chapter->chapter_number;
+        $chapter->update(['chapter_number' => $targetChapter->chapter_number]);
+        $targetChapter->update(['chapter_number' => $tempNumber]);
+    });
+
+    return response()->json(['message' => 'Kolejność została zaktualizowana.']);
+}
 }
