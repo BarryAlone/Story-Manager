@@ -67,4 +67,10 @@ Route::post('/character-relationships', [CharacterRelationshipController::class,
 
 Route::delete('/character-relationships/{id}', [CharacterRelationshipController::class, 'destroy']);
 
+//User
+Route::get('/user', function (Request $request) {
+    return response()->json(
+        $request->user()->only(['id', 'name', 'email'])
+        );
+})->middleware('auth:sanctum');
 
