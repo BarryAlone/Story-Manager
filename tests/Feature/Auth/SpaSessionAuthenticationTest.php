@@ -1,0 +1,110 @@
+<?php
+
+namespace Tests\Feature\Auth;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
+use Tests\TestCase;
+use Illuminate\Support\Facades\Hash;
+
+class SpaSessionAuthenticationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_user_can_log_in_with_json_and_receive_safe_user_data(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->postJson('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertOk();
+        $this->assertSafeUserJson($response, $user);
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_logged_in_user_can_fetch_current_user_in_the_same_session(): void
+    {
+        $user = User::factory()->create();
+
+        $this->postJson('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertOk();
+
+        $response = $this->getJson('/api/user');
+
+        $response->assertOk();
+        $this->assertSafeUserJson($response, $user);
+    }
+
+    public function test_user_cannot_log_in_with_an_invalid_password(): void
+    {
+        $user = User::factory()->create();
+
+        $this->postJson('/login', [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email')
+            ->assertJsonMissingPath('password')
+            ->assertJsonMissingPath('remember_token');
+
+        $this->assertGuest();
+    }
+
+    public function test_user_can_register_with_json_and_receive_safe_user_data(): void
+    {
+        $response = $this->postJson('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+
+        $response->assertCreated();
+        $this->assertTrue(Hash::check('password', $user->password));
+        $this->assertNotSame('password', $user->password);
+        $this->assertSafeUserJson($response, $user);
+        $this->assertDatabaseHas('users', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_user_can_log_out_with_json_and_session_is_invalidated(): void
+    {
+        $user = User::factory()->create();
+
+        $this->postJson('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertOk();
+
+        $this->postJson('/logout')
+            ->assertNoContent();
+
+        $this->assertGuest();
+        $this->getJson('/api/user')
+            ->assertUnauthorized();
+    }
+
+    private function assertSafeUserJson(TestResponse $response, User $user): void
+    {
+        $response
+            ->assertExactJson([
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ])
+            ->assertJsonMissingPath('password')
+            ->assertJsonMissingPath('remember_token');
+    }
+}
