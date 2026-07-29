@@ -96,6 +96,29 @@ class SpaSessionAuthenticationTest extends TestCase
             ->assertUnauthorized();
     }
 
+    public function test_vite_frontend_origin_can_use_stateful_session_authentication(): void
+    {
+        $user = User::factory()->create();
+
+        $this->assertContains(
+            'localhost:5173',
+            config('sanctum.stateful')
+        );
+
+        $this->withHeader('Origin', 'http://localhost:5173')
+            ->postJson('/login', [
+                'email' => $user->email,
+                'password' => 'password',
+            ])
+            ->assertOk();
+
+        $response = $this->withHeader('Origin', 'http://localhost:5173')
+            ->getJson('/api/user');
+
+        $response->assertOk();
+        $this->assertSafeUserJson($response, $user);
+    }
+
     private function assertSafeUserJson(TestResponse $response, User $user): void
     {
         $response
