@@ -17,7 +17,7 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
-    /**
+    /*
      * Display the registration view.
      */
     public function create(): Response
@@ -25,7 +25,7 @@ class RegisteredUserController extends Controller
         return Inertia::render('Auth/Register');
     }
 
-    /**
+    /*
      * Handle an incoming registration request.
      *
      * @throws ValidationException

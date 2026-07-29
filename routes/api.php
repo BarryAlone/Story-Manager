@@ -1,15 +1,14 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterRelationshipController;
 use App\Http\Controllers\ProjectAttributeController;
+use App\Http\Controllers\ProjectController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
-//Project
+// Project
 Route::get('/projects', [ProjectController::class, 'index']);
 
 Route::post('/projects', [ProjectController::class, 'store']);
@@ -20,7 +19,7 @@ Route::put('/projects/{id}', [ProjectController::class, 'update']);
 
 Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
 
-//Chapter
+// Chapter
 Route::get('/chapters', [ChapterController::class, 'index']);
 
 Route::post('/chapters', [ChapterController::class, 'store']);
@@ -35,7 +34,7 @@ Route::delete('/chapters/{id}', [ChapterController::class, 'destroy']);
 
 Route::post('/chapters/{chapter}/swap', [ChapterController::class, 'swap']);
 
-//Character
+// Character
 Route::get('/characters', [CharacterController::class, 'index']);
 
 Route::post('/characters', [CharacterController::class, 'store']);
@@ -48,7 +47,7 @@ Route::get('/projects/{project}/characters/{id}', [CharacterController::class, '
 
 Route::get('/characters/{id}', [CharacterController::class, 'show']);
 
-//ProjectAttribute
+// ProjectAttribute
 Route::get('/project-attributes', [ProjectAttributeController::class, 'index']);
 
 Route::post('/project-attributes', [ProjectAttributeController::class, 'store']);
@@ -59,7 +58,7 @@ Route::put('/project-attributes/{id}', [ProjectAttributeController::class, 'upda
 
 Route::delete('/project-attributes/{id}', [ProjectAttributeController::class, 'destroy']);
 
-//CharacterRelationship
+// CharacterRelationship
 
 Route::get('/projects/{project}/character-relationships', [CharacterRelationshipController::class, 'index']);
 
@@ -67,10 +66,9 @@ Route::post('/character-relationships', [CharacterRelationshipController::class,
 
 Route::delete('/character-relationships/{id}', [CharacterRelationshipController::class, 'destroy']);
 
-//User
+// User
 Route::get('/user', function (Request $request) {
     return response()->json(
         $request->user()->only(['id', 'name', 'email'])
-        );
+    );
 })->middleware('auth:sanctum');
-
