@@ -105,18 +105,54 @@ class SpaSessionAuthenticationTest extends TestCase
             config('sanctum.stateful')
         );
 
-        $this->withHeader('Origin', 'http://localhost:5173')
-            ->postJson('/login', [
-                'email' => $user->email,
-                'password' => 'password',
+        $loginResponse = $this->withHeader(
+            'Origin',
+            'http://localhost:5173'
+        )->postJson('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $loginResponse
+            ->assertOk()
+            ->assertHeader(
+                'Access-Control-Allow-Origin',
+                'http://localhost:5173'
+            )
+            ->assertHeader('Access-Control-Allow-Credentials', 'true');
+
+        $currentUserResponse = $this->withHeader(
+            'Origin',
+            'http://localhost:5173'
+        )->getJson('/api/user');
+
+        $currentUserResponse
+            ->assertOk()
+            ->assertHeader(
+                'Access-Control-Allow-Origin',
+                'http://localhost:5173'
+            )
+            ->assertHeader('Access-Control-Allow-Credentials', 'true');
+
+        $this->assertSafeUserJson($currentUserResponse, $user);
+    }
+
+    public function test_vite_frontend_can_preflight_web_auth_routes(): void
+    {
+        foreach (['/login', '/register', '/logout'] as $path) {
+            $this->withHeaders([
+                'Origin' => 'http://localhost:5173',
+                'Access-Control-Request-Method' => 'POST',
+                'Access-Control-Request-Headers' => 'content-type,x-xsrf-token',
             ])
-            ->assertOk();
-
-        $response = $this->withHeader('Origin', 'http://localhost:5173')
-            ->getJson('/api/user');
-
-        $response->assertOk();
-        $this->assertSafeUserJson($response, $user);
+                ->optionsJson($path)
+                ->assertNoContent()
+                ->assertHeader(
+                    'Access-Control-Allow-Origin',
+                    'http://localhost:5173'
+                )
+                ->assertHeader('Access-Control-Allow-Credentials', 'true');
+        }
     }
 
     private function assertSafeUserJson(TestResponse $response, User $user): void
