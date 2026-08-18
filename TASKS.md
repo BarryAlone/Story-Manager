@@ -2,7 +2,7 @@
 
 ## Teraz
 
-- [ ] Zintegrować sesyjne uwierzytelnianie cookie + Sanctum z React SPA, obejmując logowanie, bieżącego użytkownika, ochronę widoków i wylogowanie.
+- Brak aktywnego zadania.
 
 ## Następne
 
@@ -19,5 +19,6 @@
 
 - [x] Utworzono bazową strukturę backendu i API dla głównych zasobów.
 - [x] Dodano podstawowy backendowy przepływ rejestracji, logowania, wylogowania i bieżącego użytkownika.
+- [x] Zintegrowano sesyjne uwierzytelnianie cookie + Sanctum z React SPA, obejmując logowanie, bieżącego użytkownika, ochronę widoków i wylogowanie.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import ForceGraph2D from 'react-force-graph-2d';
+import { apiFetch } from './api';
 
 function RelationshipGraph() {
   const { projectId } = useParams();
@@ -12,11 +13,11 @@ function RelationshipGraph() {
     // Funkcja pobierająca postacie i relacje między nimi jednocześnie
     const fetchData = async () => {
       try {
-        const charsResponse = await fetch(`http://localhost:8000/api/projects/${projectId}/characters`);
+        const charsResponse = await apiFetch(`/api/projects/${projectId}/characters`);
         const charsData = await charsResponse.json();
         const characters = Array.isArray(charsData?.characters) ? charsData.characters : [];
 
-        const relsResponse = await fetch(`http://localhost:8000/api/projects/${projectId}/character-relationships`);
+        const relsResponse = await apiFetch(`/api/projects/${projectId}/character-relationships`);
         const relsData = await relsResponse.json();
 
         // 1. Tworzymy węzły (Postacie)

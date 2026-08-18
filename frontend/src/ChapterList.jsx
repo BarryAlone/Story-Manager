@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import FABIcon from './assets/icons/plus.png';
+import { apiFetch, backendUrl } from './api';
 
 function ChapterList() {
   const { projectId } = useParams();
@@ -29,7 +30,7 @@ function ChapterList() {
   const [newDisplayLabel, setNewDisplayLabel] = useState('');
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/chapters/${projectId}/chapters`)
+    apiFetch(`/api/chapters/${projectId}/chapters`)
       .then(response => response.json())
       .then(data => setChapters(data))
       .catch(error => console.error('Błąd:', error))
@@ -93,15 +94,15 @@ function ChapterList() {
     if (newDisplayLabel) formData.append('display_label', newDisplayLabel);
     if (newChapterImage) formData.append('chapter_image', newChapterImage);
 
-    let url = 'http://localhost:8000/api/chapters';
+    let url = '/api/chapters';
     let method = 'POST';
 
     if (editingChapterId) {
-      url = `http://localhost:8000/api/chapters/${editingChapterId}`;
+      url = `/api/chapters/${editingChapterId}`;
       formData.append('_method', 'PUT');
     }
 
-    fetch(url, {
+    apiFetch(url, {
       method: method,
       headers: { 'Accept': 'application/json' },
       body: formData 
@@ -123,7 +124,7 @@ function ChapterList() {
 
   const handleDelete = (id) => {
     if (!window.confirm("Czy na pewno chcesz trwale usunąć ten rozdział?")) return;
-    fetch(`http://localhost:8000/api/chapters/${id}`, { method: 'DELETE' })
+    apiFetch(`/api/chapters/${id}`, { method: 'DELETE' })
       .then(response => { if (response.ok) setChapters(chapters.filter(c => c.id !== id)); })
       .catch(error => console.error('Błąd usuwania:', error));
     setOpenMenuId(null);
@@ -131,7 +132,7 @@ function ChapterList() {
 
   // // Odświeżanie listy z serwera
   const refreshChapters = () => {
-    fetch(`http://localhost:8000/api/chapters/${projectId}/chapters`)
+    apiFetch(`/api/chapters/${projectId}/chapters`)
       .then(response => response.json())
       .then(data => setChapters(data))
       .catch(error => console.error('Błąd odświeżania:', error));
@@ -139,7 +140,7 @@ function ChapterList() {
 
   // Funkcja zmiany kolejności góra/dół
   const handleMove = (chapter, direction) => {
-    fetch(`http://localhost:8000/api/chapters/${chapter.id}/swap`, {
+    apiFetch(`/api/chapters/${chapter.id}/swap`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -161,7 +162,7 @@ function ChapterList() {
   const handleSwapSubmit = () => {
     if (!targetSwapId) return;
 
-    fetch(`http://localhost:8000/api/chapters/${chapterToSwap.id}/swap`, {
+    apiFetch(`/api/chapters/${chapterToSwap.id}/swap`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -284,7 +285,7 @@ function ChapterList() {
             
             <div style={{ padding: '20px', maxHeight: 'calc(100vh - 220px)', overflowY: 'scroll', display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {numberedChapters.length > 0 ? numberedChapters.map((chapter, index) => {
-                  const imageUrl = chapter.chapter_image ? `http://localhost:8000/storage/${chapter.chapter_image}` : null;
+                  const imageUrl = chapter.chapter_image ? backendUrl(`/storage/${chapter.chapter_image}`) : null;
                   const isFirst = index === 0;
                   const isLast = index === numberedChapters.length - 1;
 
@@ -383,7 +384,7 @@ function ChapterList() {
             
             <div style={{ padding: '20px', maxHeight: 'calc(100vh - 220px)', overflowY: 'scroll', display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {draftedChapters.length > 0 ? draftedChapters.map(chapter => {
-                const imageUrl = chapter.chapter_image ? `http://localhost:8000/storage/${chapter.chapter_image}` : null;
+                const imageUrl = chapter.chapter_image ? backendUrl(`/storage/${chapter.chapter_image}`) : null;
 
                 return (
                   <div 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Editor } from '@tinymce/tinymce-react';
 import editIcon from './assets/icons/pencil.png';
+import { apiFetch, backendUrl } from './api';
 
 function CharacterDetail() {
   const { projectId, characterId } = useParams();
@@ -27,7 +28,7 @@ function CharacterDetail() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/characters/${characterId}`)
+    apiFetch(`/api/characters/${characterId}`)
       .then(response => response.json())
       .then(data => {
         const characterData = data.character || data;
@@ -56,7 +57,7 @@ function CharacterDetail() {
     return <div style={{ padding: '20px' }}>Ładowanie profilu postaci...</div>;
   }
 
-  const imageUrl = character.character_image ? `http://localhost:8000/storage/${character.character_image}` : null;
+  const imageUrl = character.character_image ? backendUrl(`/storage/${character.character_image}`) : null;
 
   const handleInputChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -96,7 +97,7 @@ function CharacterDetail() {
     }
     formData.append('_method', 'PUT');
 
-    fetch(`http://localhost:8000/api/characters/${characterId}`, {
+    apiFetch(`/api/characters/${characterId}`, {
       method: 'POST',
       headers: { 'Accept': 'application/json' },
       body: formData,
