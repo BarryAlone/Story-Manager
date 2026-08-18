@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-08-18 — Menu użytkownika w nagłówku
+
+- Zakres: dostępne menu rozwijane otwierane przez avatar w obu layoutach SPA.
+- Wynik: nazwa i e-mail są widoczne w menu razem z wylogowaniem; menu zamyka się po ponownym kliknięciu, kliknięciu poza nim, użyciu `Escape` i poprawnym wylogowaniu.
+- Testy: `npm run lint` i `npm run build` zakończone powodzeniem; interakcje menu pozostawiono do ręcznej weryfikacji w przeglądarce.
+
 ## 2026-08-18 — Sesyjne uwierzytelnianie w React SPA
 
 - Zakres: klient API, inicjalizacja CSRF, logowanie, odtwarzanie sesji, ochrona tras na poziomie UI, bieżący użytkownik i wylogowanie.
