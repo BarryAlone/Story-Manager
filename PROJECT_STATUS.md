@@ -20,11 +20,11 @@ Backend udostępnia API dla projektów, rozdziałów, postaci, atrybutów projek
 
 ### Frontend
 
-SPA zawiera główne widoki Story Managera i komunikuje się z API. Nie ma jeszcze kompletnej integracji sesyjnego logowania, stanu bieżącego użytkownika, ochrony widoków i wylogowania.
+SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania i rejestracji, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie.
 
 ### Uwierzytelnianie
 
-Docelowym mechanizmem są sesje cookie i Sanctum. Podstawowe testy backendowe uwierzytelniania zakończyły się wynikiem 15 zaliczonych testów i 80 asercji. Weryfikacja adresu e-mail jest odłożona.
+Mechanizmem są sesje cookie i Sanctum, bez tokenów API. SPA inicjalizuje ochronę CSRF dla logowania, rejestracji i wylogowania, wysyła cookies do backendu oraz usuwa lokalny stan użytkownika po odpowiedzi `401`. Podstawowe testy backendowe uwierzytelniania zakończyły się wynikiem 15 zaliczonych testów i 80 asercji. Weryfikacja adresu e-mail jest odłożona.
 
 ### Autoryzacja
 
@@ -37,14 +37,16 @@ Endpoint bieżącego użytkownika jest chroniony przez `auth:sanctum`. Endpointy
 - podstawowe operacje na projektach, rozdziałach, postaciach, atrybutach i relacjach;
 - osobne SPA z widokami głównych obszarów produktu;
 - backendowa rejestracja, logowanie, wylogowanie i odczyt bieżącego użytkownika;
+- sesyjne logowanie, rejestracja i wylogowanie w SPA wraz z ochroną tras na poziomie UI;
 - testy podstawowego przepływu uwierzytelniania.
 
 ## Znane ograniczenia
 
-- SPA nie korzysta jeszcze w pełni z sesyjnego uwierzytelniania;
 - endpointy domenowe nie wymagają zalogowania;
 - brak autoryzacji właściciela projektów i zasobów powiązanych;
 - tworzenie projektu nadal przypisuje `user_id = 1`;
+- ochrona tras SPA nie zastępuje zabezpieczenia endpointów ani autoryzacji danych;
+- pełny przepływ cookie i CSRF wymaga jeszcze ręcznej weryfikacji w przeglądarce;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
 - Inertia dubluje część warstwy frontendowej i ma zostać usunięta po przejęciu auth przez SPA;
 - weryfikacja e-mail nie należy do bieżącego zakresu.

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import moreIcon from './assets/icons/more.png';
 import deleteIcon from './assets/icons/trash-can.png';
 import editIcon from './assets/icons/pencil.png';
 import FABIcon from './assets/icons/plus.png';
+import { apiFetch, backendUrl } from './api';
 
 function CharacterList() {
   const { projectId } = useParams();
@@ -27,7 +27,7 @@ function CharacterList() {
   const [newAttributeType, setNewAttributeType] = useState('text');
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/projects/${projectId}/characters`)
+    apiFetch(`/api/projects/${projectId}/characters`)
       .then(response => response.json())
       .then(data => {
         setCharacters(data.characters || data);
@@ -35,7 +35,7 @@ function CharacterList() {
       })
       .catch(error => console.error('Błąd:', error));
 
-    fetch(`http://localhost:8000/api/projects/${projectId}/attributes`)
+    apiFetch(`/api/projects/${projectId}/attributes`)
       .then(response => response.json())
       .then(data => setProjectAttributes(data))
       .catch(error => console.error('Błąd pobierania atrybutów:', error));
@@ -44,7 +44,7 @@ function CharacterList() {
   const handleAddAttribute = () => {
     if (!newAttributeName.trim()) return;
 
-    fetch('http://localhost:8000/api/project-attributes', {
+    apiFetch('/api/project-attributes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -66,7 +66,7 @@ function CharacterList() {
   const handleDeleteAttribute = (attributeId) => {
     if (!window.confirm('Czy na pewno chcesz usunąć ten atrybut?')) return;
 
-    fetch(`http://localhost:8000/api/project-attributes/${attributeId}`, {
+    apiFetch(`/api/project-attributes/${attributeId}`, {
       method: 'DELETE'
     })
       .then(response => {
@@ -98,14 +98,14 @@ function CharacterList() {
       formData.append('character_image', newCharacterImage);
     }
 
-    let url = 'http://localhost:8000/api/characters';
+    let url = '/api/characters';
     
     if (editingCharacterId) {
-      url = `http://localhost:8000/api/characters/${editingCharacterId}`;
+      url = `/api/characters/${editingCharacterId}`;
       formData.append('_method', 'PUT'); 
     }
 
-    fetch(url, {
+    apiFetch(url, {
       method: 'POST',
       headers: { 'Accept': 'application/json' },
       body: formData
@@ -132,7 +132,7 @@ function CharacterList() {
   const handleDelete = (id) => {
     if (!window.confirm("Czy na pewno chcesz usunąć tę postać?")) return;
 
-    fetch(`http://localhost:8000/api/characters/${id}`, { method: 'DELETE' })
+    apiFetch(`/api/characters/${id}`, { method: 'DELETE' })
       .then(response => {
         if (response.ok) setCharacters(characters.filter(char => char.id !== id));
       })
@@ -349,7 +349,7 @@ function CharacterList() {
       {/* --- KAFELKI POSTACI */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
         {characters.map(character => {
-          const imageUrl = character.character_image ? `http://localhost:8000/storage/${character.character_image}` : null;
+          const imageUrl = character.character_image ? backendUrl(`/storage/${character.character_image}`) : null;
 
           return (
             <div 

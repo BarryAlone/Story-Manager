@@ -2,6 +2,24 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-08-18 — Rejestracja w React SPA
+
+- Zakres: publiczna trasa i formularz rejestracji, sesja cookie, inicjalizacja CSRF, walidacja `422` oraz przejścia między logowaniem i rejestracją.
+- Wynik: poprawna rejestracja zapisuje użytkownika w stanie auth i otwiera chronioną część aplikacji; po błędzie hasła są czyszczone, a nazwa i e-mail pozostają w formularzu.
+- Testy: `npm run lint` i `npm run build` zakończone powodzeniem; 15 backendowych testów auth zakończonych powodzeniem, 80 asercji.
+
+## 2026-08-18 — Menu użytkownika w nagłówku
+
+- Zakres: dostępne menu rozwijane otwierane przez avatar w obu layoutach SPA.
+- Wynik: nazwa i e-mail są widoczne w menu razem z wylogowaniem; menu zamyka się po ponownym kliknięciu, kliknięciu poza nim, użyciu `Escape` i poprawnym wylogowaniu.
+- Testy: `npm run lint` i `npm run build` zakończone powodzeniem; interakcje menu pozostawiono do ręcznej weryfikacji w przeglądarce.
+
+## 2026-08-18 — Sesyjne uwierzytelnianie w React SPA
+
+- Zakres: klient API, inicjalizacja CSRF, logowanie, odtwarzanie sesji, ochrona tras na poziomie UI, bieżący użytkownik i wylogowanie.
+- Wynik: docelowe SPA korzysta z sesji cookie i Sanctum; endpointy domenowe oraz autoryzacja właściciela pozostają poza zakresem tej zmiany.
+- Testy: `npm run lint` i `npm run build` zakończone powodzeniem; 15 backendowych testów auth zakończonych powodzeniem, 80 asercji.
+
 ## 2026-08-18 — Dokumentacja bazowa
 
 - Zakres: status projektu, zadania, decyzje architektoniczne, rejestr zmian i obsługa prywatnych notatek.

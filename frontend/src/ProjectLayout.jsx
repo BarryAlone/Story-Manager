@@ -6,17 +6,15 @@ import charactersIcon from "./assets/icons/woman.png";
 import chaptersIcon from './assets/icons/chapter.png';
 import relationshipsIcon from './assets/icons/relationship.png';
 import attributesIcon from './assets/icons/attribute.png';
-import moreIcon from './assets/icons/more.png';
-import deleteIcon from './assets/icons/trash-can.png';
-import editIcon from './assets/icons/pencil.png';
-import FABIcon from './assets/icons/plus.png';
+import UserMenu from './UserMenu';
+import { apiFetch } from './api';
 
 function ProjectLayout() {
   const { projectId } = useParams();
   const [projectName, setProjectName] = useState('Ładowanie...');
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/projects')
+    apiFetch('/api/projects')
       .then(res => res.json())
       .then(data => {
         const currentProject = data.find(p => p.id === parseInt(projectId));
@@ -123,12 +121,7 @@ function ProjectLayout() {
             {projectName}
           </h2>
 
-          {/* IKONA UŻYTKOWNIKA po prawej */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '40px', height: '40px', backgroundColor: '#e5e7eb', color: '#374151', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>
-              K
-            </div>
-          </div>
+          <UserMenu />
         </header>
 
         {/* GŁÓWNY OBSZAR ROBOCZY */}

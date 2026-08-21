@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import backArrow from './assets/icons/back_arrow.png';
+import { apiFetch, backendUrl } from './api';
 
 function ChapterDetail() {
-  const { projectId, chapterId } = useParams();
+  const { chapterId } = useParams();
   const navigate = useNavigate();
   
   const [chapter, setChapter] = useState(null);
@@ -12,7 +13,7 @@ function ChapterDetail() {
 
   useEffect(() => {
     // Odpytujemy Twój Laravelowy kontroler (metoda show)
-    fetch(`http://localhost:8000/api/chapters/${chapterId}`)
+    apiFetch(`/api/chapters/${chapterId}`)
       .then(response => {
         if (!response.ok) throw new Error('Nie udało się pobrać rozdziału');
         return response.json();
@@ -36,7 +37,7 @@ function ChapterDetail() {
     return <div style={{ padding: '20px', textAlign: 'center' }}>Nie znaleziono rozdziału.</div>;
   }
 
-  const imageUrl = chapter.chapter_image ? `http://localhost:8000/storage/${chapter.chapter_image}` : null;
+  const imageUrl = chapter.chapter_image ? backendUrl(`/storage/${chapter.chapter_image}`) : null;
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>

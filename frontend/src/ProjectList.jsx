@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import deleteIcon from './assets/icons/trash-can.png';
 import editIcon from './assets/icons/pencil.png';
 import FABIcon from './assets/icons/plus.png';
+import { apiFetch, backendUrl } from './api';
 
 function ProjectList() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ function ProjectList() {
   const [editingProjectId, setEditingProjectId] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/projects')
+    apiFetch('/api/projects')
       .then(response => response.json())
       .then(data => setProjects(data))
       .catch(error => console.error('Błąd pobierania projektów:', error));
@@ -53,16 +54,16 @@ function ProjectList() {
       formData.append('project_image', newProjectImage);
     }
 
-    let url = 'http://localhost:8000/api/projects';
+    let url = '/api/projects';
     let method = 'POST';
 
     // Jeśli edytujemy, zmieniamy URL i dorzucamy fake-ową metodę PUT (Laravel tego wymaga przy FormData)
     if (editingProjectId) {
-      url = `http://localhost:8000/api/projects/${editingProjectId}`;
+      url = `/api/projects/${editingProjectId}`;
       formData.append('_method', 'PUT');
     }
 
-    fetch(url, {
+    apiFetch(url, {
       method: method,
       headers: { 'Accept': 'application/json' },
       body: formData // Wysyłamy FormData, NIE JSON!
@@ -92,7 +93,7 @@ function ProjectList() {
   const handleDelete = (id) => {
     if (!window.confirm("Czy na pewno chcesz trwale usunąć ten projekt i całą jego zawartość?")) return;
 
-    fetch(`http://localhost:8000/api/projects/${id}`, { method: 'DELETE' })
+    apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
       .then(response => {
         if (response.ok) {
           setProjects(projects.filter(p => p.id !== id));
@@ -147,7 +148,7 @@ function ProjectList() {
         {projects.length > 0 ? projects.map(project => {
           
           // Generowanie URL dla okładki (zakładając że Laravel zapisuje to w storage/projects/...)
-          const imageUrl = project.project_image ? `http://localhost:8000/storage/${project.project_image}` : null;
+          const imageUrl = project.project_image ? backendUrl(`/storage/${project.project_image}`) : null;
 
           return (
             <div 

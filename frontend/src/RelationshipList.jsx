@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import FABIcon from './assets/icons/plus.png';
 
 import RelationshipGraph from './RelationshipGraph';
+import { apiFetch } from './api';
 
 function RelationshipList() {
   const { projectId } = useParams();
@@ -21,13 +22,13 @@ function RelationshipList() {
 
   useEffect(() => {
     // 1. Pobieramy postacie (do list rozwijanych)
-    fetch(`http://localhost:8000/api/projects/${projectId}/characters`)
+    apiFetch(`/api/projects/${projectId}/characters`)
       .then(res => res.json())
       .then(data => setCharacters(Array.isArray(data.characters) ? data.characters : []))
       .catch(err => console.error('Błąd pobierania postaci:', err));
 
     // 2. Pobieramy relacje dla tego projektu
-    fetch(`http://localhost:8000/api/projects/${projectId}/character-relationships`)
+    apiFetch(`/api/projects/${projectId}/character-relationships`)
       .then(res => res.json())
       .then(data => setRelationships(data))
       .catch(err => console.error('Błąd pobierania relacji:', err));
@@ -48,7 +49,7 @@ function RelationshipList() {
       description: description
     };
 
-    fetch('http://localhost:8000/api/character-relationships', {
+    apiFetch('/api/character-relationships', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -73,7 +74,7 @@ function RelationshipList() {
 
   const handleDelete = (id) => {
     if (!window.confirm("Usunąć tę relację?")) return;
-    fetch(`http://localhost:8000/api/character-relationships/${id}`, { method: 'DELETE' })
+    apiFetch(`/api/character-relationships/${id}`, { method: 'DELETE' })
       .then(res => {
         if (res.ok) setRelationships(relationships.filter(r => r.id !== id));
       })

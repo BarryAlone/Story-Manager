@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { apiFetch } from './api';
 
 function AttributeList() {
   const { projectId } = useParams();
@@ -11,7 +12,7 @@ function AttributeList() {
 
   // Pobieranie atrybutów po załadowaniu widoku
   useEffect(() => {
-    fetch(`http://localhost:8000/api/projects/${projectId}/attributes`)
+    apiFetch(`/api/projects/${projectId}/attributes`)
       .then(response => response.json())
       .then(data => {
         setAttributes(data);
@@ -27,7 +28,7 @@ function AttributeList() {
   const handleAddAttribute = () => {
     if (!newAttributeName.trim()) return;
 
-    fetch(`http://localhost:8000/api/projects/${projectId}/attributes`, {
+    apiFetch(`/api/projects/${projectId}/attributes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -50,7 +51,7 @@ function AttributeList() {
     // Dodałem ostrzeżenie, bo usunięcie atrybutu usunie go też z zapisanych postaci!
     if (!window.confirm('Czy na pewno chcesz usunąć ten atrybut? Usunięcie go spowoduje utratę tych danych u wszystkich przypisanych postaci!')) return;
 
-    fetch(`http://localhost:8000/api/projects/${projectId}/attributes/${attributeId}`, {
+    apiFetch(`/api/projects/${projectId}/attributes/${attributeId}`, {
       method: 'DELETE'
     })
       .then(response => {

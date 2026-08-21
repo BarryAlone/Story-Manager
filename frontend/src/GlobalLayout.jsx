@@ -1,5 +1,6 @@
 import { Outlet, Link } from 'react-router-dom';
 import logoIcon from './assets/icons/logo.png';
+import UserMenu from './UserMenu';
 
 function GlobalLayout() {
   return (
@@ -24,13 +25,7 @@ function GlobalLayout() {
           <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Story Manager</span>
         </Link>
 
-        {/* TYMCZASOWA IKONA UŻYTKOWNIKA */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontWeight: '500' }}>Kacper</span>
-          <div style={{ width: '40px', height: '40px', backgroundColor: '#e5e7eb', color: '#374151', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' }}>
-            K
-          </div>
-        </div>
+        <UserMenu />
       </header>
 
       {/* ZAWARTOŚĆ MAIN */}
