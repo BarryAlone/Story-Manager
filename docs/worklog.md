@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-08-18 — Rejestracja w React SPA
+
+- Zakres: publiczna trasa i formularz rejestracji, sesja cookie, inicjalizacja CSRF, walidacja `422` oraz przejścia między logowaniem i rejestracją.
+- Wynik: poprawna rejestracja zapisuje użytkownika w stanie auth i otwiera chronioną część aplikacji; po błędzie hasła są czyszczone, a nazwa i e-mail pozostają w formularzu.
+- Testy: `npm run lint` i `npm run build` zakończone powodzeniem; 15 backendowych testów auth zakończonych powodzeniem, 80 asercji.
+
 ## 2026-08-18 — Menu użytkownika w nagłówku
 
 - Zakres: dostępne menu rozwijane otwierane przez avatar w obu layoutach SPA.

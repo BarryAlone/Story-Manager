@@ -80,6 +80,29 @@ export default function AuthProvider({ children }) {
     return { ok: true };
   }
 
+  async function register(registrationData) {
+    await initializeCsrf();
+
+    const response = await apiFetch('/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(registrationData),
+    });
+    const payload = await readJson(response);
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        errors: payload?.errors || {},
+        message: payload?.message || 'Nie udało się utworzyć konta.',
+      };
+    }
+
+    setUser(payload);
+
+    return { ok: true };
+  }
+
   async function logout() {
     await initializeCsrf();
 
@@ -93,7 +116,7 @@ export default function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

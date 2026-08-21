@@ -12,6 +12,7 @@ import ChapterDetail from './ChapterDetail';
 import AttributeList from './AttributeList'; // Upewnij się, że masz ten import!
 import AuthProvider from './AuthProvider';
 import Login from './Login';
+import Register from './Register';
 import useAuth from './useAuth';
 
 function ProtectedRoutes() {
@@ -35,6 +36,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           <Route element={<ProtectedRoutes />}>
             {/* --- GLOBAL --- */}

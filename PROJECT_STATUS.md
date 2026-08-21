@@ -20,11 +20,11 @@ Backend udostępnia API dla projektów, rozdziałów, postaci, atrybutów projek
 
 ### Frontend
 
-SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma podstawowy ekran logowania, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie.
+SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania i rejestracji, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie.
 
 ### Uwierzytelnianie
 
-Mechanizmem są sesje cookie i Sanctum, bez tokenów API. SPA inicjalizuje ochronę CSRF, wysyła cookies do backendu i usuwa lokalny stan użytkownika po odpowiedzi `401`. Podstawowe testy backendowe uwierzytelniania zakończyły się wynikiem 15 zaliczonych testów i 80 asercji. Weryfikacja adresu e-mail jest odłożona.
+Mechanizmem są sesje cookie i Sanctum, bez tokenów API. SPA inicjalizuje ochronę CSRF dla logowania, rejestracji i wylogowania, wysyła cookies do backendu oraz usuwa lokalny stan użytkownika po odpowiedzi `401`. Podstawowe testy backendowe uwierzytelniania zakończyły się wynikiem 15 zaliczonych testów i 80 asercji. Weryfikacja adresu e-mail jest odłożona.
 
 ### Autoryzacja
 
@@ -37,7 +37,7 @@ Endpoint bieżącego użytkownika jest chroniony przez `auth:sanctum`. Endpointy
 - podstawowe operacje na projektach, rozdziałach, postaciach, atrybutach i relacjach;
 - osobne SPA z widokami głównych obszarów produktu;
 - backendowa rejestracja, logowanie, wylogowanie i odczyt bieżącego użytkownika;
-- podstawowa integracja sesyjnego auth w SPA wraz z ochroną tras na poziomie UI;
+- sesyjne logowanie, rejestracja i wylogowanie w SPA wraz z ochroną tras na poziomie UI;
 - testy podstawowego przepływu uwierzytelniania.
 
 ## Znane ograniczenia
