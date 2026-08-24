@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Project;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class ProjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::all();
+        $projects = $request->user()->projects()->get();
         return response()->json($projects, 200); // format json($zmienna Request, komunikat HTTP: 200 - OK)
     }
 
@@ -34,8 +35,7 @@ class ProjectController extends Controller
             $validated['project_image'] = $path; // Do bazy zapisujemy tylko ścieżkę
         }
 
-        //tymczasowo przypisuję user_id na sztywno, docelowo będzie pobierane z tokena autoryzacyjnego
-        $validated['user_id'] = 1;
+        $validated['user_id'] = $request->user()->id;
 
         $project = Project::create($validated);
 
@@ -45,6 +45,7 @@ class ProjectController extends Controller
     public function update(Request $request, $id)
     {
         $project = Project::findOrFail($id);
+        Gate::authorize('update', $project);
         $validated = $request->validate([
         'name' => [
             'required',
@@ -73,6 +74,7 @@ class ProjectController extends Controller
     public function destroy($id)
     {
         $project = Project::findOrFail($id);
+        Gate::authorize('delete', $project);
     
         if ($project->project_image) {
             Storage::disk('public')->delete($project->project_image);
@@ -86,6 +88,7 @@ class ProjectController extends Controller
     public function show($id)
     {
         $project = Project::findOrFail($id);
+        Gate::authorize('view', $project);
         
             return response()->json([
                 'project' => $project

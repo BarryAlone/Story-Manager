@@ -16,7 +16,7 @@ Story Manager to aplikacja webowa wspierająca tworzenie książek i komiksów. 
 
 ### Backend
 
-Backend udostępnia API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Podstawowy przepływ rejestracji, logowania, wylogowania i pobierania bieżącego użytkownika jest zaimplementowany.
+Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Podstawowy przepływ rejestracji, logowania, wylogowania i pobierania bieżącego użytkownika jest zaimplementowany.
 
 ### Frontend
 
@@ -28,7 +28,7 @@ Mechanizmem są sesje cookie i Sanctum, bez tokenów API. SPA inicjalizuje ochro
 
 ### Autoryzacja
 
-Endpoint bieżącego użytkownika jest chroniony przez `auth:sanctum`. Endpointy domenowe pozostają obecnie publiczne. Nie wdrożono jeszcze sprawdzania właściciela projektu ani autoryzacji zasobów powiązanych.
+Endpoint bieżącego użytkownika i wszystkie istniejące endpointy domenowe są chronione przez `auth:sanctum`. Właściciela określa `Project.user_id`, a rozdziały, postacie, atrybuty i relacje dziedziczą własność przez projekt. Listy są ograniczone do danych zalogowanego użytkownika, nowe projekty otrzymują jego identyfikator, a bezpośrednia próba dostępu do cudzego zasobu zwraca `404`.
 
 ## Działające elementy
 
@@ -38,19 +38,17 @@ Endpoint bieżącego użytkownika jest chroniony przez `auth:sanctum`. Endpointy
 - osobne SPA z widokami głównych obszarów produktu;
 - backendowa rejestracja, logowanie, wylogowanie i odczyt bieżącego użytkownika;
 - sesyjne logowanie, rejestracja i wylogowanie w SPA wraz z ochroną tras na poziomie UI;
+- serwerowa ochrona istniejących endpointów domenowych i autoryzacja właściciela zasobów;
 - testy podstawowego przepływu uwierzytelniania.
 
 ## Znane ograniczenia
 
-- endpointy domenowe nie wymagają zalogowania;
-- brak autoryzacji właściciela projektów i zasobów powiązanych;
-- tworzenie projektu nadal przypisuje `user_id = 1`;
-- ochrona tras SPA nie zastępuje zabezpieczenia endpointów ani autoryzacji danych;
-- pełny przepływ cookie i CSRF wymaga jeszcze ręcznej weryfikacji w przeglądarce;
+- wydarzenia i osobne rekordy obrazów nie mają obecnie tras API;
+- pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
 - Inertia dubluje część warstwy frontendowej i ma zostać usunięta po przejęciu auth przez SPA;
 - weryfikacja e-mail nie należy do bieżącego zakresu.
 
 ## Ostatnia aktualizacja
 
-2026-08-18
+2026-08-21
