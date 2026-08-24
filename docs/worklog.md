@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-08-24 — GitHub Actions CI
+
+- Zakres: workflow dla pull requestów, pushów do `main` i uruchomień ręcznych, obejmujący backend Laravel, docelowe React SPA i tymczasowy frontend Inertia.
+- Wynik: dodano dwa niezależne checki z minimalnymi uprawnieniami, anulowaniem starszych uruchomień, instalacją zależności z lockfile oraz SQLite w pamięci dla testów backendowych. Job backendowy buduje zasoby Inertia wymagane przez testy renderujące widoki Blade, bez powtarzania tego samego buildu w osobnym jobie.
+- Testy: pełny PHPUnit zakończony powodzeniem — 45 testów i 243 asercje; lint i build React SPA oraz rootowy build Inertia zakończone powodzeniem. Po pierwszym uruchomieniu CI uzupełniono job backendowy o brakujący manifest Vite; build SPA nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-08-21 — Autoryzacja zasobów domenowych
 
 - Zakres: ochrona istniejących tras domenowych przez `auth:sanctum`, własność projektów, dziedziczona własność zasobów zależnych, filtrowanie list i Policies dla operacji bezpośrednich.

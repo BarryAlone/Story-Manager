@@ -30,6 +30,10 @@ Mechanizmem są sesje cookie i Sanctum, bez tokenów API. SPA inicjalizuje ochro
 
 Endpoint bieżącego użytkownika i wszystkie istniejące endpointy domenowe są chronione przez `auth:sanctum`. Właściciela określa `Project.user_id`, a rozdziały, postacie, atrybuty i relacje dziedziczą własność przez projekt. Listy są ograniczone do danych zalogowanego użytkownika, nowe projekty otrzymują jego identyfikator, a bezpośrednia próba dostępu do cudzego zasobu zwraca `404`.
 
+### CI
+
+GitHub Actions udostępnia dwa checki: backendowy build zasobów Inertia wymaganych przez testy wraz z pełnym PHPUnit oraz lintowanie i build docelowego React SPA. Kontrole działają dla pull requestów, pushów do `main` i uruchomień ręcznych, korzystając z izolowanej bazy SQLite w pamięci oraz zależności określonych przez lockfile.
+
 ## Działające elementy
 
 - relacyjny model danych i migracje;
@@ -39,6 +43,7 @@ Endpoint bieżącego użytkownika i wszystkie istniejące endpointy domenowe są
 - backendowa rejestracja, logowanie, wylogowanie i odczyt bieżącego użytkownika;
 - sesyjne logowanie, rejestracja i wylogowanie w SPA wraz z ochroną tras na poziomie UI;
 - serwerowa ochrona istniejących endpointów domenowych i autoryzacja właściciela zasobów;
+- automatyczne kontrole backendu i obu frontendów w GitHub Actions;
 - testy podstawowego przepływu uwierzytelniania.
 
 ## Znane ograniczenia
@@ -51,4 +56,4 @@ Endpoint bieżącego użytkownika i wszystkie istniejące endpointy domenowe są
 
 ## Ostatnia aktualizacja
 
-2026-08-21
+2026-08-24
