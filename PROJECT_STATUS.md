@@ -32,7 +32,7 @@ Endpoint bieżącego użytkownika i wszystkie istniejące endpointy domenowe są
 
 ### CI
 
-GitHub Actions uruchamia pełny PHPUnit backendu, lintowanie i build docelowego React SPA oraz osobny build tymczasowego frontendu Inertia. Kontrole działają dla pull requestów, pushów do `main` i uruchomień ręcznych, korzystając z izolowanej bazy SQLite w pamięci oraz zależności określonych przez lockfile.
+GitHub Actions udostępnia dwa checki: backendowy build zasobów Inertia wymaganych przez testy wraz z pełnym PHPUnit oraz lintowanie i build docelowego React SPA. Kontrole działają dla pull requestów, pushów do `main` i uruchomień ręcznych, korzystając z izolowanej bazy SQLite w pamięci oraz zależności określonych przez lockfile.
 
 ## Działające elementy
 

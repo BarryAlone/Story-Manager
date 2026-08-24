@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend / PHPUnit
+    name: Backend / Build and PHPUnit
     runs-on: ubuntu-latest
     env:
       APP_ENV: testing
@@ -36,6 +36,19 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Set up Node.js for test views
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install Inertia dependencies for test views
+        run: npm ci
+
+      - name: Build Inertia assets for feature tests
+        run: npm run build
 
       - name: Run PHPUnit
         run: ./vendor/bin/phpunit --do-not-cache-result
@@ -65,26 +78,4 @@ jobs:
 
       - name: Build SPA
         working-directory: frontend
-        run: npm run build
-
-  inertia-build:
-    # Remove this job together with the temporary Inertia frontend.
-    name: Frontend Inertia / Build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Install Inertia dependencies
-        run: npm ci
-
-      - name: Build Inertia frontend
         run: npm run build
