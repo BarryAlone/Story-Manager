@@ -6,13 +6,12 @@
 
 ## Następne
 
-- [ ] Zabezpieczyć endpointy projektów i powiązać operacje z zalogowanym właścicielem zamiast `user_id = 1`.
-- [ ] Rozszerzyć autoryzację właściciela na pozostałe zasoby projektu.
+- [ ] Ujednolicić niespójne trasy między SPA i API.
+- [ ] Usunąć Inertia po pełnym przejęciu przepływu uwierzytelniania przez SPA.
 
 ## Później
 
-- [ ] Ujednolicić niespójne trasy między SPA i API.
-- [ ] Usunąć Inertia po pełnym przejęciu przepływu uwierzytelniania przez SPA.
+- [ ] Zaplanować kontrolowany dostęp do plików obrazów przed wprowadzeniem prywatnych materiałów.
 - [ ] Wrócić do weryfikacji adresu e-mail po ustabilizowaniu podstawowego auth.
 
 ## Zakończone
@@ -21,5 +20,6 @@
 - [x] Dodano podstawowy backendowy przepływ rejestracji, logowania, wylogowania i bieżącego użytkownika.
 - [x] Zintegrowano sesyjne uwierzytelnianie cookie + Sanctum z React SPA, obejmując logowanie, bieżącego użytkownika, ochronę widoków i wylogowanie.
 - [x] Dodano rejestrację użytkownika w React SPA wraz z obsługą walidacji formularza.
+- [x] Zabezpieczono endpointy domenowe i powiązano projekty oraz zasoby zależne z zalogowanym właścicielem.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.

@@ -4,12 +4,26 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CharacterRelationship;
+use App\Models\Character;
+use App\Models\Project;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class CharacterRelationshipController extends Controller
 {
-    public function index()
+    public function index(Request $request, int $project)
     {
-        $characterRelationships = CharacterRelationship::all();
+        $ownedProject = Project::whereKey($project)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
+        $characterRelationships = CharacterRelationship::whereHas(
+            'character1',
+            fn ($query) => $query->where('project_id', $ownedProject->id)
+        )->whereHas(
+            'character2',
+            fn ($query) => $query->where('project_id', $ownedProject->id)
+        )->get();
         return response()->json($characterRelationships, 200);
     }
 
@@ -22,6 +36,17 @@ class CharacterRelationshipController extends Controller
         'relation_name' => 'required|string|max:128'
         ]);
 
+        $firstCharacter = Character::findOrFail($validated['character_1_id']);
+        $secondCharacter = Character::findOrFail($validated['character_2_id']);
+        Gate::authorize('view', $firstCharacter);
+        Gate::authorize('view', $secondCharacter);
+
+        if ($firstCharacter->project_id !== $secondCharacter->project_id) {
+            throw ValidationException::withMessages([
+                'character_2_id' => ['Postacie muszą należeć do tego samego projektu.'],
+            ]);
+        }
+
         $characterRelationship = CharacterRelationship::create($validated);
 
         return response()->json($characterRelationship, 201);
@@ -30,6 +55,7 @@ class CharacterRelationshipController extends Controller
     public function update(Request $request, $id)
     {
         $relationship = CharacterRelationship::findOrFail($id);
+        Gate::authorize('update', $relationship);
 
         $validated = $request->validate([
             'character_1_id' => 'required|integer|exists:characters,id',
@@ -47,6 +73,7 @@ class CharacterRelationshipController extends Controller
     public function destroy($id)
     {
         $relationship = CharacterRelationship::findOrFail($id);
+        Gate::authorize('delete', $relationship);
         
         $relationship->delete();
 

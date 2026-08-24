@@ -15,11 +15,11 @@ class CharacterRelationship extends Model
 
     public function character1(): BelongsTo
     {
-        return $this->belongsTo(Character::class);
+        return $this->belongsTo(Character::class, 'character_1_id');
     }
 
     public function character2(): BelongsTo
     {
-        return $this->belongsTo(Character::class);
+        return $this->belongsTo(Character::class, 'character_2_id');
     }
 }

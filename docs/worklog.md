@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-08-21 — Autoryzacja zasobów domenowych
+
+- Zakres: ochrona istniejących tras domenowych przez `auth:sanctum`, własność projektów, dziedziczona własność zasobów zależnych, filtrowanie list i Policies dla operacji bezpośrednich.
+- Wynik: gość otrzymuje `401`, zalogowany użytkownik widzi i modyfikuje tylko własne dane, nowe projekty otrzymują jego `user_id`, a dostęp do cudzego zasobu zwraca `404`.
+- Testy: celowany zestaw autoryzacji zakończony powodzeniem — 11 testów i 114 asercji; pełny PHPUnit zakończony powodzeniem — 45 testów i 243 asercje. Frontend nie był zmieniany, więc lintowania i buildu nie uruchamiano.
+
 ## 2026-08-18 — Rejestracja w React SPA
 
 - Zakres: publiczna trasa i formularz rejestracji, sesja cookie, inicjalizacja CSRF, walidacja `422` oraz przejścia między logowaniem i rejestracją.

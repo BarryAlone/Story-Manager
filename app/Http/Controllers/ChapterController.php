@@ -4,15 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Chapter;
+use App\Models\Project;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class ChapterController extends Controller
 {
-    public function index()
+    public function index(Request $request, ?int $project = null)
     {
-        $chapters = Chapter::all();
+        if ($project) {
+            $ownedProject = Project::whereKey($project)
+                ->where('user_id', $request->user()->id)
+                ->firstOrFail();
+            $chapters = $ownedProject->chapters()->get();
+        } else {
+            $chapters = Chapter::whereHas(
+                'project',
+                fn ($query) => $query->where('user_id', $request->user()->id)
+            )->get();
+        }
+
         return response()->json($chapters, 200);
     }
 
@@ -42,6 +55,10 @@ class ChapterController extends Controller
         'display_label' => 'nullable|string'
         ]);
 
+        Project::whereKey($validated['project_id'])
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
         if ($request->hasFile('chapter_image')) {
             $path = $request->file('chapter_image')->store('chapters', 'public');
             $validated['chapter_image'] = $path;
@@ -55,6 +72,7 @@ class ChapterController extends Controller
     public function update(Request $request, $id)
     {
         $chapter = Chapter::findOrFail($id);
+        Gate::authorize('update', $chapter);
         
         $validated = $request->validate([
             'project_id' => 'required|integer|exists:projects,id',
@@ -80,6 +98,10 @@ class ChapterController extends Controller
         'display_label' => 'nullable|string'
         ]);
 
+        Project::whereKey($validated['project_id'])
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
         if ($request->hasFile('chapter_image')) {
             if ($chapter->chapter_image) {
                 Storage::disk('public')->delete($chapter->chapter_image);
@@ -96,6 +118,7 @@ class ChapterController extends Controller
     public function destroy($id)
     {
         $chapter = Chapter::findOrFail($id);
+        Gate::authorize('delete', $chapter);
     
         if ($chapter->chapter_image) {
             Storage::disk('public')->delete($chapter->chapter_image);
@@ -109,6 +132,7 @@ class ChapterController extends Controller
     public function show($id)
     {
         $chapter = Chapter::findOrFail($id);
+        Gate::authorize('view', $chapter);
         
             return response()->json([
                 'chapter' => $chapter,
@@ -117,6 +141,8 @@ class ChapterController extends Controller
 
     public function swap(Request $request, Chapter $chapter)
 {
+    Gate::authorize('update', $chapter);
+
     $validated = $request->validate([
         'target_id' => 'nullable|exists:chapters,id',
         'direction' => 'nullable|in:up,down',
@@ -131,9 +157,9 @@ class ChapterController extends Controller
 
     // SCENARIUSZ A: Wybrano konkretny rozdział do zamiany (Z modala Swap)
     if ($request->filled('target_id')) {
-        $targetChapter = Chapter::where('project_id', $chapter->project_id)
-                                ->where('id', $validated['target_id'])
-                                ->first();
+        $targetChapter = Chapter::findOrFail($validated['target_id']);
+        Gate::authorize('update', $targetChapter);
+        abort_unless($targetChapter->project_id === $chapter->project_id, 404);
     } 
     // SCENARIUSZ B: Kliknięto strzałkę w górę (szukamy sąsiada wyżej)
     elseif ($request->input('direction') === 'up') {
