@@ -20,7 +20,7 @@ Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybut
 
 ### Frontend
 
-SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania i rejestracji, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie.
+SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania i rejestracji, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy.
 
 ### Uwierzytelnianie
 
@@ -42,6 +42,7 @@ GitHub Actions udostępnia dwa checki: backendowy build zasobów Inertia wymagan
 - osobne SPA z widokami głównych obszarów produktu;
 - backendowa rejestracja, logowanie, wylogowanie i odczyt bieżącego użytkownika;
 - sesyjne logowanie, rejestracja i wylogowanie w SPA wraz z ochroną tras na poziomie UI;
+- dashboard użytkownika z liczbą projektów, wyróżnieniem ostatnio edytowanych i obsługą stanów listy;
 - serwerowa ochrona istniejących endpointów domenowych i autoryzacja właściciela zasobów;
 - automatyczne kontrole backendu i obu frontendów w GitHub Actions;
 - testy podstawowego przepływu uwierzytelniania.
@@ -56,4 +57,4 @@ GitHub Actions udostępnia dwa checki: backendowy build zasobów Inertia wymagan
 
 ## Ostatnia aktualizacja
 
-2026-08-24
+2026-09-08
