@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-09-08 — Dashboard użytkownika
+
+- Zakres: przekształcenie głównego widoku projektów w dashboard wykorzystujący dane bieżącego użytkownika i istniejące API projektów.
+- Wynik: dodano powitanie, licznik projektów, uporządkowanie według ostatniej edycji, responsywną listę oraz osobne stany ładowania, błędu z ponowieniem i pustej listy; zachowano tworzenie, otwieranie, edycję i usuwanie projektów.
+- Testy: lint i build React SPA zakończone powodzeniem; build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-08-24 — GitHub Actions CI
 
 - Zakres: workflow dla pull requestów, pushów do `main` i uruchomień ręcznych, obejmujący backend Laravel, docelowe React SPA i tymczasowy frontend Inertia.
