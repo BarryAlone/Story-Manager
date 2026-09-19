@@ -10,21 +10,21 @@ Story Manager to aplikacja webowa wspierająca tworzenie książek i komiksów. 
 - Frontend docelowy: osobne SPA w katalogu `frontend/`, oparte na React 19, React Router 7, Vite 8 i Tailwind CSS 4.
 - Baza deweloperska: SQLite.
 - Uwierzytelnianie: sesje cookie obsługiwane przez Laravel Sanctum; tokeny API nie są planowane.
-- Warstwa Inertia pozostaje przejściowo na potrzeby istniejącego przepływu uwierzytelniania.
+- Warstwa Inertia pozostaje jako przejściowy kod oczekujący na usunięcie w osobnym zadaniu.
 
 ## Stan obszarów
 
 ### Backend
 
-Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Podstawowy przepływ rejestracji, logowania, wylogowania i pobierania bieżącego użytkownika jest zaimplementowany.
+Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
 
 ### Frontend
 
-SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania i rejestracji, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy.
+SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy.
 
 ### Uwierzytelnianie
 
-Mechanizmem są sesje cookie i Sanctum, bez tokenów API. SPA inicjalizuje ochronę CSRF dla logowania, rejestracji i wylogowania, wysyła cookies do backendu oraz usuwa lokalny stan użytkownika po odpowiedzi `401`. Podstawowe testy backendowe uwierzytelniania zakończyły się wynikiem 15 zaliczonych testów i 80 asercji. Weryfikacja adresu e-mail jest odłożona.
+Mechanizmem są sesje cookie i Sanctum, bez tokenów API. SPA inicjalizuje ochronę CSRF dla operacji modyfikujących, wysyła cookies do backendu oraz usuwa lokalny stan użytkownika po odpowiedzi `401`. Link resetujący przechodzi przez nazwaną trasę backendu i przekierowuje do adresu SPA określonego przez `FRONTEND_URL`. Weryfikacja adresu e-mail pozostaje poza MVP.
 
 ### Autoryzacja
 
@@ -42,6 +42,8 @@ GitHub Actions udostępnia dwa checki: backendowy build zasobów Inertia wymagan
 - osobne SPA z widokami głównych obszarów produktu;
 - backendowa rejestracja, logowanie, wylogowanie i odczyt bieżącego użytkownika;
 - sesyjne logowanie, rejestracja i wylogowanie w SPA wraz z ochroną tras na poziomie UI;
+- zarządzanie profilem, zmiana hasła i usunięcie konta w SPA;
+- żądanie resetu i ustawienie nowego hasła przez formularze SPA;
 - dashboard użytkownika z liczbą projektów, wyróżnieniem ostatnio edytowanych i obsługą stanów listy;
 - serwerowa ochrona istniejących endpointów domenowych i autoryzacja właściciela zasobów;
 - automatyczne kontrole backendu i obu frontendów w GitHub Actions;
@@ -52,9 +54,9 @@ GitHub Actions udostępnia dwa checki: backendowy build zasobów Inertia wymagan
 - wydarzenia i osobne rekordy obrazów nie mają obecnie tras API;
 - pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
-- Inertia dubluje część warstwy frontendowej i ma zostać usunięta po przejęciu auth przez SPA;
-- weryfikacja e-mail nie należy do bieżącego zakresu.
+- Inertia dubluje przejętą już przez SPA warstwę frontendową i oczekuje na osobne zadanie usuwające;
+- weryfikacja e-mail pozostaje poza MVP i nie ma interfejsu w SPA.
 
 ## Ostatnia aktualizacja
 
-2026-09-08
+2026-09-19

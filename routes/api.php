@@ -3,6 +3,8 @@
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterRelationshipController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectAttributeController;
 use App\Http\Controllers\ProjectController;
 use Illuminate\Http\Request;
@@ -52,4 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
             $request->user()->only(['id', 'name', 'email'])
         );
     });
+    Route::patch('/profile', [ProfileController::class, 'update']);
+    Route::delete('/profile', [ProfileController::class, 'destroy']);
+    Route::put('/password', [PasswordController::class, 'update']);
 });

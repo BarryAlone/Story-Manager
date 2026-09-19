@@ -21,6 +21,8 @@ return [
         'login',
         'register',
         'logout',
+        'forgot-password',
+        'reset-password',
     ],
 
     'allowed_methods' => ['*'],

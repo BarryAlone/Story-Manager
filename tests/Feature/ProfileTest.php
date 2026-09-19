@@ -10,31 +10,30 @@ class ProfileTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_profile_page_is_displayed(): void
+    public function test_guest_cannot_update_a_profile(): void
     {
-        $user = User::factory()->create();
-
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
-
-        $response->assertOk();
+        $this->patchJson('/api/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ])->assertUnauthorized();
     }
 
-    public function test_profile_information_can_be_updated(): void
+    public function test_profile_information_can_be_updated_with_json(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
+        $response = $this->actingAs($user)->patchJson('/api/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertExactJson([
+                'id' => $user->id,
                 'name' => 'Test User',
                 'email' => 'test@example.com',
             ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
 
         $user->refresh();
 
@@ -47,53 +46,47 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
+        $this->actingAs($user)
+            ->patchJson('/api/profile', [
                 'name' => 'Test User',
                 'email' => $user->email,
-            ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ])
+            ->assertOk();
 
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
-    public function test_user_can_delete_their_account(): void
+    public function test_user_can_delete_their_account_and_session_with_json(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->delete('/profile', [
+        $this->withHeader('Origin', 'http://localhost:5173')
+            ->postJson('/login', [
+                'email' => $user->email,
                 'password' => 'password',
-            ]);
+            ])
+            ->assertOk();
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
+        $this->deleteJson('/api/profile', ['password' => 'password'])
+            ->assertNoContent();
+
+        $this->app['auth']->forgetGuards();
 
         $this->assertGuest();
         $this->assertNull($user->fresh());
+        $this->getJson('/api/user')->assertUnauthorized();
     }
 
     public function test_correct_password_must_be_provided_to_delete_account(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
-                'password' => 'wrong-password',
-            ]);
+        $this->actingAs($user)
+            ->deleteJson('/api/profile', ['password' => 'wrong-password'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('password');
 
-        $response
-            ->assertSessionHasErrors('password')
-            ->assertRedirect('/profile');
-
+        $this->assertAuthenticatedAs($user);
         $this->assertNotNull($user->fresh());
     }
 }

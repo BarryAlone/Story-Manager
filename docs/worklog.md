@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-09-19 — Zarządzanie kontem i reset hasła w React SPA
+
+- Zakres: profil użytkownika, zmiana hasła, usunięcie konta, żądanie resetu i ustawienie nowego hasła z linku e-mail wraz z kontraktami JSON backendu.
+- Wynik: dodano chronione endpointy konta, neutralną odpowiedź żądania resetu, konfigurowalne przekierowanie z nazwanej trasy backendu do SPA oraz formularze i routing SPA; Inertia pozostawiono do osobnego zadania usuwającego warstwę przejściową.
+- Testy: pełny PHPUnit zakończony powodzeniem — 46 testów i 275 asercji; lint i build React SPA zakończone powodzeniem. Build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-09-08 — Dashboard użytkownika
 
 - Zakres: przekształcenie głównego widoku projektów w dashboard wykorzystujący dane bieżącego użytkownika i istniejące API projektów.

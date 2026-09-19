@@ -10,6 +10,14 @@ export function setUnauthorizedHandler(handler) {
   unauthorizedHandler = handler;
 }
 
+export async function readJson(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
 function getXsrfToken() {
   const tokenCookie = document.cookie
     .split(';')

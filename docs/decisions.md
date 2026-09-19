@@ -21,10 +21,11 @@
 
 ## Warstwa przejściowa
 
-- Istniejący frontend Inertia pozostaje tymczasowo, dopóki React SPA nie przejmie kompletnego przepływu rejestracji, logowania, stanu użytkownika i wylogowania.
-- Po zakończeniu migracji auth warstwa Inertia ma zostać usunięta.
+- React SPA przejęło przepływ rejestracji, logowania, stanu użytkownika, profilu i resetowania hasła.
+- Istniejący frontend Inertia pozostaje wyłącznie do czasu osobnego zadania usuwającego jego pliki, zależności oraz powiązany build CI.
 
 ## Weryfikacja adresu e-mail
 
-- Weryfikacja e-mail jest odłożona.
-- Najpierw zostanie ustabilizowany podstawowy przepływ sesyjnego auth oraz autoryzacja zasobów.
+- Weryfikacja e-mail pozostaje poza zakresem MVP.
+- SPA nie otrzymuje na tym etapie interfejsu weryfikacji, a trasy produktu nie korzystają z middleware `verified`.
+- Powrót do tej funkcji wymaga osobnej decyzji produktowej po ustabilizowaniu MVP.

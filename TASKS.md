@@ -7,12 +7,12 @@
 ## Następne
 
 - [ ] Ujednolicić niespójne trasy między SPA i API.
-- [ ] Usunąć Inertia po pełnym przejęciu przepływu uwierzytelniania przez SPA.
+- [ ] Usunąć pozostałości Inertia oraz uprościć powiązany build CI.
 
 ## Później
 
 - [ ] Zaplanować kontrolowany dostęp do plików obrazów przed wprowadzeniem prywatnych materiałów.
-- [ ] Wrócić do weryfikacji adresu e-mail po ustabilizowaniu podstawowego auth.
+- [ ] Po MVP zdecydować, czy i kiedy wdrożyć weryfikację adresu e-mail.
 
 ## Zakończone
 
@@ -23,5 +23,6 @@
 - [x] Zabezpieczono endpointy domenowe i powiązano projekty oraz zasoby zależne z zalogowanym właścicielem.
 - [x] Dodano GitHub Actions CI dla backendu z wymaganym buildem Inertia oraz docelowego React SPA.
 - [x] Przekształcono główny widok projektów w dashboard zalogowanego użytkownika.
+- [x] Przeniesiono profil, zmianę hasła, usunięcie konta i reset hasła do React SPA.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.
