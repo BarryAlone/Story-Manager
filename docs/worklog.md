@@ -2,6 +2,18 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-09-20 — Aktualizacja README po usunięciu Inertia
+
+- Zakres: dostosowanie opisu architektury, wymagań, konfiguracji środowiska oraz poleceń uruchamiania i kontroli jakości do jedynego React SPA w `frontend/`.
+- Wynik: README opisuje aktualny sesyjny auth, konfigurację `VITE_API_URL`, wymóg spójnej nazwy hosta oraz polecenia zgodne z manifestami i CI.
+- Testy: testów aplikacji ani buildów nie uruchamiano; sprawdzono poprawność diffu i zgodność poleceń z manifestami.
+
+## 2026-09-20 — Usunięcie przejściowego frontendu Inertia
+
+- Zakres: usunięcie widoków, tras, middleware, zależności i rootowego buildu Inertia po przeniesieniu funkcji konta do React SPA.
+- Wynik: `frontend/` jest jedynym interfejsem użytkownika, endpointy auth i profilu mają wyłącznie kontrakty JSON, backendowy most resetu hasła do SPA pozostał aktywny, a CI wykonuje PHPUnit oraz lint i build SPA.
+- Testy: `composer install` zakończony powodzeniem; pełny PHPUnit — 38 testów i 261 asercji; lint i build React SPA zakończone powodzeniem. Build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-09-19 — Zarządzanie kontem i reset hasła w React SPA
 
 - Zakres: profil użytkownika, zmiana hasła, usunięcie konta, żądanie resetu i ustawienie nowego hasła z linku e-mail wraz z kontraktami JSON backendu.
