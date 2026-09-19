@@ -16,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 class NewPasswordController extends Controller
 {
     /**
-     * Display the password reset view.
+     * Redirect a password reset link to the SPA.
      */
     public function create(Request $request): RedirectResponse
     {
@@ -34,7 +34,7 @@ class NewPasswordController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): JsonResponse|RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'token' => 'required',
@@ -57,17 +57,12 @@ class NewPasswordController extends Controller
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
+        // Return a JSON response on success and expose broker errors through the
+        // standard Laravel validation response used by the SPA.
         if ($status == Password::PASSWORD_RESET) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => 'Hasło zostało ustawione. Możesz się teraz zalogować.',
-                ]);
-            }
-
-            return redirect()->route('login')->with('status', __($status));
+            return response()->json([
+                'message' => 'Hasło zostało ustawione. Możesz się teraz zalogować.',
+            ]);
         }
 
         throw ValidationException::withMessages([

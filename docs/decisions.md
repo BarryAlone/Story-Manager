@@ -19,10 +19,11 @@
 - Listy domenowe są filtrowane według zalogowanego użytkownika, a operacje na konkretnym zasobie są sprawdzane przez Policies.
 - Dostęp zalogowanego użytkownika do cudzego zasobu zwraca `404`, aby nie ujawniać jego istnienia. Kod `403` pozostaje dla przyszłych przypadków, w których istnienie zasobu jest jawne, ale rola nie pozwala na daną operację.
 
-## Warstwa przejściowa
+## Warstwa interfejsu
 
-- React SPA przejęło przepływ rejestracji, logowania, stanu użytkownika, profilu i resetowania hasła.
-- Istniejący frontend Inertia pozostaje wyłącznie do czasu osobnego zadania usuwającego jego pliki, zależności oraz powiązany build CI.
+- React SPA w katalogu `frontend/` jest jedynym interfejsem użytkownika i obsługuje rejestrację, logowanie, stan użytkownika, profil oraz resetowanie hasła.
+- Warstwa Inertia, jej zależności i rootowy build frontendowy zostały usunięte po zapewnieniu równoważnych funkcji w SPA.
+- Nazwana trasa backendowa resetu hasła pozostaje mostem wymaganym przez Laravel Password Broker i przekierowuje do skonfigurowanego adresu SPA.
 
 ## Weryfikacja adresu e-mail
 

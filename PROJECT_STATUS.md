@@ -10,7 +10,7 @@ Story Manager to aplikacja webowa wspierająca tworzenie książek i komiksów. 
 - Frontend docelowy: osobne SPA w katalogu `frontend/`, oparte na React 19, React Router 7, Vite 8 i Tailwind CSS 4.
 - Baza deweloperska: SQLite.
 - Uwierzytelnianie: sesje cookie obsługiwane przez Laravel Sanctum; tokeny API nie są planowane.
-- Warstwa Inertia pozostaje jako przejściowy kod oczekujący na usunięcie w osobnym zadaniu.
+- React SPA w katalogu `frontend/` jest jedynym interfejsem użytkownika; backend nie zawiera już warstwy Inertia ani rootowego buildu frontendowego.
 
 ## Stan obszarów
 
@@ -32,7 +32,7 @@ Endpoint bieżącego użytkownika i wszystkie istniejące endpointy domenowe są
 
 ### CI
 
-GitHub Actions udostępnia dwa checki: backendowy build zasobów Inertia wymaganych przez testy wraz z pełnym PHPUnit oraz lintowanie i build docelowego React SPA. Kontrole działają dla pull requestów, pushów do `main` i uruchomień ręcznych, korzystając z izolowanej bazy SQLite w pamięci oraz zależności określonych przez lockfile.
+GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowanie i build React SPA. Kontrole działają dla pull requestów, pushów do `main` i uruchomień ręcznych, korzystając z izolowanej bazy SQLite w pamięci oraz zależności określonych przez lockfile.
 
 ## Działające elementy
 
@@ -46,7 +46,7 @@ GitHub Actions udostępnia dwa checki: backendowy build zasobów Inertia wymagan
 - żądanie resetu i ustawienie nowego hasła przez formularze SPA;
 - dashboard użytkownika z liczbą projektów, wyróżnieniem ostatnio edytowanych i obsługą stanów listy;
 - serwerowa ochrona istniejących endpointów domenowych i autoryzacja właściciela zasobów;
-- automatyczne kontrole backendu i obu frontendów w GitHub Actions;
+- automatyczne kontrole backendu i React SPA w GitHub Actions;
 - testy podstawowego przepływu uwierzytelniania.
 
 ## Znane ograniczenia
@@ -54,9 +54,8 @@ GitHub Actions udostępnia dwa checki: backendowy build zasobów Inertia wymagan
 - wydarzenia i osobne rekordy obrazów nie mają obecnie tras API;
 - pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
-- Inertia dubluje przejętą już przez SPA warstwę frontendową i oczekuje na osobne zadanie usuwające;
 - weryfikacja e-mail pozostaje poza MVP i nie ma interfejsu w SPA.
 
 ## Ostatnia aktualizacja
 
-2026-09-19
+2026-09-20

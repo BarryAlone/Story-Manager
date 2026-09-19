@@ -3,32 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): Response
-    {
-        return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => session('status'),
-        ]);
-    }
-
-    /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): JsonResponse|RedirectResponse
+    public function update(ProfileUpdateRequest $request): JsonResponse
     {
         $request->user()->fill($request->validated());
 
@@ -38,19 +22,15 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        if ($request->expectsJson()) {
-            return response()->json(
-                $request->user()->only(['id', 'name', 'email'])
-            );
-        }
-
-        return Redirect::route('profile.edit');
+        return response()->json(
+            $request->user()->only(['id', 'name', 'email'])
+        );
     }
 
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): JsonResponse|RedirectResponse
+    public function destroy(Request $request): JsonResponse
     {
         $request->validate([
             'password' => ['required', 'current_password'],
@@ -67,10 +47,6 @@ class ProfileController extends Controller
             $request->session()->regenerateToken();
         }
 
-        if ($request->expectsJson()) {
-            return response()->json(null, 204);
-        }
-
-        return Redirect::to('/');
+        return response()->json(null, 204);
     }
 }
