@@ -237,9 +237,7 @@ function ProjectList() {
         <div className="dashboard__summary" aria-live="polite">
           <span className="dashboard__count">{projects.length}</span>
           <span>{projectCountLabel(projects.length)} na Twoim koncie</span>
-          {recentProjectIds.size > 0 && projects.length > 1 && (
-            <span className="dashboard__sort-note">Ostatnio edytowane są wyświetlane jako pierwsze</span>
-          )}
+          {recentProjectIds.size > 0 && projects.length > 1 }
         </div>
       )}
 
