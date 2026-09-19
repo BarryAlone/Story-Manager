@@ -83,6 +83,10 @@ export default function Login() {
         />
         {errors.password?.map(error => <span key={error} style={authStyles.error}>{error}</span>)}
 
+        <div style={authStyles.passwordHelp}>
+          <Link to="/forgot-password" style={authStyles.link}>Nie pamiętasz hasła?</Link>
+        </div>
+
         <label style={authStyles.remember}>
           <input
             type="checkbox"

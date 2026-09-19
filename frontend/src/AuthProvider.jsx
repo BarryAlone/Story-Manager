@@ -1,16 +1,8 @@
 import { useEffect, useState } from 'react';
 import AuthContext from './AuthContext';
-import { apiFetch, initializeCsrf, setUnauthorizedHandler } from './api';
+import { apiFetch, initializeCsrf, readJson, setUnauthorizedHandler } from './api';
 
 let initialSessionRequest = null;
-
-async function readJson(response) {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
 
 function restoreInitialSession() {
   if (!initialSessionRequest) {
@@ -115,8 +107,33 @@ export default function AuthProvider({ children }) {
     setUser(null);
   }
 
+  async function refreshUser() {
+    const response = await apiFetch('/api/user');
+
+    if (!response.ok) {
+      throw new Error('Nie udało się odświeżyć danych użytkownika.');
+    }
+
+    const currentUser = await response.json();
+    setUser(currentUser);
+
+    return currentUser;
+  }
+
+  function clearUser() {
+    setUser(null);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{
+      user,
+      isLoading,
+      login,
+      register,
+      logout,
+      refreshUser,
+      clearUser,
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -48,7 +48,15 @@ const authStyles = {
     backgroundColor: '#fee2e2',
     color: '#991b1b',
   },
+  success: {
+    padding: '10px 12px',
+    borderRadius: '8px',
+    backgroundColor: '#dcfce7',
+    color: '#166534',
+  },
   error: { marginTop: '5px', color: '#b91c1c', fontSize: '0.875rem' },
+  description: { margin: '-12px 0 12px', color: '#6b7280', lineHeight: 1.55 },
+  passwordHelp: { marginTop: '10px', textAlign: 'right', fontSize: '0.9rem' },
   switchForm: { margin: '20px 0 0', textAlign: 'center', color: '#6b7280' },
   link: { color: '#374151', fontWeight: 600 },
 };

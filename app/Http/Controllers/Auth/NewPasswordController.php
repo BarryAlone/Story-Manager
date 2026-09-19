@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -11,20 +12,21 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class NewPasswordController extends Controller
 {
     /**
      * Display the password reset view.
      */
-    public function create(Request $request): Response
+    public function create(Request $request): RedirectResponse
     {
-        return Inertia::render('Auth/ResetPassword', [
-            'email' => $request->email,
-            'token' => $request->route('token'),
-        ]);
+        $frontendUrl = rtrim((string) config('app.frontend_url'), '/');
+        abort_if($frontendUrl === '', 500, 'Frontend URL is not configured.');
+
+        $token = rawurlencode((string) $request->route('token'));
+        $email = rawurlencode((string) $request->query('email'));
+
+        return redirect()->away("{$frontendUrl}/reset-password/{$token}?email={$email}");
     }
 
     /**
@@ -32,7 +34,7 @@ class NewPasswordController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse|RedirectResponse
     {
         $request->validate([
             'token' => 'required',
@@ -59,6 +61,12 @@ class NewPasswordController extends Controller
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         if ($status == Password::PASSWORD_RESET) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Hasło zostało ustawione. Możesz się teraz zalogować.',
+                ]);
+            }
+
             return redirect()->route('login')->with('status', __($status));
         }
 

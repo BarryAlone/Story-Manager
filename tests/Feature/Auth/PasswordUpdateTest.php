@@ -11,22 +11,17 @@ class PasswordUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_password_can_be_updated(): void
+    public function test_password_can_be_updated_with_json(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->put('/password', [
+        $this->actingAs($user)
+            ->putJson('/api/password', [
                 'current_password' => 'password',
                 'password' => 'new-password',
                 'password_confirmation' => 'new-password',
-            ]);
-
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ])
+            ->assertNoContent();
 
         $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
     }
@@ -35,17 +30,15 @@ class PasswordUpdateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->put('/password', [
+        $this->actingAs($user)
+            ->putJson('/api/password', [
                 'current_password' => 'wrong-password',
                 'password' => 'new-password',
                 'password_confirmation' => 'new-password',
-            ]);
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('current_password');
 
-        $response
-            ->assertSessionHasErrors('current_password')
-            ->assertRedirect('/profile');
+        $this->assertTrue(Hash::check('password', $user->refresh()->password));
     }
 }

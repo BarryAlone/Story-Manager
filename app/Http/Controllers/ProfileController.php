@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,7 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request): JsonResponse|RedirectResponse
     {
         $request->user()->fill($request->validated());
 
@@ -37,13 +38,19 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+        if ($request->expectsJson()) {
+            return response()->json(
+                $request->user()->only(['id', 'name', 'email'])
+            );
+        }
+
         return Redirect::route('profile.edit');
     }
 
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request): JsonResponse|RedirectResponse
     {
         $request->validate([
             'password' => ['required', 'current_password'],
@@ -51,12 +58,18 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        Auth::logout();
+        Auth::guard('web')->logout();
 
         $user->delete();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(null, 204);
+        }
 
         return Redirect::to('/');
     }

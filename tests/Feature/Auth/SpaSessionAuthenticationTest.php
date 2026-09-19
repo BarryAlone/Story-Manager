@@ -139,7 +139,7 @@ class SpaSessionAuthenticationTest extends TestCase
 
     public function test_vite_frontend_can_preflight_web_auth_routes(): void
     {
-        foreach (['/login', '/register', '/logout'] as $path) {
+        foreach (['/login', '/register', '/logout', '/forgot-password', '/reset-password'] as $path) {
             $this->withHeaders([
                 'Origin' => 'http://localhost:5173',
                 'Access-Control-Request-Method' => 'POST',

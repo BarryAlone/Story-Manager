@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import useAuth from './useAuth';
 
 export default function UserMenu() {
@@ -93,6 +94,15 @@ export default function UserMenu() {
           </div>
 
           {error && <div role="alert" style={{ marginBottom: '10px', fontSize: '0.875rem', color: '#b91c1c' }}>{error}</div>}
+
+          <Link
+            to="/profile"
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+            style={{ display: 'block', marginBottom: '8px', padding: '9px 12px', border: '1px solid #d1d5db', borderRadius: '7px', color: '#374151', textDecoration: 'none' }}
+          >
+            Profil
+          </Link>
 
           <button
             type="button"
