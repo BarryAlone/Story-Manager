@@ -2,6 +2,18 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-09-22 — Refaktoryzacja modułu grafu relacji
+
+- Zakres: podział strony relacji na katalog funkcjonalny z osobnymi komponentami przestrzeni roboczej, canvasa, panelu, filtrów, szczegółów, formularza i listy oraz hookami danych i lokalnego stanu.
+- Wynik: zachowano istniejące zachowanie grafu i formularza, a transformacje danych, rysowanie oraz scenariusze developerskie zostały odseparowane od komponentu nadrzędnego. Dodano dokument techniczny modułu.
+- Testy: lint i build React SPA oraz `git diff --check` zakończone powodzeniem; build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
+## 2026-09-20 — Wizualizacja i narzędzia dużego grafu relacji
+
+- Zakres: avatary z fallbackiem inicjałów i cache obrazów, adaptacyjne etykiety, stabilne kolory, wyszukiwanie, filtry i interakcje grafu oraz dwukolumnowy panel roboczy bez modala.
+- Wynik: wspólny combobox obsługuje wyszukiwanie grafu i wybór końców relacji, panel zawiera tworzenie, usuwanie i dostępną listę relacji, a graf ma stabilny hover, automatyczne kadrowanie sąsiedztwa i widok rozszerzony. Cztery deterministyczne scenariusze 100/200 pozostają tylko do odczytu. Zapis edycji relacji pozostaje zablokowany, ponieważ API nie udostępnia trasy aktualizacji.
+- Testy: lint i build React SPA oraz `git diff --check` zakończone powodzeniem; generator zwrócił oczekiwane liczby 100/100, 100/500, 200/200 i 200/1000, a identyfikatory scenariuszy nie występują w produkcyjnym bundlu. Build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-09-20 — Aktualizacja README po usunięciu Inertia
 
 - Zakres: dostosowanie opisu architektury, wymagań, konfiguracji środowiska oraz poleceń uruchamiania i kontroli jakości do jedynego React SPA w `frontend/`.
