@@ -7,6 +7,7 @@ import RelationshipToolbar from './RelationshipToolbar';
 import { DEV_SCENARIO_KEYS, SCENARIO_PARAM } from './relationshipConstants';
 import useRelationshipGraphController from './useRelationshipGraphController';
 import useRelationshipGraphData from './useRelationshipGraphData';
+import useGraphLayoutPersistence from './useGraphLayoutPersistence';
 import './styles/relationshipWorkspace.css';
 import './styles/relationshipGraph.css';
 
@@ -29,7 +30,7 @@ const RelationshipWorkspace = forwardRef(function RelationshipWorkspace(props, r
 
   return (
     <RelationshipWorkspaceContent
-      key={`${projectId}-${props.dataRevision}-${scenarioKey}`}
+      key={`${props.userId}-${projectId}-${props.dataRevision}-${scenarioKey}`}
       ref={ref}
       {...props}
       projectId={projectId}
@@ -47,12 +48,20 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
   projectId,
   scenarioKey,
   sidebarContent,
+  userId,
 }, ref) {
   const loadState = useRelationshipGraphData(projectId, dataRevision, scenarioKey);
   const controller = useRelationshipGraphController({
     sourceGraphData: loadState.graphData,
     onClearSelection,
     onSelectRelationship,
+  });
+  const layoutPersistence = useGraphLayoutPersistence({
+    canvasRef: controller.canvasRef,
+    nodes: loadState.graphData.nodes,
+    projectId,
+    scenarioKey,
+    userId,
   });
 
   useImperativeHandle(ref, () => ({
@@ -64,7 +73,11 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
       className={`relationship-workspace${controller.isExpanded ? ' relationship-workspace--expanded' : ''}${controller.isPanelOpen ? '' : ' relationship-workspace--panel-closed'}`}
       aria-label="Przestrzeń robocza relacji postaci"
     >
-      <RelationshipSidebar controller={controller} projectId={projectId}>
+      <RelationshipSidebar
+        controller={controller}
+        layoutPersistence={layoutPersistence}
+        projectId={projectId}
+      >
         {sidebarContent}
       </RelationshipSidebar>
 
@@ -75,7 +88,12 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
           onScenarioChange={onScenarioChange}
         />
         <RelationshipLegend relationTypes={controller.visibleRelationTypes} />
-        <RelationshipCanvas ref={controller.canvasRef} controller={controller} loadState={loadState} />
+        <RelationshipCanvas
+          ref={controller.canvasRef}
+          controller={controller}
+          layoutPersistence={layoutPersistence}
+          loadState={loadState}
+        />
       </div>
     </section>
   );

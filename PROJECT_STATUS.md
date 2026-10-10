@@ -45,7 +45,7 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 - zarządzanie profilem, zmiana hasła i usunięcie konta w SPA;
 - żądanie resetu i ustawienie nowego hasła przez formularze SPA;
 - dashboard użytkownika z liczbą projektów, wyróżnieniem ostatnio edytowanych i obsługą stanów listy;
-- graf relacji z avatarami, fallbackiem inicjałów, adaptacyjnymi etykietami, wyszukiwaniem, filtrami, bezpośrednimi interakcjami oraz lokalnymi scenariuszami wydajnościowymi dostępnymi tylko w trybie developerskim;
+- graf relacji z avatarami, fallbackiem inicjałów, adaptacyjnymi etykietami, wyszukiwaniem, filtrami, bezpośrednimi interakcjami, lokalnym zapisem układu oraz scenariuszami wydajnościowymi dostępnymi tylko w trybie developerskim;
 - serwerowa ochrona istniejących endpointów domenowych i autoryzacja właściciela zasobów;
 - automatyczne kontrole backendu i React SPA w GitHub Actions;
 - testy podstawowego przepływu uwierzytelniania.
@@ -60,4 +60,4 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 
 ## Ostatnia aktualizacja
 
-2026-09-20
+2026-10-09

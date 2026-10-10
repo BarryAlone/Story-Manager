@@ -55,21 +55,27 @@ export default function useRelationshipGraphController({
   const selectedLink = useMemo(() => sourceGraphData.links.find((link) => (
     link.id === selectedLinkId
   )) || null, [selectedLinkId, sourceGraphData.links]);
+
   const selectedLinkSource = selectedLink
     ? nodeById.get(graphEndpointId(selectedLink.source)) || null
     : null;
+
   const selectedLinkTarget = selectedLink
     ? nodeById.get(graphEndpointId(selectedLink.target)) || null
     : null;
+
   const hoveredLink = hoveredLinkId === null
     ? null
     : visibleGraphData.links.find((link) => link.id === hoveredLinkId) || null;
+
   const hoveredLinkSource = hoveredLink
     ? nodeById.get(graphEndpointId(hoveredLink.source)) || null
     : null;
+
   const hoveredLinkTarget = hoveredLink
     ? nodeById.get(graphEndpointId(hoveredLink.target)) || null
     : null;
+
   const interactionHighlight = useMemo(() => buildInteractionHighlight(
     visibleGraphData.links,
     { hoveredLinkId, hoveredNodeId, selectedLinkId, selectedNodeId },

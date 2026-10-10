@@ -26,5 +26,6 @@
 - [x] Przeniesiono profil, zmianę hasła, usunięcie konta i reset hasła do React SPA.
 - [x] Usunięto przejściowy frontend Inertia, jego zależności i rootowy build oraz pozostawiono React SPA jako jedyny interfejs.
 - [x] Dodano dwukolumnową przestrzeń roboczą grafu relacji: avatary, wspólny combobox, widok sąsiedztwa, filtry, interakcje bezpośrednie, tryb rozszerzony i lokalne scenariusze 100/200 postaci.
+- [x] Dodano lokalne zapisywanie i resetowanie układu grafu osobno dla użytkownika, projektu i scenariusza developerskiego.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.
