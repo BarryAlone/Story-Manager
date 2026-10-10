@@ -16,7 +16,11 @@ import {
   drawNodePointerArea,
 } from './relationshipGraphDrawing';
 
-const RelationshipCanvas = forwardRef(function RelationshipCanvas({ controller, loadState }, ref) {
+const RelationshipCanvas = forwardRef(function RelationshipCanvas({
+  controller,
+  layoutPersistence,
+  loadState,
+}, ref) {
   const containerRef = useRef(null);
   const graphRef = useRef(null);
   const imageCacheRef = useRef(new Map());
@@ -24,6 +28,7 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({ controller, 
   const fitPendingRef = useRef(false);
   const previousFitRequestRef = useRef(controller.fitRequest);
   const [dimensions, setDimensions] = useState({ width: 720, height: 600 });
+  const [, setImageRevision] = useState(0);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -53,11 +58,11 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({ controller, 
       imageCacheRef.current.set(node.imageUrl, cacheEntry);
       image.onload = () => {
         cacheEntry.status = 'loaded';
-        graphRef.current?.refresh();
+        setImageRevision((revision) => revision + 1);
       };
       image.onerror = () => {
         cacheEntry.status = 'error';
-        graphRef.current?.refresh();
+        setImageRevision((revision) => revision + 1);
       };
       image.src = node.imageUrl;
     });
@@ -109,9 +114,12 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({ controller, 
       const currentZoom = graphRef.current?.zoom() || 1;
       graphRef.current?.zoom(Math.max(currentZoom, GRAPH_CAMERA.linkZoom), GRAPH_CAMERA.animationMs);
     },
+    restartSimulation() {
+      graphRef.current?.d3ReheatSimulation();
+    },
   }), []);
 
-  const paintNode = useCallback((node, context, globalScale) => drawNode(
+  const paintNode = (node, context, globalScale) => drawNode(
     node,
     context,
     globalScale,
@@ -122,12 +130,7 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({ controller, 
       imageCache: imageCacheRef.current,
       visibleNodeCount: controller.visibleGraphData.nodes.length,
     },
-  ), [
-    controller.hoveredNodeId,
-    controller.interactionHighlight,
-    controller.selectedNodeId,
-    controller.visibleGraphData.nodes.length,
-  ]);
+  );
   const paintLinkLabel = useCallback((link, context, globalScale) => drawLinkLabel(
     link,
     context,
@@ -174,6 +177,9 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({ controller, 
             didDragRef.current = true;
           }}
           onNodeDragEnd={() => {
+            // ForceGraph zwalnia węzeł po własnym zdarzeniu drag-end, więc utrwalenie
+            // wykonujemy w następnym obrocie pętli zdarzeń.
+            window.setTimeout(layoutPersistence.saveLayout, 0);
             window.setTimeout(() => {
               didDragRef.current = false;
             }, 0);

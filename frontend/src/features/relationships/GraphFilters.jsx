@@ -1,7 +1,7 @@
 import CharacterCombobox from './CharacterCombobox';
 import { UNGROUPED_FILTER } from './relationshipConstants';
 
-export default function GraphFilters({ controller }) {
+export default function GraphFilters({ controller, layoutPersistence }) {
   return (
     <section className="relationship-workspace__section relationship-workspace__controls" aria-labelledby="graph-controls-heading">
       <h2 id="graph-controls-heading">Widok grafu</h2>
@@ -53,6 +53,14 @@ export default function GraphFilters({ controller }) {
         disabled={!controller.hasActiveFilters}
       >
         Wyczyść filtry
+      </button>
+      <button
+        type="button"
+        className="relationship-workspace__secondary"
+        onClick={layoutPersistence.resetLayout}
+        disabled={!layoutPersistence.hasSavedLayout}
+      >
+        Resetuj układ
       </button>
     </section>
   );

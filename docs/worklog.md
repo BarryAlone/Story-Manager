@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-09 — Lokalny układ grafu relacji
+
+- Zakres: zapis pozycji postaci po przeciągnięciu, odtwarzanie układu oraz jego reset dla bieżącego użytkownika i projektu.
+- Wynik: wersjonowane wpisy `localStorage` są izolowane także dla scenariuszy developerskich, odporne na brakujące postacie i niepoprawne dane; reset zwalnia pozycje i ponownie uruchamia symulację.
+- Testy: lint i build React SPA oraz `git diff --check`.
+
 ## 2026-09-22 — Refaktoryzacja modułu grafu relacji
 
 - Zakres: podział strony relacji na katalog funkcjonalny z osobnymi komponentami przestrzeni roboczej, canvasa, panelu, filtrów, szczegółów, formularza i listy oraz hookami danych i lokalnego stanu.

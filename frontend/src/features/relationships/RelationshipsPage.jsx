@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+import useAuth from '../../useAuth';
 import RelationshipForm from './RelationshipForm';
 import RelationshipListPanel from './RelationshipListPanel';
 import RelationshipWorkspace from './RelationshipWorkspace';
@@ -8,6 +9,7 @@ import useRelationshipCrud from './useRelationshipCrud';
 
 export default function RelationshipsPage() {
   const { projectId } = useParams();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const workspaceRef = useRef(null);
   const firstCharacterRef = useRef(null);
@@ -43,6 +45,7 @@ export default function RelationshipsPage() {
         onClearSelection={crud.resetForm}
         onSelectRelationship={crud.selectFromGraph}
         sidebarContent={sidebarContent}
+        userId={user.id}
       />
     </div>
   );
