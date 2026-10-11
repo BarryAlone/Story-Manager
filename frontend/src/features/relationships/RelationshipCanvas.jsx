@@ -128,6 +128,8 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({
       selectedNodeId: controller.selectedNodeId,
       interactionHighlight: controller.interactionHighlight,
       imageCache: imageCacheRef.current,
+      relationshipCreationStage: controller.relationshipCreationStage,
+      relationshipSourceNodeId: controller.relationshipSourceNodeId,
       visibleNodeCount: controller.visibleGraphData.nodes.length,
     },
   );
@@ -185,7 +187,7 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({
             }, 0);
           }}
           onNodeClick={(node) => {
-            if (!didDragRef.current) controller.selectNode(node);
+            if (!didDragRef.current) controller.handleNodeClick(node);
           }}
           onLinkHover={(link) => {
             controller.setHoveredLinkId(link?.id ?? null);

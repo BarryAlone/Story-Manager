@@ -9,20 +9,28 @@ export function drawNode(node, context, globalScale, options) {
     selectedNodeId,
     interactionHighlight,
     imageCache,
+    relationshipCreationStage,
+    relationshipSourceNodeId,
     visibleNodeCount,
   } = options;
   const isHovered = node.id === hoveredNodeId;
   const isSelected = node.id === selectedNodeId;
+  const isRelationshipSource = relationshipCreationStage !== 'idle'
+    && node.id === relationshipSourceNodeId;
   const isRelated = interactionHighlight.nodeIds.has(node.id);
   const isDimmed = interactionHighlight.active && !isRelated;
   const baseRadius = GRAPH_RENDERING.nodeRadius;
-  const radius = isHovered ? 11 : (isSelected ? 10.5 : (isRelated ? 9.75 : baseRadius));
+  const radius = isRelationshipSource
+    ? 11.5
+    : (isHovered ? 11 : (isSelected ? 10.5 : (isRelated ? 9.75 : baseRadius)));
   const cachedImage = node.imageUrl ? imageCache.get(node.imageUrl) : null;
 
   context.save();
   context.globalAlpha = isDimmed ? 0.22 : 1;
-  if (isHovered || isSelected) {
-    context.shadowColor = isSelected ? 'rgba(37, 99, 235, 0.8)' : 'rgba(17, 24, 39, 0.55)';
+  if (isRelationshipSource || isHovered || isSelected) {
+    context.shadowColor = isRelationshipSource
+      ? 'rgba(217, 119, 6, 0.85)'
+      : (isSelected ? 'rgba(37, 99, 235, 0.8)' : 'rgba(17, 24, 39, 0.55)');
     context.shadowBlur = 12;
   }
   context.beginPath();
@@ -46,11 +54,14 @@ export function drawNode(node, context, globalScale, options) {
   context.globalAlpha = isDimmed ? 0.22 : 1;
   context.beginPath();
   context.arc(node.x, node.y, radius, 0, Math.PI * 2);
-  context.strokeStyle = isSelected ? '#2563eb' : (isHovered ? '#111827' : '#ffffff');
-  context.lineWidth = isSelected || isHovered ? 2.5 : 1.5;
+  context.strokeStyle = isRelationshipSource
+    ? '#d97706'
+    : (isSelected ? '#2563eb' : (isHovered ? '#111827' : '#ffffff'));
+  context.lineWidth = isRelationshipSource ? 3 : (isSelected || isHovered ? 2.5 : 1.5);
   context.stroke();
 
-  const showLabel = isSelected
+  const showLabel = isRelationshipSource
+    || isSelected
     || isHovered
     || (isRelated && interactionHighlight.active)
     || visibleNodeCount <= 30

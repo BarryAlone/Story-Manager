@@ -433,6 +433,34 @@ class DomainAuthorizationTest extends TestCase
             ->assertOk();
     }
 
+    public function test_relationship_pair_cannot_be_created_more_than_once_in_either_order(): void
+    {
+        $owner = User::factory()->create();
+        $project = $this->project($owner, 'Owned project');
+        $firstCharacter = Character::create($this->characterData($project, 'First character'));
+        $secondCharacter = Character::create($this->characterData($project, 'Second character'));
+
+        $this->actingAs($owner)->postJson('/api/character-relationships', [
+            'character_1_id' => $firstCharacter->id,
+            'character_2_id' => $secondCharacter->id,
+            'relation_name' => 'Friends',
+        ])->assertCreated();
+
+        $this->actingAs($owner)->postJson('/api/character-relationships', [
+            'character_1_id' => $firstCharacter->id,
+            'character_2_id' => $secondCharacter->id,
+            'relation_name' => 'Enemies',
+        ])->assertUnprocessable()->assertJsonValidationErrors('character_2_id');
+
+        $this->actingAs($owner)->postJson('/api/character-relationships', [
+            'character_1_id' => $secondCharacter->id,
+            'character_2_id' => $firstCharacter->id,
+            'relation_name' => 'Enemies',
+        ])->assertUnprocessable()->assertJsonValidationErrors('character_2_id');
+
+        $this->assertDatabaseCount('character_relationships', 1);
+    }
+
     private function project(User $user, string $name): Project
     {
         return Project::create([

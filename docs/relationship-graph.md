@@ -22,7 +22,7 @@ Dla rzeczywistych danych `useRelationshipGraphData` pobiera równolegle postacie
 
 `filterGraphData` jest czystą funkcją działającą poza Reactem. Stosuje kolejno filtr grupy, typu relacji i bezpośredniego sąsiedztwa. Każda widoczna krawędź zawsze ma oba widoczne końce. Kontroler wylicza również podświetlenia hovera i zaznaczenia bez modyfikowania danych źródłowych.
 
-Wyszukanie postaci lub kliknięcie węzła ustawia zaznaczenie i kamerę. Widok sąsiedztwa zgłasza żądanie `zoomToFit`; canvas wykonuje szybkie kadrowanie oraz końcowe dopasowanie po zatrzymaniu symulacji. Zmiana hovera nie tworzy nowych danych grafu i nie uruchamia kadrowania.
+Kliknięcie węzła zmienia zaznaczenie bez poruszania kamery. Jawny wybór wyniku wyszukiwania może wycentrować postać, a widok sąsiedztwa zgłasza żądanie `zoomToFit`; canvas wykonuje szybkie kadrowanie oraz końcowe dopasowanie po zatrzymaniu symulacji. Zmiana hovera nie tworzy nowych danych grafu i nie uruchamia kadrowania.
 
 ## Renderowanie canvas
 
@@ -34,13 +34,13 @@ Scenariusze 100/200 są generowane deterministycznie przez `relationshipGraphSce
 
 ## Tworzenie i edycja relacji
 
-Nowa relacja korzysta z istniejącego `POST /api/character-relationships`. Formularz przesyła identyfikatory dwóch różnych postaci i nazwę relacji, a błędy `422` pokazuje przy odpowiednich polach. Usunięcie korzysta z `DELETE /api/character-relationships/{id}` i wymaga potwierdzenia.
+Nowa relacja rozpoczyna się przez ponowne kliknięcie zaznaczonej postaci, wybór innej postaci jako celu i ręczne zatwierdzenie istniejącego formularza. Kontroler grafu przechowuje etap tego przepływu, a `Escape` lub anulowanie cofają o jeden etap. Zapis korzysta z istniejącego `POST /api/character-relationships`, przesyła identyfikatory dwóch różnych postaci i nazwę relacji, a błędy `422` pokazuje przy odpowiednich polach. SPA i backend traktują parę postaci jako nieuporządkowaną i blokują kolejną relację również wtedy, gdy jej końce podano w odwrotnej kolejności. Usunięcie korzysta z `DELETE /api/character-relationships/{id}` i wymaga potwierdzenia.
 
 Kliknięcie istniejącej relacji wypełnia ten sam formularz w trybie podglądu edycji. Zapis zmian jest obecnie zablokowany, ponieważ routing API nie udostępnia metody `PUT` ani `PATCH`, mimo że kontroler zawiera metodę aktualizacji.
 
 ## Ograniczenia
 
-- Pozycje węzłów nie są zapisywane między wizytami.
+- Pozycje węzłów są zapisywane lokalnie dla użytkownika i projektu, bez synchronizacji między urządzeniami.
 - Kolory są deterministycznie wyliczane z nazwy typu relacji i nie są przechowywane w bazie.
 - Lista HTML i graf pobierają dane osobno, aby utrzymać niezależne stany błędu i odświeżania.
 - Trwała edycja relacji wymaga uzupełnienia kontraktu backendowego.

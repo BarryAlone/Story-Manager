@@ -10,7 +10,7 @@ export default function RelationshipSidebar({ controller, layoutPersistence, pro
       </div>
       <GraphFilters controller={controller} layoutPersistence={layoutPersistence} />
       <SelectionDetails controller={controller} projectId={projectId} />
-      {children}
+      {typeof children === 'function' ? children(controller) : children}
     </aside>
   );
 }

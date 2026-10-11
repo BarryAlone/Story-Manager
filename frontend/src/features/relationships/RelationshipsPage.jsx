@@ -22,19 +22,41 @@ export default function RelationshipsPage() {
     workspaceRef.current?.selectLink(relationship.id);
   };
 
-  const sidebarContent = isTestMode ? (
-    <section className="relationship-workspace__section">
-      <h2>Relacje</h2>
-      <p className="relationship-workspace__notice">
-        Dane scenariusza są tylko do odczytu. Formularz nie wysyła żądań do API.
-      </p>
-    </section>
-  ) : (
-    <>
-      <RelationshipForm crud={crud} firstCharacterRef={firstCharacterRef} />
-      <RelationshipListPanel crud={crud} onSelect={selectRelationshipFromList} />
-    </>
-  );
+  const saveRelationship = async (event) => {
+    const saved = await crud.save(event);
+    if (saved) workspaceRef.current?.completeRelationshipCreation();
+  };
+
+  const sidebarContent = (controller) => {
+    if (isTestMode) {
+      return (
+        <section className="relationship-workspace__section">
+          <h2>Relacje</h2>
+          <p className="relationship-workspace__notice">
+            Dane scenariusza są tylko do odczytu. Formularz nie wysyła żądań do API.
+          </p>
+        </section>
+      );
+    }
+
+    const showForm = crud.editingRelationshipId !== null
+      || controller.relationshipCreationStage === 'form';
+
+    return (
+      <>
+        {showForm ? (
+          <RelationshipForm
+            crud={crud}
+            firstCharacterRef={firstCharacterRef}
+            isGraphCreation={controller.relationshipCreationStage === 'form'}
+            onCancel={controller.returnToTargetSelection}
+            onSubmit={saveRelationship}
+          />
+        ) : null}
+        <RelationshipListPanel crud={crud} onSelect={selectRelationshipFromList} />
+      </>
+    );
+  };
 
   return (
     <div className="relationship-page">
@@ -42,7 +64,9 @@ export default function RelationshipsPage() {
       <RelationshipWorkspace
         ref={workspaceRef}
         dataRevision={crud.graphRevision}
+        onBeginRelationship={crud.beginFromGraph}
         onClearSelection={crud.resetForm}
+        onSelectRelationshipTarget={crud.beginFromGraph}
         onSelectRelationship={crud.selectFromGraph}
         sidebarContent={sidebarContent}
         userId={user.id}

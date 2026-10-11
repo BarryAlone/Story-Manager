@@ -62,10 +62,37 @@ export default function useRelationshipCrud(projectId, isTestMode, firstCharacte
     setFormError('');
   }, []);
 
+  const relationshipExists = useCallback((firstCharacterId, secondCharacterId) => (
+    relationships.some((relationship) => {
+      const firstId = String(relationship.character_1_id);
+      const secondId = String(relationship.character_2_id);
+      const requestedFirstId = String(firstCharacterId);
+      const requestedSecondId = String(secondCharacterId);
+
+      return (firstId === requestedFirstId && secondId === requestedSecondId)
+        || (firstId === requestedSecondId && secondId === requestedFirstId);
+    })
+  ), [relationships]);
+
   const beginNew = useCallback(() => {
     resetForm();
     window.requestAnimationFrame(() => firstCharacterRef.current?.focus());
   }, [firstCharacterRef, resetForm]);
+
+  const beginFromGraph = useCallback((sourceCharacter, targetCharacter = null) => {
+    resetForm();
+    setCharacter1Id(String(sourceCharacter.id));
+    setCharacter1Query(sourceCharacter.name || getCharacterName(sourceCharacter.id));
+    if (targetCharacter) {
+      setCharacter2Id(String(targetCharacter.id));
+      setCharacter2Query(targetCharacter.name || getCharacterName(targetCharacter.id));
+      if (relationshipExists(sourceCharacter.id, targetCharacter.id)) {
+        setFieldErrors({
+          character_2_id: ['Relacja między wybranymi postaciami już istnieje.'],
+        });
+      }
+    }
+  }, [getCharacterName, relationshipExists, resetForm]);
 
   const beginEdit = useCallback((relationship) => {
     if (!relationship || relationship.synthetic) return;
@@ -95,7 +122,7 @@ export default function useRelationshipCrud(projectId, isTestMode, firstCharacte
 
   const save = async (event) => {
     event.preventDefault();
-    if (isTestMode || editingRelationshipId !== null) return;
+    if (isTestMode || editingRelationshipId !== null) return false;
 
     const localErrors = {};
     if (!character1Id) localErrors.character_1_id = ['Wybierz postać źródłową.'];
@@ -103,10 +130,13 @@ export default function useRelationshipCrud(projectId, isTestMode, firstCharacte
     if (character1Id && character1Id === character2Id) {
       localErrors.character_2_id = ['Wybierz dwie różne postacie.'];
     }
+    if (character1Id && character2Id && relationshipExists(character1Id, character2Id)) {
+      localErrors.character_2_id = ['Relacja między wybranymi postaciami już istnieje.'];
+    }
     if (!relationshipType.trim()) localErrors.relation_name = ['Podaj typ relacji.'];
     if (Object.keys(localErrors).length > 0) {
       setFieldErrors(localErrors);
-      return;
+      return false;
     }
 
     setIsSaving(true);
@@ -125,13 +155,15 @@ export default function useRelationshipCrud(projectId, isTestMode, firstCharacte
       if (response.status === 422) {
         const payload = await response.json();
         setFieldErrors(payload.errors || {});
-        return;
+        return false;
       }
       if (!response.ok) throw new Error('Nie udało się zapisać relacji.');
-      beginNew();
+      resetForm();
       await refreshAfterMutation();
+      return true;
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Nie udało się zapisać relacji.');
+      return false;
     } finally {
       setIsSaving(false);
     }
@@ -180,6 +212,7 @@ export default function useRelationshipCrud(projectId, isTestMode, firstCharacte
     loadData,
     resetForm,
     beginNew,
+    beginFromGraph,
     beginEdit,
     selectFromGraph,
     save,
