@@ -47,6 +47,23 @@ class CharacterRelationshipController extends Controller
             ]);
         }
 
+        $relationshipAlreadyExists = CharacterRelationship::query()
+            ->where(function ($query) use ($validated) {
+                $query->where('character_1_id', $validated['character_1_id'])
+                    ->where('character_2_id', $validated['character_2_id']);
+            })
+            ->orWhere(function ($query) use ($validated) {
+                $query->where('character_1_id', $validated['character_2_id'])
+                    ->where('character_2_id', $validated['character_1_id']);
+            })
+            ->exists();
+
+        if ($relationshipAlreadyExists) {
+            throw ValidationException::withMessages([
+                'character_2_id' => ['Relacja między wybranymi postaciami już istnieje.'],
+            ]);
+        }
+
         $characterRelationship = CharacterRelationship::create($validated);
 
         return response()->json($characterRelationship, 201);

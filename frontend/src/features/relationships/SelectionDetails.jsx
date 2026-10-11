@@ -28,21 +28,43 @@ function CharacterAvatar({ node }) {
 export default function SelectionDetails({ controller, projectId }) {
   if (controller.selectedNode) {
     const node = controller.selectedNode;
+    const isSelectingTarget = controller.relationshipCreationStage === 'selecting-target';
+    const isCompletingForm = controller.relationshipCreationStage === 'form';
     return (
       <section className="relationship-workspace__section relationship-graph__details" aria-label="Wybrana postać">
         <CharacterAvatar key={`${node.id}-${node.imageUrl}`} node={node} />
         <div className="relationship-graph__details-content">
-          <span className="relationship-graph__details-eyebrow">Wybrana postać</span>
+          <span className="relationship-graph__details-eyebrow">
+            {isSelectingTarget || isCompletingForm ? 'Tworzenie relacji' : 'Wybrana postać'}
+          </span>
           <strong>{node.name}</strong>
           <span>{node.groupName || 'Bez przypisanej grupy'}</span>
           {node.description ? <p>{node.description}</p> : null}
         </div>
+        {isSelectingTarget ? (
+          <p className="relationship-workspace__notice" aria-live="polite">
+            Wybierz postać, którą chcesz powiązać z {node.name}.
+          </p>
+        ) : null}
+        {isCompletingForm && controller.relationshipTargetNode ? (
+          <p className="relationship-workspace__notice" aria-live="polite">
+            Wybrano {controller.relationshipTargetNode.name}. Uzupełnij typ relacji i zatwierdź formularz.
+          </p>
+        ) : null}
+        {!node.synthetic && controller.relationshipCreationStage === 'idle' ? (
+          <p className="relationship-graph__hint">
+            Kliknij tę postać ponownie, aby rozpocząć tworzenie relacji.
+          </p>
+        ) : null}
         <div className="relationship-graph__details-actions">
           {node.synthetic ? (
             <span className="relationship-graph__readonly">Dane testowe — tylko odczyt</span>
           ) : (
             <Link to={`/project/${projectId}/characters/${node.id}`}>Edytuj postać</Link>
           )}
+          {isSelectingTarget ? (
+            <button type="button" onClick={controller.cancelTargetSelection}>Anuluj wybór relacji</button>
+          ) : null}
           <button type="button" onClick={controller.clearSelection}>Wyczyść wybór</button>
         </div>
       </section>

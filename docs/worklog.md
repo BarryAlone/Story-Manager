@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-10 — Tworzenie relacji przez wybór na grafie
+
+- Zakres: etapowe wskazanie źródła i celu relacji, istniejący formularz zatwierdzenia oraz nawigacja wstecz przez anulowanie i `Escape`.
+- Wynik: zwykłe zaznaczenie nie porusza kamery, ponowne kliknięcie rozpoczyna wybór celu, a zapis odświeża graf i listę bez utraty zaznaczenia źródła ani lokalnego układu. SPA i backend blokują kolejną relację dla tej samej pary także przy odwróconej kolejności postaci.
+- Testy: lint i build React SPA, testy autoryzacji i kontraktu relacji oraz `git diff --check`.
+
 ## 2026-10-09 — Lokalny układ grafu relacji
 
 - Zakres: zapis pozycji postaci po przeciągnięciu, odtwarzanie układu oraz jego reset dla bieżącego użytkownika i projektu.

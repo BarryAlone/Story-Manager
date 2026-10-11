@@ -60,7 +60,7 @@ function ExpandedControls({ controller }) {
           query={controller.searchQuery}
           onQueryChange={controller.setSearchQuery}
           onSelect={(node) => {
-            if (node) controller.selectNode(node, { resetFilters: true });
+            if (node) controller.showNode(node, { resetFilters: true });
             else controller.clearSelection();
           }}
         />

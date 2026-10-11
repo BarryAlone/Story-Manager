@@ -30,7 +30,7 @@ const RelationshipWorkspace = forwardRef(function RelationshipWorkspace(props, r
 
   return (
     <RelationshipWorkspaceContent
-      key={`${props.userId}-${projectId}-${props.dataRevision}-${scenarioKey}`}
+      key={`${props.userId}-${projectId}-${scenarioKey}`}
       ref={ref}
       {...props}
       projectId={projectId}
@@ -42,7 +42,9 @@ const RelationshipWorkspace = forwardRef(function RelationshipWorkspace(props, r
 
 const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceContent({
   dataRevision = 0,
+  onBeginRelationship,
   onClearSelection,
+  onSelectRelationshipTarget,
   onSelectRelationship,
   onScenarioChange,
   projectId,
@@ -52,8 +54,10 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
 }, ref) {
   const loadState = useRelationshipGraphData(projectId, dataRevision, scenarioKey);
   const controller = useRelationshipGraphController({
+    onBeginRelationship,
     sourceGraphData: loadState.graphData,
     onClearSelection,
+    onSelectRelationshipTarget,
     onSelectRelationship,
   });
   const layoutPersistence = useGraphLayoutPersistence({
@@ -66,7 +70,8 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
 
   useImperativeHandle(ref, () => ({
     selectLink: controller.selectLinkById,
-  }), [controller.selectLinkById]);
+    completeRelationshipCreation: controller.completeRelationshipCreation,
+  }), [controller.completeRelationshipCreation, controller.selectLinkById]);
 
   return (
     <section

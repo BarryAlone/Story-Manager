@@ -8,8 +8,10 @@ import {
 } from './relationshipGraphData';
 
 export default function useRelationshipGraphController({
+  onBeginRelationship,
   sourceGraphData,
   onClearSelection,
+  onSelectRelationshipTarget,
   onSelectRelationship,
 }) {
   const canvasRef = useRef(null);
@@ -24,6 +26,9 @@ export default function useRelationshipGraphController({
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [fitRequest, setFitRequest] = useState(0);
+  const [relationshipCreationStage, setRelationshipCreationStage] = useState('idle');
+  const [relationshipSourceNodeId, setRelationshipSourceNodeId] = useState(null);
+  const [relationshipTargetNodeId, setRelationshipTargetNodeId] = useState(null);
 
   const nodeById = useMemo(() => new Map(
     sourceGraphData.nodes.map((node) => [node.id, node]),
@@ -64,6 +69,13 @@ export default function useRelationshipGraphController({
     ? nodeById.get(graphEndpointId(selectedLink.target)) || null
     : null;
 
+  const relationshipSourceNode = relationshipSourceNodeId === null
+    ? null
+    : nodeById.get(relationshipSourceNodeId) || null;
+  const relationshipTargetNode = relationshipTargetNodeId === null
+    ? null
+    : nodeById.get(relationshipTargetNodeId) || null;
+
   const hoveredLink = hoveredLinkId === null
     ? null
     : visibleGraphData.links.find((link) => link.id === hoveredLinkId) || null;
@@ -78,47 +90,119 @@ export default function useRelationshipGraphController({
 
   const interactionHighlight = useMemo(() => buildInteractionHighlight(
     visibleGraphData.links,
-    { hoveredLinkId, hoveredNodeId, selectedLinkId, selectedNodeId },
-  ), [hoveredLinkId, hoveredNodeId, selectedLinkId, selectedNodeId, visibleGraphData.links]);
-
-  useEffect(() => {
-    if (!isExpanded) return undefined;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const handleEscape = (event) => {
-      if (event.key !== 'Escape') return;
-      if (isPanelOpen) setIsPanelOpen(false);
-      else setIsExpanded(false);
-    };
-    window.addEventListener('keydown', handleEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleEscape);
-    };
-  }, [isExpanded, isPanelOpen]);
+    {
+      hoveredLinkId,
+      hoveredNodeId,
+      selectedLinkId,
+      selectedNodeId: relationshipCreationStage === 'idle' ? selectedNodeId : null,
+    },
+  ), [
+    hoveredLinkId,
+    hoveredNodeId,
+    relationshipCreationStage,
+    selectedLinkId,
+    selectedNodeId,
+    visibleGraphData.links,
+  ]);
 
   const requestFitAfterLayout = useCallback(() => {
     setFitRequest((value) => value + 1);
   }, []);
 
-  const selectNode = useCallback((node, { resetFilters = false } = {}) => {
+  const resetRelationshipCreation = useCallback(() => {
+    setRelationshipCreationStage('idle');
+    setRelationshipSourceNodeId(null);
+    setRelationshipTargetNodeId(null);
+  }, []);
+
+  const selectNode = useCallback((node, { center = false, resetFilters = false } = {}) => {
     if (resetFilters) {
       setRelationTypeFilter('');
       setGroupFilter('');
       setViewMode('all');
     }
+    resetRelationshipCreation();
     setSelectedNodeId(node.id);
     setSelectedLinkId(null);
     setSearchQuery(node.name);
     setIsPanelOpen(true);
     onClearSelection?.();
 
-    if (!resetFilters && viewMode === 'neighbors') requestFitAfterLayout();
-    else window.requestAnimationFrame(() => canvasRef.current?.centerNode(node));
-  }, [onClearSelection, requestFitAfterLayout, viewMode]);
+    if (center) window.requestAnimationFrame(() => canvasRef.current?.centerNode(node));
+  }, [onClearSelection, resetRelationshipCreation]);
+
+  const showNode = useCallback((node, options = {}) => {
+    selectNode(node, { ...options, center: true });
+  }, [selectNode]);
+
+  const beginRelationshipCreation = useCallback((node) => {
+    if (!node || node.synthetic) return;
+    setRelationshipCreationStage('selecting-target');
+    setRelationshipSourceNodeId(node.id);
+    setRelationshipTargetNodeId(null);
+    setSelectedNodeId(node.id);
+    setSelectedLinkId(null);
+    setSearchQuery(node.name);
+    setIsPanelOpen(true);
+    onBeginRelationship?.(node);
+  }, [onBeginRelationship]);
+
+  const cancelTargetSelection = useCallback(() => {
+    setRelationshipCreationStage('idle');
+    setRelationshipSourceNodeId(null);
+    setRelationshipTargetNodeId(null);
+    onClearSelection?.();
+  }, [onClearSelection]);
+
+  const returnToTargetSelection = useCallback(() => {
+    if (!relationshipSourceNode) return;
+    setRelationshipCreationStage('selecting-target');
+    setRelationshipTargetNodeId(null);
+    onBeginRelationship?.(relationshipSourceNode);
+  }, [onBeginRelationship, relationshipSourceNode]);
+
+  const completeRelationshipCreation = useCallback(() => {
+    setRelationshipCreationStage('idle');
+    setRelationshipSourceNodeId(null);
+    setRelationshipTargetNodeId(null);
+  }, []);
+
+  const handleNodeClick = useCallback((node) => {
+    if (relationshipCreationStage === 'selecting-target') {
+      if (node.id === relationshipSourceNodeId) {
+        cancelTargetSelection();
+        return;
+      }
+      if (!relationshipSourceNode || node.synthetic) return;
+
+      setRelationshipCreationStage('form');
+      setRelationshipTargetNodeId(node.id);
+      setIsPanelOpen(true);
+      onSelectRelationshipTarget?.(relationshipSourceNode, node);
+      return;
+    }
+
+    if (relationshipCreationStage === 'form') return;
+
+    if (selectedNodeId === node.id) {
+      beginRelationshipCreation(node);
+      return;
+    }
+
+    selectNode(node);
+  }, [
+    beginRelationshipCreation,
+    cancelTargetSelection,
+    onSelectRelationshipTarget,
+    relationshipCreationStage,
+    relationshipSourceNode,
+    relationshipSourceNodeId,
+    selectNode,
+    selectedNodeId,
+  ]);
 
   const clearSelection = useCallback(() => {
+    resetRelationshipCreation();
     setSelectedNodeId(null);
     setSelectedLinkId(null);
     setHoveredNodeId(null);
@@ -126,16 +210,17 @@ export default function useRelationshipGraphController({
     setSearchQuery('');
     setViewMode('all');
     onClearSelection?.();
-  }, [onClearSelection]);
+  }, [onClearSelection, resetRelationshipCreation]);
 
   const selectRelationship = useCallback((link) => {
+    resetRelationshipCreation();
     setSelectedNodeId(null);
     setSelectedLinkId(link.id);
     setSearchQuery('');
     setIsPanelOpen(true);
     window.requestAnimationFrame(() => canvasRef.current?.centerLink(link, nodeById));
     onSelectRelationship?.(link);
-  }, [nodeById, onSelectRelationship]);
+  }, [nodeById, onSelectRelationship, resetRelationshipCreation]);
 
   const selectLinkById = useCallback((linkId) => {
     const link = sourceGraphData.links.find((candidate) => candidate.id === linkId);
@@ -168,6 +253,42 @@ export default function useRelationshipGraphController({
     setIsPanelOpen(false);
   };
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    if (isExpanded) document.body.style.overflow = 'hidden';
+
+    const handleEscape = (event) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+
+      if (relationshipCreationStage === 'form') {
+        returnToTargetSelection();
+      } else if (relationshipCreationStage === 'selecting-target') {
+        cancelTargetSelection();
+      } else if (selectedNodeId !== null || selectedLinkId !== null) {
+        clearSelection();
+      } else if (isExpanded && isPanelOpen) {
+        setIsPanelOpen(false);
+      } else if (isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [
+    cancelTargetSelection,
+    clearSelection,
+    isExpanded,
+    isPanelOpen,
+    relationshipCreationStage,
+    returnToTargetSelection,
+    selectedLinkId,
+    selectedNodeId,
+  ]);
+
   return {
     canvasRef,
     sourceGraphData,
@@ -191,6 +312,11 @@ export default function useRelationshipGraphController({
     selectedLink,
     selectedLinkSource,
     selectedLinkTarget,
+    relationshipCreationStage,
+    relationshipSourceNodeId,
+    relationshipSourceNode,
+    relationshipTargetNodeId,
+    relationshipTargetNode,
     hoveredNodeId,
     setHoveredNodeId,
     hoveredLinkId,
@@ -207,6 +333,11 @@ export default function useRelationshipGraphController({
       searchQuery || relationTypeFilter || groupFilter || viewMode !== 'all'
     ),
     selectNode,
+    showNode,
+    handleNodeClick,
+    cancelTargetSelection,
+    returnToTargetSelection,
+    completeRelationshipCreation,
     clearSelection,
     selectRelationship,
     selectLinkById,
