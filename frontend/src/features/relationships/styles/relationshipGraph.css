@@ -1,5 +1,6 @@
 .relationship-graph {
   display: flex;
+  width: 100%;
   min-width: 0;
   min-height: 0;
   flex-direction: column;
@@ -9,20 +10,22 @@
 
 .relationship-graph__toolbar {
   position: relative;
-  z-index: 10;
-  display: grid;
-  min-height: 58px;
+  z-index: 30;
+  display: flex;
   flex: 0 0 auto;
-  align-items: center;
-  grid-template-columns: auto auto minmax(120px, 1fr) auto auto;
-  gap: 10px;
-  padding: 9px 12px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px 5px;
   border-bottom: 1px solid #e5e7eb;
   background: #fff;
 }
 
-.relationship-workspace--expanded .relationship-graph__toolbar {
-  grid-template-columns: auto auto minmax(180px, 230px) minmax(120px, 160px) minmax(120px, 160px) minmax(90px, 1fr) auto auto;
+.relationship-graph__toolbar-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .relationship-graph__stats,
@@ -37,9 +40,46 @@
 
 .relationship-graph__hover-info {
   min-width: 0;
-  height: 20px;
+  min-height: 18px;
   color: #1d4ed8;
   text-align: center;
+}
+
+.relationship-graph__toolbar-search {
+  width: clamp(180px, 20vw, 270px);
+  min-width: 160px;
+}
+
+.relationship-graph__toolbar-search .character-combobox > label,
+.relationship-graph__toolbar-filter > span,
+.relationship-graph__scenario-control > span,
+.relationship-graph__scope-toggle > legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.relationship-graph__toolbar-search .character-combobox input,
+.relationship-graph__toolbar-filter select,
+.relationship-graph__scenario-control select {
+  min-height: 36px;
+  padding-block: 6px;
+}
+
+.relationship-graph__toolbar-filter {
+  position: relative;
+  min-width: 130px;
+}
+
+.relationship-graph__toolbar-filter select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #111827;
 }
 
 .relationship-graph__scenario-control {
@@ -51,70 +91,137 @@
   font-weight: 600;
 }
 
-.relationship-graph__expanded-search {
-  min-width: 0;
-}
-
-.relationship-graph__expanded-search .character-combobox > label,
-.relationship-graph__expanded-filter > span {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
-.relationship-graph__expanded-search .character-combobox input,
-.relationship-graph__expanded-filter select {
-  min-height: 36px;
-  padding-block: 6px;
-}
-
-.relationship-graph__expanded-filter {
-  position: relative;
-  min-width: 0;
-}
-
-.relationship-graph__expanded-filter select {
-  width: 100%;
-  border: 1px solid #cbd5e1;
-  border-radius: 7px;
-  background: #fff;
-  color: #111827;
-}
-
 .relationship-graph__scenario-control select {
   width: auto;
   max-width: 190px;
   min-height: 36px;
 }
 
-.relationship-graph__view-mode {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 7px;
+.relationship-graph__scope-toggle {
+  display: inline-flex;
   margin: 0;
   padding: 0;
-  border: 0;
-  color: #374151;
-  font-size: 0.83rem;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
 }
 
-.relationship-graph__view-mode legend {
-  margin-bottom: 2px;
+.relationship-graph__scope-option {
+  position: relative;
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  padding: 6px 9px;
+  color: #4b5563;
+  cursor: pointer;
+  font-size: 0.78rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-.relationship-graph__view-mode label {
-  display: flex;
-  align-items: flex-start;
-  gap: 7px;
+.relationship-graph__scope-option + .relationship-graph__scope-option {
+  border-left: 1px solid #cbd5e1;
 }
 
-.relationship-graph__view-mode input {
-  margin-top: 2px;
+.relationship-graph__scope-option--active {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.relationship-graph__scope-option:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.relationship-graph__scope-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.relationship-graph__clear-filters {
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.relationship-icon-button__wrapper {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.relationship-icon-button {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  padding: 7px;
+  place-items: center;
+  border: 1px solid #9ca3af;
+  border-radius: 7px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+}
+
+.relationship-icon-button:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.relationship-icon-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.relationship-icon-button__tooltip {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 7px);
+  left: 50%;
+  width: max-content;
+  max-width: min(220px, calc(100vw - 24px));
+  padding: 5px 8px;
+  transform: translate(-50%, -3px);
+  border-radius: 5px;
+  background: #111827;
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  opacity: 0;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.relationship-icon-button__wrapper:hover .relationship-icon-button__tooltip,
+.relationship-icon-button__wrapper:focus-within .relationship-icon-button__tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.relationship-graph__expand-toggle {
+  margin-left: auto;
+}
+
+.relationship-graph__panel-toggle .relationship-icon-button__tooltip {
+  left: 0;
+  transform: translateY(-3px);
+}
+
+.relationship-graph__expand-toggle .relationship-icon-button__tooltip {
+  right: 0;
+  left: auto;
+  transform: translateY(-3px);
+}
+
+.relationship-graph__panel-toggle:hover .relationship-icon-button__tooltip,
+.relationship-graph__panel-toggle:focus-within .relationship-icon-button__tooltip,
+.relationship-graph__expand-toggle:hover .relationship-icon-button__tooltip,
+.relationship-graph__expand-toggle:focus-within .relationship-icon-button__tooltip {
+  transform: translateY(0);
 }
 
 .relationship-graph__details {
@@ -209,15 +316,16 @@
 
 .relationship-graph__legend {
   display: flex;
-  min-height: 42px;
+  min-height: 48px;
   flex: 0 0 auto;
   flex-wrap: wrap;
   align-content: center;
-  gap: 6px 12px;
+  gap: 9px 20px;
   margin: 0;
-  padding: 7px 12px;
+  padding: 10px 16px;
   border-bottom: 1px solid #e5e7eb;
-  background: #fff;
+  background: #f8fafc;
+  box-shadow: inset 0 -1px 0 rgba(148, 163, 184, 0.18);
   list-style: none;
 }
 
@@ -230,18 +338,21 @@
 .relationship-graph__legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  color: #4b5563;
-  font-size: 0.75rem;
+  gap: 8px;
+  color: #374151;
+  font-size: 0.875rem;
+  line-height: 1.25;
 }
 
 .relationship-graph__legend-color {
-  width: 16px;
-  height: 4px;
+  width: 28px;
+  height: 6px;
+  flex: 0 0 28px;
   border-radius: 999px;
 }
 
 .relationship-graph__canvas {
+  position: relative;
   width: 100%;
   min-width: 0;
   min-height: 420px;
@@ -249,6 +360,24 @@
   overflow: hidden;
   overscroll-behavior: contain;
   touch-action: none;
+}
+
+.relationship-graph__reset-layout {
+  position: absolute;
+  z-index: 25;
+  top: 12px;
+  right: 12px;
+}
+
+.relationship-graph__reset-layout .relationship-icon-button__tooltip {
+  right: 0;
+  left: auto;
+  transform: translateY(-3px);
+}
+
+.relationship-graph__reset-layout:hover .relationship-icon-button__tooltip,
+.relationship-graph__reset-layout:focus-within .relationship-icon-button__tooltip {
+  transform: translateY(0);
 }
 
 .relationship-graph__canvas canvas {
@@ -268,86 +397,13 @@
   margin-left: 10px;
 }
 
-@media (max-width: 1180px) {
-  .relationship-graph__toolbar {
-    grid-template-columns: auto auto minmax(90px, 1fr) auto;
-  }
-
-  .relationship-graph__scenario-control {
-    display: none;
-  }
-
-  .relationship-workspace--expanded .relationship-graph__toolbar {
-    grid-template-columns: auto auto minmax(160px, 1fr) minmax(110px, 150px) minmax(90px, 1fr) auto;
-  }
-
-  .relationship-workspace--expanded .relationship-graph__expanded-filter:nth-of-type(2) {
-    display: none;
-  }
-}
-
 @media (max-width: 900px) {
-  .relationship-workspace {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .relationship-workspace__sidebar {
-    position: absolute;
-    z-index: 20;
-    inset: 0 auto 0 0;
-    width: min(370px, calc(100% - 44px));
-    border-right: 1px solid #94a3b8;
-    box-shadow: 14px 0 30px rgba(17, 24, 39, 0.18);
-    transform: translateX(0);
-    transition: transform 180ms ease, visibility 180ms ease;
-  }
-
-  .relationship-workspace--panel-closed .relationship-workspace__sidebar {
-    transform: translateX(-105%);
-  }
-
-  .relationship-graph__toolbar {
-    grid-template-columns: auto 1fr auto;
-  }
-
-  .relationship-workspace--expanded .relationship-graph__toolbar {
-    grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) auto;
-  }
-
-  .relationship-workspace--expanded .relationship-workspace__panel-toggle {
-    grid-row: 1;
-    grid-column: 1;
-    justify-self: start;
-  }
-
-  .relationship-workspace--expanded .relationship-graph__stats {
-    grid-row: 1;
-    grid-column: 2;
-  }
-
-  .relationship-workspace--expanded .relationship-graph__expanded-search {
-    grid-row: 2;
-    grid-column: 1 / -1;
-  }
-
-  .relationship-workspace--expanded .relationship-graph__expanded-filter {
-    grid-row: 3;
-  }
-
-  .relationship-workspace--expanded .relationship-graph__hover-info {
-    grid-row: 4;
-    grid-column: 1 / -1;
-  }
-
-  .relationship-workspace--expanded .relationship-workspace__expand {
-    grid-row: 1;
-    grid-column: 3;
-  }
-
   .relationship-graph__hover-info {
-    grid-row: 2;
-    grid-column: 1 / -1;
     text-align: left;
+  }
+
+  .relationship-graph__toolbar-search {
+    width: min(260px, calc(100% - 132px));
   }
 }
 
@@ -357,10 +413,53 @@
   }
 
   .relationship-graph__stats {
+    order: 1;
+    width: calc(100% - 88px);
     font-size: 0.72rem;
   }
 
-  .relationship-workspace__expand {
-    padding-inline: 8px;
+  .relationship-graph__toolbar-search,
+  .relationship-graph__toolbar-filter,
+  .relationship-graph__scenario-control {
+    width: 100%;
+    max-width: none;
+  }
+
+  .relationship-graph__toolbar-search {
+    order: 2;
+  }
+
+  .relationship-graph__scope-toggle {
+    order: 3;
+    width: 100%;
+  }
+
+  .relationship-graph__scope-option {
+    flex: 1 1 50%;
+    justify-content: center;
+  }
+
+  .relationship-graph__toolbar-filter,
+  .relationship-graph__clear-filters,
+  .relationship-graph__scenario-control {
+    order: 4;
+  }
+
+  .relationship-graph__scenario-control select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .relationship-graph__expand-toggle {
+    margin-left: 0;
+  }
+
+  .relationship-graph__legend {
+    gap: 8px 14px;
+    padding: 9px 12px;
+  }
+
+  .relationship-graph__legend-item {
+    font-size: 0.82rem;
   }
 }

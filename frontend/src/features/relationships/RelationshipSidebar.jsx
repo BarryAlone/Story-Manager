@@ -1,14 +1,16 @@
-import GraphFilters from './GraphFilters';
 import SelectionDetails from './SelectionDetails';
 
-export default function RelationshipSidebar({ controller, layoutPersistence, projectId, children }) {
+export default function RelationshipSidebar({ controller, projectId, children }) {
   return (
-    <aside className="relationship-workspace__sidebar" aria-label="Narzędzia grafu i relacji">
+    <aside
+      id="relationship-tools-panel"
+      className="relationship-workspace__sidebar"
+      aria-label="Narzędzia grafu i relacji"
+      aria-hidden={!controller.isPanelOpen}
+    >
       <div className="relationship-workspace__sidebar-heading">
         <strong>Narzędzia relacji</strong>
-        <button type="button" onClick={controller.closePanel} aria-label="Zwiń panel narzędzi">×</button>
       </div>
-      <GraphFilters controller={controller} layoutPersistence={layoutPersistence} />
       <SelectionDetails controller={controller} projectId={projectId} />
       {typeof children === 'function' ? children(controller) : children}
     </aside>

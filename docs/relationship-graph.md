@@ -5,14 +5,19 @@ Kod funkcji znajduje się w `frontend/src/features/relationships/`. Pliki `front
 ## Główne elementy
 
 - `RelationshipsPage` składa stronę, formularz, listę i przestrzeń roboczą.
-- `RelationshipWorkspace` łączy panel boczny, toolbar, legendę i canvas.
+- `RelationshipWorkspace` łączy wspólny toolbar, nakładany panel narzędzi, legendę i canvas.
 - `useRelationshipCrud` obsługuje pobieranie postaci i relacji oraz tworzenie i usuwanie relacji.
 - `useRelationshipGraphData` pobiera dane grafu albo ładuje scenariusz developerski.
 - `useRelationshipGraphController` przechowuje lokalny stan filtrów, zaznaczenia, hovera, panelu i widoku rozszerzonego.
 - `RelationshipCanvas` konfiguruje `ForceGraph2D`, cache obrazów, kamerę oraz zdarzenia wskaźnika.
 - `relationshipGraphDrawing` zawiera funkcje rysujące avatary, inicjały, etykiety i opisy relacji.
-- `GraphFilters`, `SelectionDetails`, `RelationshipForm` i `RelationshipListPanel` odpowiadają za osobne części panelu bocznego.
+- `GraphFilters` udostępnia kontrolki zakresu, typu i grupy używane przez toolbar, a `SelectionDetails`, `RelationshipForm` i `RelationshipListPanel` odpowiadają za zawartość panelu narzędzi.
 - `CharacterCombobox` jest wspólnym wyborem postaci dla wyszukiwarki grafu i formularza relacji.
+- `RelationshipIconButton` zapewnia lokalne przyciski ikonowe z etykietami i tooltipami dla panelu, widoku rozszerzonego oraz resetu układu.
+
+## Układ przestrzeni roboczej
+
+Ten sam górny toolbar jest renderowany w zwykłym i rozszerzonym widoku. Zawiera licznik widocznych elementów, wyszukiwanie, zakres grafu, filtry typu i grupy, czyszczenie filtrów, scenariusz developerski oraz sterowanie widokiem. Panel narzędzi jest pozycjonowany absolutnie nad lewą częścią grafu, dlatego jego otwarcie nie zmienia wymiarów canvasa ani nie uruchamia ponownie symulacji. Reset lokalnego układu pozostaje osobną akcją ikonową w rogu canvasa.
 
 ## Przepływ danych
 
@@ -21,6 +26,8 @@ Dla rzeczywistych danych `useRelationshipGraphData` pobiera równolegle postacie
 ## Filtrowanie i zaznaczenie
 
 `filterGraphData` jest czystą funkcją działającą poza Reactem. Stosuje kolejno filtr grupy, typu relacji i bezpośredniego sąsiedztwa. Każda widoczna krawędź zawsze ma oba widoczne końce. Kontroler wylicza również podświetlenia hovera i zaznaczenia bez modyfikowania danych źródłowych.
+
+Legenda jest budowana wyłącznie z typów relacji obecnych w aktualnie widocznym grafie. Pozostaje informacyjna i nie steruje filtrami.
 
 Kliknięcie węzła zmienia zaznaczenie bez poruszania kamery. Jawny wybór wyniku wyszukiwania może wycentrować postać, a widok sąsiedztwa zgłasza żądanie `zoomToFit`; canvas wykonuje szybkie kadrowanie oraz końcowe dopasowanie po zatrzymaniu symulacji. Zmiana hovera nie tworzy nowych danych grafu i nie uruchamia kadrowania.
 

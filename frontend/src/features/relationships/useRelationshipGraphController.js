@@ -243,15 +243,7 @@ export default function useRelationshipGraphController({
     requestFitAfterLayout();
   };
 
-  const togglePanel = () => {
-    if (viewMode === 'neighbors') requestFitAfterLayout();
-    setIsPanelOpen((open) => !open);
-  };
-
-  const closePanel = () => {
-    if (viewMode === 'neighbors') requestFitAfterLayout();
-    setIsPanelOpen(false);
-  };
+  const togglePanel = () => setIsPanelOpen((open) => !open);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -344,6 +336,5 @@ export default function useRelationshipGraphController({
     clearFilters,
     showNeighbors,
     togglePanel,
-    closePanel,
   };
 }

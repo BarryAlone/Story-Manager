@@ -1,4 +1,3 @@
-export const MAX_LEGEND_ITEMS = 8;
 export const SCENARIO_PARAM = import.meta.env.DEV ? 'graphScenario' : '';
 export const UNGROUPED_FILTER = '__without_group__';
 

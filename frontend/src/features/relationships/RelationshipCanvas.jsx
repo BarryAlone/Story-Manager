@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
+import RelationshipIconButton, { ResetLayoutIcon } from './RelationshipIconButton';
 import { GRAPH_CAMERA, GRAPH_RENDERING } from './relationshipConstants';
 import { graphEndpointId } from './relationshipGraphData';
 import {
@@ -142,6 +143,15 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({
 
   return (
     <div ref={containerRef} className="relationship-graph__canvas">
+      <RelationshipIconButton
+        className="relationship-graph__reset-layout"
+        label="Resetuj układ"
+        disabled={!layoutPersistence.hasSavedLayout}
+        onClick={layoutPersistence.resetLayout}
+      >
+        <ResetLayoutIcon />
+      </RelationshipIconButton>
+
       {loadState.status === 'loading' ? <GraphMessage>Ładowanie grafu...</GraphMessage> : null}
       {loadState.status === 'error' ? (
         <GraphMessage role="alert">

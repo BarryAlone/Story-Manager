@@ -20,7 +20,7 @@ Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybut
 
 ### Frontend
 
-SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Graf relacji ma dwukolumnową przestrzeń roboczą, avatary lub inicjały postaci, etykiety zależne od powiększenia i legendę stabilnych kolorów; udostępnia wyszukiwanie, widok bezpośrednich sąsiadów, filtry typu i grupy, dostępną listę relacji, widok rozszerzony oraz etapowe tworzenie relacji przez wybór postaci na grafie.
+SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Graf relacji ma wspólny pasek wyszukiwania i filtrów, pełnowymiarowy canvas oraz wysuwany panel narzędzi nakładany na graf; udostępnia avatary lub inicjały postaci, czytelną legendę stabilnych kolorów, widok bezpośrednich sąsiadów, dostępną listę relacji, widok rozszerzony oraz etapowe tworzenie relacji przez wybór postaci na grafie.
 
 ### Uwierzytelnianie
 
@@ -60,4 +60,4 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 
 ## Ostatnia aktualizacja
 
-2026-10-10
+2026-10-11

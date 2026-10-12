@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-11 — Uporządkowanie interfejsu grafu relacji
+
+- Zakres: wspólny toolbar dla zwykłego i rozszerzonego widoku, nakładany panel narzędzi, lokalne przyciski ikonowe oraz czytelniejsza legenda.
+- Wynik: usunięto powielone filtry i kontrolki panelu, przeniesiono reset układu na canvas, a otwieranie panelu nie zmienia wymiarów grafu ani nie żąda ponownego kadrowania. Zachowano dotychczasową zawartość panelu i przepływ wyboru relacji.
+- Testy: lint i build React SPA oraz `git diff --check` zakończone powodzeniem; build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-10-10 — Tworzenie relacji przez wybór na grafie
 
 - Zakres: etapowe wskazanie źródła i celu relacji, istniejący formularz zatwierdzenia oraz nawigacja wstecz przez anulowanie i `Escape`.
