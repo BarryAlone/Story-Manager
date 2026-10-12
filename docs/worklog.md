@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-12 — Prawy panel i wspólne kafelki relacji
+
+- Zakres: prawy panel nakładany na canvas, sterowanie panelem z poziomu grafu, wspólny kafelek listy i edycji oraz zwarty formularz nowej relacji.
+- Wynik: pełna lista, relacje postaci i kliknięta linia korzystają z jednego `RelationshipCard`; wąski przełącznik przesuwa się razem z prawym panelem, który od krawędzi legendy przykrywa graf i przycisk resetu. Rozwijany kafelek jest kontrolowanie dosuwany do widocznego obszaru z zapasem pod ostatnim elementem; panel zapisuje zmianę nazwy przez `PATCH`, zachowuje potwierdzenie usuwania i chroni niezapisany szkic przed przypadkowym przełączeniem widoku.
+- Testy: lint i build React SPA oraz `git diff --check` zakończone powodzeniem; build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-10-12 — Kontekstowy panel i podgląd nowej relacji
 
 - Zakres: jeden panel dla szczegółów postaci, wyboru celu, formularza, istniejącej relacji i pełnej listy oraz tymczasowa linia tworzonego połączenia.

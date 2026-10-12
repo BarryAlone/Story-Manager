@@ -8,7 +8,6 @@ import {
 import RelationshipIconButton, {
   CollapseIcon,
   ExpandIcon,
-  PanelChevronIcon,
 } from './RelationshipIconButton';
 import { DEV_SCENARIOS } from './relationshipConstants';
 
@@ -16,21 +15,12 @@ export default function RelationshipToolbar({ controller, scenarioKey, onScenari
   return (
     <div className="relationship-graph__toolbar">
       <div className="relationship-graph__toolbar-main">
-        <RelationshipIconButton
-          className="relationship-graph__panel-toggle"
-          label={controller.isPanelOpen ? 'Schowaj panel narzędzi' : 'Pokaż panel narzędzi'}
-          aria-expanded={controller.isPanelOpen}
-          aria-controls="relationship-tools-panel"
-          onClick={controller.togglePanel}
-        >
-          <PanelChevronIcon direction={controller.isPanelOpen ? 'left' : 'right'} />
-        </RelationshipIconButton>
-
         <div className="relationship-graph__stats" aria-live="polite">
-          <span>{controller.visibleGraphData.nodes.length} postaci</span>
-          <span aria-hidden="true">·</span>
+          <span className="relationship-graph__character-count">
+            {controller.visibleGraphData.nodes.length} postaci
+          </span>
           <RelationshipCount controller={controller} />
-          {scenarioKey ? <span>· Dane testowe</span> : null}
+          {scenarioKey ? <span className="relationship-graph__test-badge">Dane testowe</span> : null}
         </div>
 
         <div className="relationship-graph__toolbar-search">
@@ -65,7 +55,11 @@ export default function RelationshipToolbar({ controller, scenarioKey, onScenari
         {import.meta.env.DEV ? (
           <label className="relationship-graph__scenario-control">
             <span>Scenariusz</span>
-            <select value={scenarioKey} onChange={onScenarioChange}>
+            <select
+              value={scenarioKey}
+              disabled={controller.isRelationshipFormActive}
+              onChange={onScenarioChange}
+            >
               <option value="">Dane API</option>
               {DEV_SCENARIOS.map((scenario) => (
                 <option key={scenario.key} value={scenario.key}>{scenario.label}</option>

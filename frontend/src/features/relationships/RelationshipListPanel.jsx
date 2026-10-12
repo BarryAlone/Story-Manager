@@ -1,18 +1,21 @@
 import { graphEndpointId } from './relationshipGraphData';
+import RelationshipCard from './RelationshipCard';
 
 export default function RelationshipListPanel({
   controller,
   crud,
   isReadOnly = false,
-  onSelect,
+  onCancelEdit,
+  onDelete,
+  onSave,
   showHeading = true,
 }) {
   const relationships = isReadOnly ? controller.sourceGraphData.links : crud.relationships;
   const listStatus = isReadOnly ? 'ready' : crud.listStatus;
-  const getName = (id) => (
+  const getCharacter = (id) => (
     isReadOnly
-      ? controller.nodeById.get(id)?.name || `Nieznana postać (ID: ${id})`
-      : crud.getCharacterName(id)
+      ? controller.nodeById.get(id)
+      : crud.getCharacter(id)
   );
 
   return (
@@ -49,20 +52,30 @@ export default function RelationshipListPanel({
             const label = isReadOnly
               ? relationship.label
               : relationship.relation_name || 'Powiązanie';
+            const isExpanded = String(relationship.id) === String(controller.expandedRelationshipId);
             return (
               <li key={relationship.id}>
-                <button
-                  type="button"
-                  className={String(relationship.id) === String(controller.selectedLinkId)
-                    ? 'relationship-workspace__relationship relationship-workspace__relationship--selected'
-                    : 'relationship-workspace__relationship'}
-                  onClick={() => onSelect(relationship)}
-                >
-                  <strong>{label}</strong>
-                  <span>
-                    {getName(sourceId)} ↔ {getName(targetId)}
-                  </span>
-                </button>
+                <RelationshipCard
+                  relationship={{ ...relationship, relation_name: label }}
+                  source={getCharacter(sourceId)}
+                  target={getCharacter(targetId)}
+                  disabled={controller.isRelationshipEditDirty && !isExpanded}
+                  fieldError={crud.fieldErrors.relation_name?.[0]}
+                  formError={crud.formError}
+                  isDeleting={crud.isDeleting}
+                  isExpanded={isExpanded}
+                  isReadOnly={isReadOnly}
+                  isSaving={crud.isSaving}
+                  nameDraft={crud.relationshipType}
+                  onExpand={() => controller.selectLinkById(relationship.id, {
+                    center: false,
+                    panelMode: 'list',
+                  })}
+                  onNameChange={crud.setRelationshipType}
+                  onCancel={onCancelEdit}
+                  onDelete={() => onDelete(relationship.id)}
+                  onSave={onSave}
+                />
               </li>
             );
           })}

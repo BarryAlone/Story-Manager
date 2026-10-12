@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import RelationshipCard from './RelationshipCard';
 import { graphEndpointId, relationColor } from './relationshipGraphData';
 
 function CharacterAvatar({ node }) {
@@ -25,21 +26,27 @@ function CharacterAvatar({ node }) {
   );
 }
 
-export default function SelectionDetails({ controller, projectId }) {
+export default function SelectionDetails({
+  controller,
+  crud,
+  isReadOnly,
+  onCancelEdit,
+  onDelete,
+  onSave,
+  projectId,
+}) {
   if (controller.selectedNode) {
     const node = controller.selectedNode;
     const isSelectingTarget = controller.relationshipCreationStage === 'selecting-target';
     const isCompletingForm = controller.relationshipCreationStage === 'form';
     return (
       <section className="relationship-workspace__section relationship-graph__details" aria-label="Wybrana postać">
-        <CharacterAvatar key={`${node.id}-${node.imageUrl}`} node={node} />
-        <div className="relationship-graph__details-content">
-          <span className="relationship-graph__details-eyebrow">
-            {isSelectingTarget || isCompletingForm ? 'Tworzenie relacji' : 'Wybrana postać'}
-          </span>
-          <strong>{node.name}</strong>
-          <span>{node.groupName || 'Bez przypisanej grupy'}</span>
-          {node.description ? <p>{node.description}</p> : null}
+        <div className="relationship-graph__character-header">
+          <CharacterAvatar key={`${node.id}-${node.imageUrl}`} node={node} />
+          <div className="relationship-graph__details-content">
+            <strong>{node.name}</strong>
+            {node.groupName ? <span>{node.groupName}</span> : null}
+          </div>
         </div>
         {isSelectingTarget ? (
           <p className="relationship-workspace__notice" aria-live="polite">
@@ -59,23 +66,45 @@ export default function SelectionDetails({ controller, projectId }) {
         ) : null}
         {!node.synthetic && controller.relationshipCreationStage === 'idle' ? (
           <p className="relationship-graph__hint">
-            Kliknij tę postać ponownie, aby rozpocząć tworzenie relacji.
+            Kliknij postać ponownie, aby utworzyć relację.
           </p>
         ) : null}
         {controller.relationshipCreationStage === 'idle' ? (
-          <CharacterRelationships controller={controller} node={node} />
+          <CharacterRelationships
+            controller={controller}
+            crud={crud}
+            isReadOnly={isReadOnly}
+            node={node}
+            onCancelEdit={onCancelEdit}
+            onDelete={onDelete}
+            onSave={onSave}
+          />
         ) : null}
         <div className="relationship-graph__details-actions">
           {node.synthetic ? (
             <span className="relationship-graph__readonly">Dane testowe — tylko odczyt</span>
           ) : (
-            <Link to={`/project/${projectId}/characters/${node.id}`}>Edytuj postać</Link>
+            <Link
+              to={`/project/${projectId}/characters/${node.id}`}
+              aria-disabled={controller.isRelationshipEditDirty}
+              onClick={(event) => {
+                if (controller.isRelationshipEditDirty) event.preventDefault();
+              }}
+            >
+              Edytuj postać
+            </Link>
           )}
           {isSelectingTarget ? (
             <button type="button" onClick={controller.cancelTargetSelection}>Anuluj wybór relacji</button>
           ) : null}
           {!isCompletingForm ? (
-            <button type="button" onClick={controller.clearSelection}>Wyczyść wybór</button>
+            <button
+              type="button"
+              disabled={controller.isRelationshipEditDirty}
+              onClick={controller.clearSelection}
+            >
+              Wyczyść wybór
+            </button>
           ) : null}
         </div>
       </section>
@@ -85,23 +114,24 @@ export default function SelectionDetails({ controller, projectId }) {
   if (controller.selectedLink && controller.selectedLinkSource && controller.selectedLinkTarget) {
     const link = controller.selectedLink;
     return (
-      <section className="relationship-workspace__section relationship-graph__details" aria-label="Wybrana relacja">
-        <span className="relationship-graph__details-eyebrow">Wybrana relacja</span>
-        <div className="relationship-graph__selected-relation">
-          <span className="relationship-graph__details-relation" style={{ backgroundColor: link.color }} aria-hidden="true" />
-          <div className="relationship-graph__details-content">
-            <strong>{link.label}</strong>
-            <span>{controller.selectedLinkSource.name} ↔ {controller.selectedLinkTarget.name}</span>
-          </div>
-        </div>
-        <span className="relationship-graph__readonly">
-          {link.synthetic
-            ? 'Dane testowe — tylko odczyt'
-            : 'Relacja jest wczytana do formularza poniżej.'}
-        </span>
-        <div className="relationship-graph__details-actions">
-          <button type="button" onClick={controller.clearSelection}>Wyczyść wybór</button>
-        </div>
+      <section className="relationship-workspace__section" aria-label="Wybrana relacja">
+        <RelationshipCard
+          relationship={link}
+          source={controller.selectedLinkSource}
+          target={controller.selectedLinkTarget}
+          fieldError={crud.fieldErrors.relation_name?.[0]}
+          formError={crud.formError}
+          isDeleting={crud.isDeleting}
+          isExpanded={controller.expandedRelationshipId !== null}
+          isReadOnly={link.synthetic}
+          isSaving={crud.isSaving}
+          nameDraft={crud.relationshipType}
+          onExpand={() => controller.openRelationshipCard(link, 'relationship')}
+          onNameChange={crud.setRelationshipType}
+          onCancel={onCancelEdit}
+          onDelete={() => onDelete(link.id)}
+          onSave={onSave}
+        />
       </section>
     );
   }
@@ -109,7 +139,15 @@ export default function SelectionDetails({ controller, projectId }) {
   return null;
 }
 
-function CharacterRelationships({ controller, node }) {
+function CharacterRelationships({
+  controller,
+  crud,
+  isReadOnly,
+  node,
+  onCancelEdit,
+  onDelete,
+  onSave,
+}) {
   const relationships = controller.sourceGraphData.links.filter((link) => (
     graphEndpointId(link.source) === node.id || graphEndpointId(link.target) === node.id
   ));
@@ -123,20 +161,30 @@ function CharacterRelationships({ controller, node }) {
         <ul className="relationship-workspace__relationship-list">
           {relationships.map((relationship) => {
             const sourceId = graphEndpointId(relationship.source);
-            const otherId = sourceId === node.id
-              ? graphEndpointId(relationship.target)
-              : sourceId;
-            const otherNode = controller.nodeById.get(otherId);
+            const sourceNode = controller.nodeById.get(sourceId);
+            const targetNode = controller.nodeById.get(graphEndpointId(relationship.target));
+            const isExpanded = String(relationship.id) === String(controller.expandedRelationshipId);
             return (
               <li key={relationship.id}>
-                <button
-                  type="button"
-                  className="relationship-workspace__relationship"
-                  onClick={() => controller.selectRelationship(relationship)}
-                >
-                  <strong>{relationship.label}</strong>
-                  <span>{otherNode?.name || 'Nieznana postać'}</span>
-                </button>
+                <RelationshipCard
+                  relationship={relationship}
+                  source={sourceNode}
+                  target={targetNode}
+                  contextCharacterId={node.id}
+                  disabled={controller.isRelationshipEditDirty && !isExpanded}
+                  fieldError={crud.fieldErrors.relation_name?.[0]}
+                  formError={crud.formError}
+                  isDeleting={crud.isDeleting}
+                  isExpanded={isExpanded}
+                  isReadOnly={isReadOnly}
+                  isSaving={crud.isSaving}
+                  nameDraft={crud.relationshipType}
+                  onExpand={() => controller.openRelationshipCard(relationship, 'character')}
+                  onNameChange={crud.setRelationshipType}
+                  onCancel={onCancelEdit}
+                  onDelete={() => onDelete(relationship.id)}
+                  onSave={onSave}
+                />
               </li>
             );
           })}
