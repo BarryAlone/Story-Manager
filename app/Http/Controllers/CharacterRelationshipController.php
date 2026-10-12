@@ -69,20 +69,17 @@ class CharacterRelationshipController extends Controller
         return response()->json($characterRelationship, 201);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, CharacterRelationship $relationship)
     {
-        $relationship = CharacterRelationship::findOrFail($id);
         Gate::authorize('update', $relationship);
 
         $validated = $request->validate([
-            'character_1_id' => 'required|integer|exists:characters,id',
-            // Laravel sprawdza, czy character_2_id istnieje i czy jest RÓŻNE od character_1_id
-            'character_2_id' => 'required|integer|exists:characters,id|different:character_1_id',
-            'relation_name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
+            'relation_name' => 'required|string|max:128',
         ]);
 
-        $relationship->update($validated);
+        $relationship->update([
+            'relation_name' => $validated['relation_name'],
+        ]);
 
         return response()->json($relationship, 200);
     }
