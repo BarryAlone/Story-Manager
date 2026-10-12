@@ -7,6 +7,16 @@ import {
   listRelationTypes,
 } from './relationshipGraphData';
 
+function findRelationshipBetween(links, firstNodeId, secondNodeId) {
+  if (firstNodeId === null || secondNodeId === null || firstNodeId === secondNodeId) return null;
+  return links.find((link) => {
+    const sourceId = graphEndpointId(link.source);
+    const targetId = graphEndpointId(link.target);
+    return (sourceId === firstNodeId && targetId === secondNodeId)
+      || (sourceId === secondNodeId && targetId === firstNodeId);
+  }) || null;
+}
+
 export default function useRelationshipGraphController({
   onBeginRelationship,
   sourceGraphData,
@@ -23,7 +33,7 @@ export default function useRelationshipGraphController({
   const [selectedLinkId, setSelectedLinkId] = useState(null);
   const [hoveredNodeId, setHoveredNodeId] = useState(null);
   const [hoveredLinkId, setHoveredLinkId] = useState(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [panelMode, setPanelMode] = useState('closed');
   const [isExpanded, setIsExpanded] = useState(false);
   const [fitRequest, setFitRequest] = useState(0);
   const [relationshipCreationStage, setRelationshipCreationStage] = useState('idle');
@@ -60,15 +70,14 @@ export default function useRelationshipGraphController({
   const selectedLink = useMemo(() => sourceGraphData.links.find((link) => (
     link.id === selectedLinkId
   )) || null, [selectedLinkId, sourceGraphData.links]);
-
+  const isRelationshipFormActive = relationshipCreationStage === 'form'
+    || Boolean(panelMode === 'relationship' && selectedLink && !selectedLink.synthetic);
   const selectedLinkSource = selectedLink
     ? nodeById.get(graphEndpointId(selectedLink.source)) || null
     : null;
-
   const selectedLinkTarget = selectedLink
     ? nodeById.get(graphEndpointId(selectedLink.target)) || null
     : null;
-
   const relationshipSourceNode = relationshipSourceNodeId === null
     ? null
     : nodeById.get(relationshipSourceNodeId) || null;
@@ -76,14 +85,31 @@ export default function useRelationshipGraphController({
     ? null
     : nodeById.get(relationshipTargetNodeId) || null;
 
+  const draftTargetNodeId = relationshipCreationStage === 'form'
+    ? relationshipTargetNodeId
+    : (relationshipTargetNodeId ?? hoveredNodeId);
+  const draftTargetNode = draftTargetNodeId === null
+    ? null
+    : nodeById.get(draftTargetNodeId) || null;
+  const duplicateRelationship = useMemo(() => findRelationshipBetween(
+    sourceGraphData.links,
+    relationshipSourceNodeId,
+    draftTargetNodeId,
+  ), [draftTargetNodeId, relationshipSourceNodeId, sourceGraphData.links]);
+  const draftRelationship = relationshipCreationStage !== 'idle'
+    && relationshipSourceNode
+    && draftTargetNode
+    && relationshipSourceNode.id !== draftTargetNode.id
+    && !duplicateRelationship
+    ? { source: relationshipSourceNode, target: draftTargetNode }
+    : null;
+
   const hoveredLink = hoveredLinkId === null
     ? null
     : visibleGraphData.links.find((link) => link.id === hoveredLinkId) || null;
-
   const hoveredLinkSource = hoveredLink
     ? nodeById.get(graphEndpointId(hoveredLink.source)) || null
     : null;
-
   const hoveredLinkTarget = hoveredLink
     ? nodeById.get(graphEndpointId(hoveredLink.target)) || null
     : null;
@@ -93,10 +119,11 @@ export default function useRelationshipGraphController({
     {
       hoveredLinkId,
       hoveredNodeId,
-      selectedLinkId,
+      selectedLinkId: duplicateRelationship?.id ?? selectedLinkId,
       selectedNodeId: relationshipCreationStage === 'idle' ? selectedNodeId : null,
     },
   ), [
+    duplicateRelationship,
     hoveredLinkId,
     hoveredNodeId,
     relationshipCreationStage,
@@ -116,6 +143,7 @@ export default function useRelationshipGraphController({
   }, []);
 
   const selectNode = useCallback((node, { center = false, resetFilters = false } = {}) => {
+    if (relationshipCreationStage === 'form') return;
     if (resetFilters) {
       setRelationTypeFilter('');
       setGroupFilter('');
@@ -125,11 +153,11 @@ export default function useRelationshipGraphController({
     setSelectedNodeId(node.id);
     setSelectedLinkId(null);
     setSearchQuery(node.name);
-    setIsPanelOpen(true);
+    setPanelMode('character');
     onClearSelection?.();
 
     if (center) window.requestAnimationFrame(() => canvasRef.current?.centerNode(node));
-  }, [onClearSelection, resetRelationshipCreation]);
+  }, [onClearSelection, relationshipCreationStage, resetRelationshipCreation]);
 
   const showNode = useCallback((node, options = {}) => {
     selectNode(node, { ...options, center: true });
@@ -143,7 +171,7 @@ export default function useRelationshipGraphController({
     setSelectedNodeId(node.id);
     setSelectedLinkId(null);
     setSearchQuery(node.name);
-    setIsPanelOpen(true);
+    setPanelMode('selecting-target');
     onBeginRelationship?.(node);
   }, [onBeginRelationship]);
 
@@ -151,6 +179,8 @@ export default function useRelationshipGraphController({
     setRelationshipCreationStage('idle');
     setRelationshipSourceNodeId(null);
     setRelationshipTargetNodeId(null);
+    setSelectedLinkId(null);
+    setPanelMode('character');
     onClearSelection?.();
   }, [onClearSelection]);
 
@@ -158,6 +188,8 @@ export default function useRelationshipGraphController({
     if (!relationshipSourceNode) return;
     setRelationshipCreationStage('selecting-target');
     setRelationshipTargetNodeId(null);
+    setSelectedLinkId(null);
+    setPanelMode('selecting-target');
     onBeginRelationship?.(relationshipSourceNode);
   }, [onBeginRelationship, relationshipSourceNode]);
 
@@ -165,6 +197,7 @@ export default function useRelationshipGraphController({
     setRelationshipCreationStage('idle');
     setRelationshipSourceNodeId(null);
     setRelationshipTargetNodeId(null);
+    setPanelMode('character');
   }, []);
 
   const handleNodeClick = useCallback((node) => {
@@ -175,20 +208,28 @@ export default function useRelationshipGraphController({
       }
       if (!relationshipSourceNode || node.synthetic) return;
 
+      const existingRelationship = findRelationshipBetween(
+        sourceGraphData.links,
+        relationshipSourceNode.id,
+        node.id,
+      );
+      if (existingRelationship) {
+        setRelationshipTargetNodeId(node.id);
+        return;
+      }
+
       setRelationshipCreationStage('form');
       setRelationshipTargetNodeId(node.id);
-      setIsPanelOpen(true);
+      setPanelMode('form');
       onSelectRelationshipTarget?.(relationshipSourceNode, node);
       return;
     }
 
     if (relationshipCreationStage === 'form') return;
-
     if (selectedNodeId === node.id) {
       beginRelationshipCreation(node);
       return;
     }
-
     selectNode(node);
   }, [
     beginRelationshipCreation,
@@ -199,6 +240,7 @@ export default function useRelationshipGraphController({
     relationshipSourceNodeId,
     selectNode,
     selectedNodeId,
+    sourceGraphData.links,
   ]);
 
   const clearSelection = useCallback(() => {
@@ -209,29 +251,34 @@ export default function useRelationshipGraphController({
     setHoveredLinkId(null);
     setSearchQuery('');
     setViewMode('all');
+    setPanelMode('closed');
     onClearSelection?.();
   }, [onClearSelection, resetRelationshipCreation]);
 
-  const selectRelationship = useCallback((link) => {
+  const selectRelationship = useCallback((link, { center = false } = {}) => {
+    if (relationshipCreationStage === 'form') return;
     resetRelationshipCreation();
     setSelectedNodeId(null);
     setSelectedLinkId(link.id);
     setSearchQuery('');
-    setIsPanelOpen(true);
-    window.requestAnimationFrame(() => canvasRef.current?.centerLink(link, nodeById));
+    setPanelMode('relationship');
+    if (center) window.requestAnimationFrame(() => canvasRef.current?.centerLink(link, nodeById));
     onSelectRelationship?.(link);
-  }, [nodeById, onSelectRelationship, resetRelationshipCreation]);
+  }, [nodeById, onSelectRelationship, relationshipCreationStage, resetRelationshipCreation]);
 
   const selectLinkById = useCallback((linkId) => {
-    const link = sourceGraphData.links.find((candidate) => candidate.id === linkId);
+    const link = sourceGraphData.links.find((candidate) => (
+      String(candidate.id) === String(linkId)
+    ));
     if (!link) return;
     setRelationTypeFilter('');
     setGroupFilter('');
     setViewMode('all');
-    selectRelationship(link);
+    selectRelationship(link, { center: true });
   }, [selectRelationship, sourceGraphData.links]);
 
   const clearFilters = () => {
+    if (relationshipCreationStage === 'form') return;
     setRelationTypeFilter('');
     setGroupFilter('');
     clearSelection();
@@ -243,7 +290,51 @@ export default function useRelationshipGraphController({
     requestFitAfterLayout();
   };
 
-  const togglePanel = () => setIsPanelOpen((open) => !open);
+  const closePanel = useCallback(() => {
+    if (relationshipCreationStage !== 'idle') {
+      resetRelationshipCreation();
+      setSelectedLinkId(null);
+      onClearSelection?.();
+    }
+    setPanelMode('closed');
+  }, [onClearSelection, relationshipCreationStage, resetRelationshipCreation]);
+
+  const showRelationshipList = useCallback(() => {
+    if (isRelationshipFormActive) return;
+    resetRelationshipCreation();
+    setSelectedNodeId(null);
+    setSelectedLinkId(null);
+    setPanelMode('list');
+    onClearSelection?.();
+  }, [isRelationshipFormActive, onClearSelection, resetRelationshipCreation]);
+
+  const togglePanel = () => {
+    if (panelMode !== 'closed') {
+      closePanel();
+      return;
+    }
+    if (selectedLinkId !== null) setPanelMode('relationship');
+    else if (selectedNodeId !== null) setPanelMode('character');
+    else setPanelMode('list');
+  };
+
+  const handleNodeHover = (node) => {
+    setHoveredNodeId(node?.id ?? null);
+    if (node) setHoveredLinkId(null);
+    if (relationshipCreationStage === 'selecting-target' && node) {
+      setRelationshipTargetNodeId(null);
+    }
+  };
+
+  const handleLinkHover = (link) => {
+    setHoveredLinkId(link?.id ?? null);
+    if (link) setHoveredNodeId(null);
+  };
+
+  const handleBackgroundClick = () => {
+    if (relationshipCreationStage === 'form') return;
+    clearSelection();
+  };
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -258,8 +349,8 @@ export default function useRelationshipGraphController({
         cancelTargetSelection();
       } else if (selectedNodeId !== null || selectedLinkId !== null) {
         clearSelection();
-      } else if (isExpanded && isPanelOpen) {
-        setIsPanelOpen(false);
+      } else if (panelMode === 'list') {
+        closePanel();
       } else if (isExpanded) {
         setIsExpanded(false);
       }
@@ -273,8 +364,9 @@ export default function useRelationshipGraphController({
   }, [
     cancelTargetSelection,
     clearSelection,
+    closePanel,
     isExpanded,
-    isPanelOpen,
+    panelMode,
     relationshipCreationStage,
     returnToTargetSelection,
     selectedLinkId,
@@ -310,23 +402,30 @@ export default function useRelationshipGraphController({
     relationshipTargetNodeId,
     relationshipTargetNode,
     hoveredNodeId,
-    setHoveredNodeId,
     hoveredLinkId,
     setHoveredLinkId,
     hoveredLink,
     hoveredLinkSource,
     hoveredLinkTarget,
     interactionHighlight,
-    isPanelOpen,
+    panelMode,
+    isPanelOpen: panelMode !== 'closed',
+    isRelationshipFormActive,
     isExpanded,
     setIsExpanded,
     fitRequest,
+    draftRelationship,
+    draftTargetNode,
+    duplicateRelationship,
     hasActiveFilters: Boolean(
       searchQuery || relationTypeFilter || groupFilter || viewMode !== 'all'
     ),
     selectNode,
     showNode,
     handleNodeClick,
+    handleNodeHover,
+    handleLinkHover,
+    handleBackgroundClick,
     cancelTargetSelection,
     returnToTargetSelection,
     completeRelationshipCreation,
@@ -335,6 +434,7 @@ export default function useRelationshipGraphController({
     selectLinkById,
     clearFilters,
     showNeighbors,
+    showRelationshipList,
     togglePanel,
   };
 }

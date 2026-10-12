@@ -28,5 +28,7 @@
 - [x] Dodano dwukolumnową przestrzeń roboczą grafu relacji: avatary, wspólny combobox, widok sąsiedztwa, filtry, interakcje bezpośrednie, tryb rozszerzony i lokalne scenariusze 100/200 postaci.
 - [x] Dodano lokalne zapisywanie i resetowanie układu grafu osobno dla użytkownika, projektu i scenariusza developerskiego.
 - [x] Dodano etapowy wybór źródła i celu relacji bezpośrednio na grafie, z anulowaniem, obsługą `Escape` i ochroną przed duplikowaniem par postaci.
+- [x] T2: Ujednolicono szczegóły, formularz i pełną listę relacji w jednym kontekstowym panelu grafu.
+- [x] T4: Dodano tymczasową linię podglądu podczas wyboru i zatwierdzania nowej relacji.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.

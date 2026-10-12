@@ -62,10 +62,11 @@
 .relationship-workspace__sidebar {
   position: absolute;
   z-index: 20;
+  display: flex;
   inset: 0 auto 0 0;
   width: min(350px, calc(100% - 24px));
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
+  flex-direction: column;
   border-right: 1px solid #d1d5db;
   background: #fff;
   box-shadow: 12px 0 28px rgba(17, 24, 39, 0.16);
@@ -88,9 +89,7 @@
 }
 
 .relationship-workspace__sidebar-heading {
-  position: sticky;
   z-index: 5;
-  top: 0;
   display: flex;
   min-height: 48px;
   align-items: center;
@@ -99,6 +98,18 @@
   padding: 10px 14px;
   border-bottom: 1px solid #e5e7eb;
   background: rgba(255, 255, 255, 0.96);
+}
+
+.relationship-workspace__sidebar-content {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.relationship-workspace__sidebar--list .relationship-workspace__sidebar-content {
+  display: flex;
+  overflow: hidden;
 }
 
 .relationship-workspace__section {
@@ -290,6 +301,11 @@
   line-height: 1.45;
 }
 
+.relationship-workspace__notice--warning {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
 .relationship-workspace__empty {
   background: #f3f4f6;
   color: #6b7280;
@@ -308,6 +324,20 @@
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.relationship-workspace__relationship-list-panel {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.relationship-workspace__relationship-list-panel > .relationship-workspace__relationship-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .relationship-workspace__relationship {

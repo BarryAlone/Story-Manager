@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-12 — Kontekstowy panel i podgląd nowej relacji
+
+- Zakres: jeden panel dla szczegółów postaci, wyboru celu, formularza, istniejącej relacji i pełnej listy oraz tymczasowa linia tworzonego połączenia.
+- Wynik: panel jest domyślnie zamknięty, licznik otwiera przewijaną listę, a aktywny formularz chroni szkic przed przejściem do listy. Przerywana linia nie należy do danych ani fizyki grafu; duplikat wyróżnia istniejącą relację zamiast tworzyć podgląd.
+- Testy: lint i build React SPA oraz `git diff --check` zakończone powodzeniem; build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-10-11 — Uporządkowanie interfejsu grafu relacji
 
 - Zakres: wspólny toolbar dla zwykłego i rozszerzonego widoku, nakładany panel narzędzi, lokalne przyciski ikonowe oraz czytelniejsza legenda.

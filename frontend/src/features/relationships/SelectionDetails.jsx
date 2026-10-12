@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { relationColor } from './relationshipGraphData';
+import { graphEndpointId, relationColor } from './relationshipGraphData';
 
 function CharacterAvatar({ node }) {
   const [imageFailed, setImageFailed] = useState(false);
@@ -46,6 +46,12 @@ export default function SelectionDetails({ controller, projectId }) {
             Wybierz postać, którą chcesz powiązać z {node.name}.
           </p>
         ) : null}
+        {isSelectingTarget && controller.duplicateRelationship ? (
+          <p className="relationship-workspace__notice relationship-workspace__notice--warning" role="status">
+            Relacja z {controller.draftTargetNode?.name || 'tą postacią'} już istnieje.
+            Istniejąca linia została wyróżniona na grafie.
+          </p>
+        ) : null}
         {isCompletingForm && controller.relationshipTargetNode ? (
           <p className="relationship-workspace__notice" aria-live="polite">
             Wybrano {controller.relationshipTargetNode.name}. Uzupełnij typ relacji i zatwierdź formularz.
@@ -56,6 +62,9 @@ export default function SelectionDetails({ controller, projectId }) {
             Kliknij tę postać ponownie, aby rozpocząć tworzenie relacji.
           </p>
         ) : null}
+        {controller.relationshipCreationStage === 'idle' ? (
+          <CharacterRelationships controller={controller} node={node} />
+        ) : null}
         <div className="relationship-graph__details-actions">
           {node.synthetic ? (
             <span className="relationship-graph__readonly">Dane testowe — tylko odczyt</span>
@@ -65,7 +74,9 @@ export default function SelectionDetails({ controller, projectId }) {
           {isSelectingTarget ? (
             <button type="button" onClick={controller.cancelTargetSelection}>Anuluj wybór relacji</button>
           ) : null}
-          <button type="button" onClick={controller.clearSelection}>Wyczyść wybór</button>
+          {!isCompletingForm ? (
+            <button type="button" onClick={controller.clearSelection}>Wyczyść wybór</button>
+          ) : null}
         </div>
       </section>
     );
@@ -96,4 +107,41 @@ export default function SelectionDetails({ controller, projectId }) {
   }
 
   return null;
+}
+
+function CharacterRelationships({ controller, node }) {
+  const relationships = controller.sourceGraphData.links.filter((link) => (
+    graphEndpointId(link.source) === node.id || graphEndpointId(link.target) === node.id
+  ));
+
+  return (
+    <div className="relationship-graph__character-relations">
+      <h3>Relacje postaci</h3>
+      {relationships.length === 0 ? (
+        <p className="relationship-workspace__empty">Ta postać nie ma jeszcze relacji.</p>
+      ) : (
+        <ul className="relationship-workspace__relationship-list">
+          {relationships.map((relationship) => {
+            const sourceId = graphEndpointId(relationship.source);
+            const otherId = sourceId === node.id
+              ? graphEndpointId(relationship.target)
+              : sourceId;
+            const otherNode = controller.nodeById.get(otherId);
+            return (
+              <li key={relationship.id}>
+                <button
+                  type="button"
+                  className="relationship-workspace__relationship"
+                  onClick={() => controller.selectRelationship(relationship)}
+                >
+                  <strong>{relationship.label}</strong>
+                  <span>{otherNode?.name || 'Nieznana postać'}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
 }

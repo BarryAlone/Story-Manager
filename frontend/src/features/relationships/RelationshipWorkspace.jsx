@@ -71,7 +71,12 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
   useImperativeHandle(ref, () => ({
     selectLink: controller.selectLinkById,
     completeRelationshipCreation: controller.completeRelationshipCreation,
-  }), [controller.completeRelationshipCreation, controller.selectLinkById]);
+    clearSelection: controller.clearSelection,
+  }), [
+    controller.clearSelection,
+    controller.completeRelationshipCreation,
+    controller.selectLinkById,
+  ]);
 
   return (
     <section

@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import CharacterCombobox from './CharacterCombobox';
 import {
   CharacterGroupFilter,
@@ -25,10 +26,12 @@ export default function RelationshipToolbar({ controller, scenarioKey, onScenari
           <PanelChevronIcon direction={controller.isPanelOpen ? 'left' : 'right'} />
         </RelationshipIconButton>
 
-        <p className="relationship-graph__stats" aria-live="polite">
-          {controller.visibleGraphData.nodes.length} postaci · {controller.visibleGraphData.links.length} relacji
-          {scenarioKey ? ' · Dane testowe' : ''}
-        </p>
+        <div className="relationship-graph__stats" aria-live="polite">
+          <span>{controller.visibleGraphData.nodes.length} postaci</span>
+          <span aria-hidden="true">·</span>
+          <RelationshipCount controller={controller} />
+          {scenarioKey ? <span>· Dane testowe</span> : null}
+        </div>
 
         <div className="relationship-graph__toolbar-search">
           <CharacterCombobox
@@ -37,6 +40,7 @@ export default function RelationshipToolbar({ controller, scenarioKey, onScenari
             characters={controller.sourceGraphData.nodes}
             selectedId={controller.selectedNodeId ?? ''}
             query={controller.searchQuery}
+            disabled={controller.isRelationshipFormActive}
             onQueryChange={controller.setSearchQuery}
             onSelect={(node) => {
               if (node) controller.showNode(node, { resetFilters: true });
@@ -53,7 +57,7 @@ export default function RelationshipToolbar({ controller, scenarioKey, onScenari
           type="button"
           className="relationship-workspace__secondary relationship-graph__clear-filters"
           onClick={controller.clearFilters}
-          disabled={!controller.hasActiveFilters}
+          disabled={!controller.hasActiveFilters || controller.isRelationshipFormActive}
         >
           Wyczyść filtry
         </button>
@@ -86,5 +90,31 @@ export default function RelationshipToolbar({ controller, scenarioKey, onScenari
           : '\u00a0'}
       </p>
     </div>
+  );
+}
+
+function RelationshipCount({ controller }) {
+  const tooltipId = useId();
+  const isDisabled = controller.isRelationshipFormActive;
+  const count = controller.visibleGraphData.links.length;
+  const label = count === 1 ? '1 relacja' : `${count} relacji`;
+  const tooltip = isDisabled
+    ? 'Najpierw zapisz albo anuluj formularz relacji.'
+    : 'Pokaż pełną listę relacji';
+
+  return (
+    <span className="relationship-graph__relationship-count">
+      <button
+        type="button"
+        disabled={isDisabled}
+        aria-describedby={tooltipId}
+        onClick={controller.showRelationshipList}
+      >
+        {label}
+      </button>
+      <span id={tooltipId} role="tooltip" className="relationship-graph__relationship-count-tooltip">
+        {tooltip}
+      </span>
+    </span>
   );
 }
