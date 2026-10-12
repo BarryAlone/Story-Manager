@@ -6,24 +6,25 @@ Kod funkcji znajduje się w `frontend/src/features/relationships/`. Pliki `front
 
 - `RelationshipsPage` składa stronę, formularz, listę i przestrzeń roboczą.
 - `RelationshipWorkspace` łączy wspólny toolbar, nakładany panel narzędzi, legendę i canvas.
-- `useRelationshipCrud` obsługuje pobieranie postaci i relacji oraz tworzenie i usuwanie relacji.
+- `useRelationshipCrud` obsługuje pobieranie postaci i relacji oraz ich tworzenie, zmianę nazwy i usuwanie.
 - `useRelationshipGraphData` pobiera dane grafu albo ładuje scenariusz developerski.
 - `useRelationshipGraphController` przechowuje lokalny stan filtrów, zaznaczenia, hovera, trybu panelu, tworzenia relacji i widoku rozszerzonego.
 - `RelationshipCanvas` konfiguruje `ForceGraph2D`, cache obrazów, kamerę oraz zdarzenia wskaźnika.
 - `relationshipGraphDrawing` zawiera funkcje rysujące avatary, inicjały, etykiety i opisy relacji.
 - `GraphFilters` udostępnia kontrolki zakresu, typu i grupy używane przez toolbar, a `SelectionDetails`, `RelationshipForm` i `RelationshipListPanel` odpowiadają za zawartość panelu narzędzi.
-- `CharacterCombobox` jest wspólnym wyborem postaci dla wyszukiwarki grafu i formularza relacji.
+- `RelationshipCard` jest wspólnym, rozwijanym kafelkiem pełnej listy, relacji wybranej postaci i relacji wskazanej na grafie.
+- `CharacterCombobox` obsługuje wyszukiwanie postaci w grafie.
 - `RelationshipIconButton` zapewnia lokalne przyciski ikonowe z etykietami i tooltipami dla panelu, widoku rozszerzonego oraz resetu układu.
 
 ## Układ przestrzeni roboczej
 
-Ten sam górny toolbar jest renderowany w zwykłym i rozszerzonym widoku. Zawiera klikalny licznik relacji, wyszukiwanie, zakres grafu, filtry typu i grupy, czyszczenie filtrów, scenariusz developerski oraz sterowanie widokiem. Panel jest pozycjonowany absolutnie nad lewą częścią canvasa, dlatego jego otwarcie nie zmienia wymiarów grafu ani nie uruchamia ponownie symulacji. Reset lokalnego układu pozostaje osobną akcją ikonową w rogu canvasa.
+Ten sam górny toolbar jest renderowany w zwykłym i rozszerzonym widoku. Zawiera klikalny licznik relacji, wyszukiwanie, zakres grafu, filtry typu i grupy, czyszczenie filtrów, scenariusz developerski oraz sterowanie widokiem. Panel jest pozycjonowany absolutnie nad prawą częścią canvasa, dlatego jego otwarcie nie zmienia wymiarów grafu ani nie uruchamia ponownie symulacji. Wąski przełącznik jest przytwierdzony do bocznej krawędzi panelu i przesuwa się razem z nim, a reset układu pozostaje wyżej na canvasie i po otwarciu panelu znajduje się pod jego warstwą.
 
-Panel ma jedno źródło stanu w kontrolerze i przechodzi między trybami: zamknięty, szczegóły postaci, wybór celu, formularz tworzenia, szczegóły istniejącej relacji oraz pełna lista. Lista jest otwierana przez licznik i ma własny scroll. Podczas aktywnego formularza przejście do listy jest wyłączone, a zamknięcie panelu jawnie anuluje szkic i pozostawia zwykłe zaznaczenie postaci źródłowej.
+Panel ma jedno źródło stanu w kontrolerze i przechodzi między trybami: zamknięty, szczegóły postaci, wybór celu, formularz tworzenia, szczegóły istniejącej relacji oraz pełna lista. Lista jest otwierana przez licznik i ma własny scroll. Tylko jeden kafelek relacji może być rozwinięty, a niezapisana zmiana nazwy blokuje przypadkowe przełączenie kontekstu do czasu zapisu, anulowania lub użycia `Escape`.
 
 ## Przepływ danych
 
-Dla rzeczywistych danych `useRelationshipGraphData` pobiera równolegle postacie i relacje z endpointów projektu. `buildRelationshipGraphData` zamienia odpowiedź API na węzły i krawędzie używane przez `ForceGraph2D`. Osobne pobranie w `useRelationshipCrud` zasila formularz i dostępną listę HTML. Po utworzeniu albo usunięciu relacji dane listy są pobierane ponownie, a zmiana `graphRevision` odświeża graf.
+Dla rzeczywistych danych `useRelationshipGraphData` pobiera równolegle postacie i relacje z endpointów projektu. `buildRelationshipGraphData` zamienia odpowiedź API na węzły i krawędzie używane przez `ForceGraph2D`. Osobne pobranie w `useRelationshipCrud` zasila formularze i dostępną listę HTML. Po utworzeniu, zmianie nazwy albo usunięciu relacji dane listy są pobierane ponownie, a zmiana `graphRevision` odświeża graf.
 
 ## Filtrowanie i zaznaczenie
 
@@ -47,11 +48,10 @@ Scenariusze 100/200 są generowane deterministycznie przez `relationshipGraphSce
 
 Nowa relacja rozpoczyna się przez ponowne kliknięcie zaznaczonej postaci, wybór innej postaci jako celu i ręczne zatwierdzenie istniejącego formularza w tym samym panelu. Kontroler grafu przechowuje etap tego przepływu, a `Escape` lub anulowanie cofają o jeden etap. Zapis korzysta z istniejącego `POST /api/character-relationships`, przesyła identyfikatory dwóch różnych postaci i nazwę relacji, a błędy `422` pokazuje przy odpowiednich polach. SPA i backend traktują parę postaci jako nieuporządkowaną i blokują kolejną relację również wtedy, gdy jej końce podano w odwrotnej kolejności. Usunięcie korzysta z `DELETE /api/character-relationships/{id}` i wymaga potwierdzenia.
 
-Kliknięcie istniejącej relacji wypełnia ten sam formularz w trybie podglądu edycji. Zapis zmian jest obecnie zablokowany, ponieważ routing API nie udostępnia metody `PUT` ani `PATCH`, mimo że kontroler zawiera metodę aktualizacji.
+Kliknięcie istniejącej relacji rozwija wspólny kafelek bez względu na to, czy wejście nastąpiło z pełnej listy, relacji postaci czy linii na grafie. Edycja wysyła wyłącznie nazwę do `PATCH /api/character-relationships/{relationship}`; anulowanie odrzuca szkic i zwija kafelek, a usunięcie nadal wymaga potwierdzenia.
 
 ## Ograniczenia
 
 - Pozycje węzłów są zapisywane lokalnie dla użytkownika i projektu, bez synchronizacji między urządzeniami.
 - Kolory są deterministycznie wyliczane z nazwy typu relacji i nie są przechowywane w bazie.
 - Lista HTML i graf pobierają dane osobno, aby utrzymać niezależne stany błędu i odświeżania.
-- Trwała edycja relacji wymaga uzupełnienia kontraktu backendowego.

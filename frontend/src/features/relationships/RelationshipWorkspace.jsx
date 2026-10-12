@@ -43,6 +43,8 @@ const RelationshipWorkspace = forwardRef(function RelationshipWorkspace(props, r
 const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceContent({
   dataRevision = 0,
   onBeginRelationship,
+  isRelationshipEditDirty,
+  onCancelRelationshipEdit,
   onClearSelection,
   onSelectRelationshipTarget,
   onSelectRelationship,
@@ -55,6 +57,8 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
   const loadState = useRelationshipGraphData(projectId, dataRevision, scenarioKey);
   const controller = useRelationshipGraphController({
     onBeginRelationship,
+    isRelationshipEditDirty,
+    onCancelRelationshipEdit,
     sourceGraphData: loadState.graphData,
     onClearSelection,
     onSelectRelationshipTarget,
@@ -70,10 +74,14 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
 
   useImperativeHandle(ref, () => ({
     selectLink: controller.selectLinkById,
+    collapseRelationshipEdit: controller.collapseRelationshipCard,
+    completeRelationshipDeletion: controller.completeRelationshipDeletion,
     completeRelationshipCreation: controller.completeRelationshipCreation,
     clearSelection: controller.clearSelection,
   }), [
     controller.clearSelection,
+    controller.collapseRelationshipCard,
+    controller.completeRelationshipDeletion,
     controller.completeRelationshipCreation,
     controller.selectLinkById,
   ]);
@@ -91,7 +99,7 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
       <RelationshipLegend relationTypes={controller.visibleRelationTypes} />
 
       <div className="relationship-workspace__stage">
-        <RelationshipSidebar controller={controller} projectId={projectId}>
+        <RelationshipSidebar controller={controller}>
           {sidebarContent}
         </RelationshipSidebar>
 

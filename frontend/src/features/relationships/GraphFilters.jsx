@@ -10,6 +10,7 @@ export function GraphScopeToggle({ controller }) {
           name="graph-view-mode"
           value="all"
           checked={controller.viewMode === 'all'}
+          disabled={controller.isRelationshipFormActive}
           onChange={() => controller.setViewMode('all')}
         />
         Wszystkie
@@ -21,7 +22,7 @@ export function GraphScopeToggle({ controller }) {
           value="neighbors"
           checked={controller.viewMode === 'neighbors'}
           onChange={controller.showNeighbors}
-          disabled={!controller.selectedNode}
+          disabled={!controller.selectedNode || controller.isRelationshipFormActive}
         />
         Wybrana postać
       </label>
@@ -35,6 +36,7 @@ export function RelationTypeFilter({ controller }) {
       <span>Typ relacji</span>
       <select
         value={controller.relationTypeFilter}
+        disabled={controller.isRelationshipFormActive}
         onChange={(event) => controller.setRelationTypeFilter(event.target.value)}
       >
         <option value="">Wszystkie typy</option>
@@ -52,7 +54,11 @@ export function CharacterGroupFilter({ controller }) {
   return (
     <label className="relationship-graph__toolbar-filter">
       <span>Grupa postaci</span>
-      <select value={controller.groupFilter} onChange={(event) => controller.setGroupFilter(event.target.value)}>
+      <select
+        value={controller.groupFilter}
+        disabled={controller.isRelationshipFormActive}
+        onChange={(event) => controller.setGroupFilter(event.target.value)}
+      >
         <option value="">Wszystkie grupy</option>
         {controller.groups.map((group) => <option key={group} value={group}>{group}</option>)}
         {controller.hasUngroupedCharacters ? <option value={UNGROUPED_FILTER}>Bez grupy</option> : null}

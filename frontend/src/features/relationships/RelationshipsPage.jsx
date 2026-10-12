@@ -4,6 +4,7 @@ import useAuth from '../../useAuth';
 import RelationshipForm from './RelationshipForm';
 import RelationshipListPanel from './RelationshipListPanel';
 import RelationshipWorkspace from './RelationshipWorkspace';
+import SelectionDetails from './SelectionDetails';
 import { DEV_SCENARIO_KEYS, SCENARIO_PARAM } from './relationshipConstants';
 import useRelationshipCrud from './useRelationshipCrud';
 
@@ -12,24 +13,25 @@ export default function RelationshipsPage() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const workspaceRef = useRef(null);
-  const firstCharacterRef = useRef(null);
   const isTestMode = import.meta.env.DEV
     && DEV_SCENARIO_KEYS.has(searchParams.get(SCENARIO_PARAM));
-  const crud = useRelationshipCrud(projectId, isTestMode, firstCharacterRef);
-
-  const selectRelationshipFromList = (relationship) => {
-    crud.beginEdit(relationship);
-    workspaceRef.current?.selectLink(relationship.id);
-  };
+  const crud = useRelationshipCrud(projectId, isTestMode);
 
   const saveRelationship = async (event) => {
+    const wasEditing = crud.editingRelationshipId !== null;
     const saved = await crud.save(event);
-    if (saved) workspaceRef.current?.completeRelationshipCreation();
+    if (!saved) return;
+    if (wasEditing) workspaceRef.current?.collapseRelationshipEdit();
+    else workspaceRef.current?.completeRelationshipCreation();
   };
 
   const deleteRelationship = async (relationshipId) => {
     const removed = await crud.remove(relationshipId);
-    if (removed) workspaceRef.current?.clearSelection();
+    if (removed) workspaceRef.current?.completeRelationshipDeletion();
+  };
+
+  const cancelRelationshipEdit = () => {
+    workspaceRef.current?.collapseRelationshipEdit();
   };
 
   const sidebarContent = (controller) => {
@@ -39,29 +41,41 @@ export default function RelationshipsPage() {
           controller={controller}
           crud={crud}
           isReadOnly={isTestMode}
-          onSelect={selectRelationshipFromList}
+          onCancelEdit={cancelRelationshipEdit}
+          onDelete={deleteRelationship}
+          onSave={saveRelationship}
           showHeading={false}
         />
       );
     }
 
-    if (isTestMode) return null;
+    if (controller.panelMode === 'form') {
+      return (
+        <RelationshipForm
+          crud={crud}
+          isGraphCreation
+          onCancel={controller.returnToTargetSelection}
+          onSubmit={saveRelationship}
+          showHeading={false}
+        />
+      );
+    }
 
-    const showForm = controller.panelMode === 'form'
-      || (controller.panelMode === 'relationship' && crud.editingRelationshipId !== null);
+    if (['character', 'selecting-target', 'relationship'].includes(controller.panelMode)) {
+      return (
+        <SelectionDetails
+          controller={controller}
+          crud={crud}
+          isReadOnly={isTestMode}
+          onCancelEdit={cancelRelationshipEdit}
+          onDelete={deleteRelationship}
+          onSave={saveRelationship}
+          projectId={projectId}
+        />
+      );
+    }
 
-    if (!showForm) return null;
-    return (
-      <RelationshipForm
-        crud={crud}
-        firstCharacterRef={firstCharacterRef}
-        isGraphCreation={controller.panelMode === 'form'}
-        onCancel={controller.returnToTargetSelection}
-        onDelete={deleteRelationship}
-        onSubmit={saveRelationship}
-        showHeading={false}
-      />
-    );
+    return null;
   };
 
   return (
@@ -70,7 +84,9 @@ export default function RelationshipsPage() {
       <RelationshipWorkspace
         ref={workspaceRef}
         dataRevision={crud.graphRevision}
+        isRelationshipEditDirty={crud.hasUnsavedChanges}
         onBeginRelationship={crud.beginFromGraph}
+        onCancelRelationshipEdit={crud.resetForm}
         onClearSelection={crud.resetForm}
         onSelectRelationshipTarget={crud.beginFromGraph}
         onSelectRelationship={crud.selectFromGraph}

@@ -16,11 +16,11 @@ Story Manager to aplikacja webowa wspierająca tworzenie książek i komiksów. 
 
 ### Backend
 
-Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
+Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
 
 ### Frontend
 
-SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Graf relacji ma wspólny pasek wyszukiwania i filtrów, pełnowymiarowy canvas oraz jeden kontekstowy panel nakładany na graf. Panel przełącza szczegóły postaci, wybór celu, formularz, szczegóły relacji i pełną listę, a tworzenie relacji pokazuje niezapisywaną linię podglądu bez ingerencji w fizykę grafu.
+SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Graf relacji ma wspólny pasek wyszukiwania i filtrów, pełnowymiarowy canvas oraz minimalistyczny prawy panel nakładany na graf. Pełna lista, relacje wybranej postaci i relacja wskazana na grafie korzystają ze wspólnego rozwijanego kafelka z edycją nazwy i potwierdzanym usuwaniem.
 
 ### Uwierzytelnianie
 
@@ -55,7 +55,6 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 - wydarzenia i osobne rekordy obrazów nie mają obecnie tras API;
 - pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
-- API relacji nie udostępnia jeszcze trasy aktualizacji, dlatego panel pozwala tworzyć i usuwać relacje, ale zapis edycji pozostaje zablokowany;
 - weryfikacja e-mail pozostaje poza MVP i nie ma interfejsu w SPA.
 
 ## Ostatnia aktualizacja
