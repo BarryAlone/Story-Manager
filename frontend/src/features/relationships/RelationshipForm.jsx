@@ -5,15 +5,23 @@ export default function RelationshipForm({
   firstCharacterRef,
   isGraphCreation = false,
   onCancel,
+  onDelete,
   onSubmit,
+  showHeading = true,
 }) {
   const isEditing = crud.editingRelationshipId !== null;
 
   return (
-    <section className="relationship-workspace__section" aria-labelledby="relationship-form-heading">
-      <div className="relationship-workspace__section-heading">
-        <h2 id="relationship-form-heading">{isEditing ? 'Edytuj relację' : 'Nowa relacja'}</h2>
-      </div>
+    <section
+      className="relationship-workspace__section"
+      aria-labelledby={showHeading ? 'relationship-form-heading' : undefined}
+      aria-label={showHeading ? undefined : (isEditing ? 'Edycja relacji' : 'Formularz nowej relacji')}
+    >
+      {showHeading ? (
+        <div className="relationship-workspace__section-heading">
+          <h2 id="relationship-form-heading">{isEditing ? 'Edytuj relację' : 'Nowa relacja'}</h2>
+        </div>
+      ) : null}
       <form
         className="relationship-workspace__form"
         onSubmit={onSubmit || crud.save}
@@ -85,7 +93,9 @@ export default function RelationshipForm({
               type="button"
               className="relationship-workspace__danger"
               disabled={crud.isDeleting}
-              onClick={() => crud.remove(crud.editingRelationshipId)}
+              onClick={() => (onDelete
+                ? onDelete(crud.editingRelationshipId)
+                : crud.remove(crud.editingRelationshipId))}
             >
               {crud.isDeleting ? 'Usuwanie…' : 'Usuń relację'}
             </button>

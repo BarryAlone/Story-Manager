@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
+import RelationshipIconButton, { ResetLayoutIcon } from './RelationshipIconButton';
 import { GRAPH_CAMERA, GRAPH_RENDERING } from './relationshipConstants';
 import { graphEndpointId } from './relationshipGraphData';
 import {
@@ -14,6 +15,7 @@ import {
   drawLinkPointerArea,
   drawNode,
   drawNodePointerArea,
+  drawRelationshipDraft,
 } from './relationshipGraphDrawing';
 
 const RelationshipCanvas = forwardRef(function RelationshipCanvas({
@@ -142,6 +144,15 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({
 
   return (
     <div ref={containerRef} className="relationship-graph__canvas">
+      <RelationshipIconButton
+        className="relationship-graph__reset-layout"
+        label="Resetuj układ"
+        disabled={!layoutPersistence.hasSavedLayout}
+        onClick={layoutPersistence.resetLayout}
+      >
+        <ResetLayoutIcon />
+      </RelationshipIconButton>
+
       {loadState.status === 'loading' ? <GraphMessage>Ładowanie grafu...</GraphMessage> : null}
       {loadState.status === 'error' ? (
         <GraphMessage role="alert">
@@ -171,8 +182,7 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({
           nodePointerAreaPaint={drawNodePointerArea}
           nodeLabel={(node) => node.name}
           onNodeHover={(node) => {
-            controller.setHoveredNodeId(node?.id ?? null);
-            if (node) controller.setHoveredLinkId(null);
+            controller.handleNodeHover(node);
           }}
           onNodeDrag={() => {
             // Flaga zapobiega potraktowaniu końca przeciągania jako kliknięcia węzła.
@@ -189,12 +199,9 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({
           onNodeClick={(node) => {
             if (!didDragRef.current) controller.handleNodeClick(node);
           }}
-          onLinkHover={(link) => {
-            controller.setHoveredLinkId(link?.id ?? null);
-            if (link) controller.setHoveredNodeId(null);
-          }}
+          onLinkHover={controller.handleLinkHover}
           onLinkClick={controller.selectRelationship}
-          onBackgroundClick={controller.clearSelection}
+          onBackgroundClick={controller.handleBackgroundClick}
           linkColor={(link) => (
             controller.interactionHighlight.active
               && !controller.interactionHighlight.linkIds.has(link.id)
@@ -216,6 +223,9 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({
           linkPointerAreaPaint={drawLinkPointerArea}
           linkCanvasObject={paintLinkLabel}
           linkCanvasObjectMode={() => 'after'}
+          onRenderFramePost={(context, globalScale) => {
+            drawRelationshipDraft(context, globalScale, controller.draftRelationship);
+          }}
           showPointerCursor
           cooldownTicks={GRAPH_RENDERING.cooldownTicks}
           onEngineStop={() => {

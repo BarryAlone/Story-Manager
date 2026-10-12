@@ -46,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // CharacterRelationship
     Route::get('/projects/{project}/character-relationships', [CharacterRelationshipController::class, 'index']);
     Route::post('/character-relationships', [CharacterRelationshipController::class, 'store']);
+    Route::patch('/character-relationships/{relationship}', [CharacterRelationshipController::class, 'update']);
     Route::delete('/character-relationships/{id}', [CharacterRelationshipController::class, 'destroy']);
 
     // User

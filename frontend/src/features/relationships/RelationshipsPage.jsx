@@ -27,34 +27,40 @@ export default function RelationshipsPage() {
     if (saved) workspaceRef.current?.completeRelationshipCreation();
   };
 
+  const deleteRelationship = async (relationshipId) => {
+    const removed = await crud.remove(relationshipId);
+    if (removed) workspaceRef.current?.clearSelection();
+  };
+
   const sidebarContent = (controller) => {
-    if (isTestMode) {
+    if (controller.panelMode === 'list') {
       return (
-        <section className="relationship-workspace__section">
-          <h2>Relacje</h2>
-          <p className="relationship-workspace__notice">
-            Dane scenariusza są tylko do odczytu. Formularz nie wysyła żądań do API.
-          </p>
-        </section>
+        <RelationshipListPanel
+          controller={controller}
+          crud={crud}
+          isReadOnly={isTestMode}
+          onSelect={selectRelationshipFromList}
+          showHeading={false}
+        />
       );
     }
 
-    const showForm = crud.editingRelationshipId !== null
-      || controller.relationshipCreationStage === 'form';
+    if (isTestMode) return null;
 
+    const showForm = controller.panelMode === 'form'
+      || (controller.panelMode === 'relationship' && crud.editingRelationshipId !== null);
+
+    if (!showForm) return null;
     return (
-      <>
-        {showForm ? (
-          <RelationshipForm
-            crud={crud}
-            firstCharacterRef={firstCharacterRef}
-            isGraphCreation={controller.relationshipCreationStage === 'form'}
-            onCancel={controller.returnToTargetSelection}
-            onSubmit={saveRelationship}
-          />
-        ) : null}
-        <RelationshipListPanel crud={crud} onSelect={selectRelationshipFromList} />
-      </>
+      <RelationshipForm
+        crud={crud}
+        firstCharacterRef={firstCharacterRef}
+        isGraphCreation={controller.panelMode === 'form'}
+        onCancel={controller.returnToTargetSelection}
+        onDelete={deleteRelationship}
+        onSubmit={saveRelationship}
+        showHeading={false}
+      />
     );
   };
 

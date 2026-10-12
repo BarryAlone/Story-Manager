@@ -46,6 +46,7 @@ class DomainAuthorizationTest extends TestCase
             ['DELETE', '/api/project-attributes/1'],
             ['GET', '/api/projects/1/character-relationships'],
             ['POST', '/api/character-relationships'],
+            ['PATCH', '/api/character-relationships/1'],
             ['DELETE', '/api/character-relationships/1'],
         ];
 
@@ -274,12 +275,18 @@ class DomainAuthorizationTest extends TestCase
             'type' => 'number',
         ])->assertNotFound();
         $this->actingAs($otherUser)->deleteJson("/api/project-attributes/{$attribute->id}")->assertNotFound();
+        $this->actingAs($otherUser)->patchJson("/api/character-relationships/{$relationship->id}", [
+            'relation_name' => 'Changed relation',
+        ])->assertNotFound();
         $this->actingAs($otherUser)->deleteJson("/api/character-relationships/{$relationship->id}")->assertNotFound();
 
         $this->assertDatabaseHas('chapters', ['id' => $chapter->id, 'name' => 'Private chapter']);
         $this->assertDatabaseHas('characters', ['id' => $character->id, 'name' => 'Private character']);
         $this->assertDatabaseHas('project_attributes', ['id' => $attribute->id, 'name' => 'Private attribute']);
-        $this->assertDatabaseHas('character_relationships', ['id' => $relationship->id]);
+        $this->assertDatabaseHas('character_relationships', [
+            'id' => $relationship->id,
+            'relation_name' => 'Private relation',
+        ]);
     }
 
     public function test_swap_relationships_and_image_mutations_respect_ownership(): void
@@ -409,6 +416,17 @@ class DomainAuthorizationTest extends TestCase
         $this->actingAs($owner)->postJson("/api/chapters/{$firstChapterId}/swap", [
             'target_id' => $secondChapterId,
         ])->assertOk();
+        $this->actingAs($owner)->patchJson(
+            '/api/character-relationships/'.$relationshipResponse->json('id'),
+            [
+                'relation_name' => 'Trusted friends',
+                'character_1_id' => $secondCharacterId,
+                'character_2_id' => $firstCharacterId,
+            ]
+        )->assertOk()
+            ->assertJsonPath('relation_name', 'Trusted friends')
+            ->assertJsonPath('character_1_id', $firstCharacterId)
+            ->assertJsonPath('character_2_id', $secondCharacterId);
 
         $this->assertDatabaseHas('chapters', [
             'id' => $firstChapterId,
@@ -427,10 +445,46 @@ class DomainAuthorizationTest extends TestCase
             'id' => $attributeId,
             'name' => 'Updated age',
         ]);
+        $this->assertDatabaseHas('character_relationships', [
+            'id' => $relationshipResponse->json('id'),
+            'character_1_id' => $firstCharacterId,
+            'character_2_id' => $secondCharacterId,
+            'relation_name' => 'Trusted friends',
+        ]);
 
         $this->actingAs($owner)
             ->deleteJson('/api/character-relationships/'.$relationshipResponse->json('id'))
             ->assertOk();
+    }
+
+    public function test_relationship_name_update_requires_a_non_empty_name_up_to_128_characters(): void
+    {
+        $owner = User::factory()->create();
+        $project = $this->project($owner, 'Owned project');
+        $firstCharacter = Character::create($this->characterData($project, 'First character'));
+        $secondCharacter = Character::create($this->characterData($project, 'Second character'));
+        $relationship = CharacterRelationship::create([
+            'character_1_id' => $firstCharacter->id,
+            'character_2_id' => $secondCharacter->id,
+            'relation_name' => 'Friends',
+        ]);
+
+        $this->actingAs($owner)
+            ->patchJson("/api/character-relationships/{$relationship->id}", [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('relation_name');
+
+        $this->actingAs($owner)
+            ->patchJson("/api/character-relationships/{$relationship->id}", [
+                'relation_name' => str_repeat('a', 129),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('relation_name');
+
+        $this->assertDatabaseHas('character_relationships', [
+            'id' => $relationship->id,
+            'relation_name' => 'Friends',
+        ]);
     }
 
     public function test_relationship_pair_cannot_be_created_more_than_once_in_either_order(): void

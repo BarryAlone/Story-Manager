@@ -1,16 +1,30 @@
-import GraphFilters from './GraphFilters';
 import SelectionDetails from './SelectionDetails';
 
-export default function RelationshipSidebar({ controller, layoutPersistence, projectId, children }) {
+export default function RelationshipSidebar({ controller, projectId, children }) {
+  const showsSelection = ['character', 'selecting-target', 'form', 'relationship']
+    .includes(controller.panelMode);
+  const panelTitle = {
+    character: 'Szczegóły postaci',
+    'selecting-target': 'Wybór postaci',
+    form: 'Nowa relacja',
+    relationship: 'Szczegóły relacji',
+    list: 'Lista relacji',
+  }[controller.panelMode] || 'Narzędzia relacji';
+
   return (
-    <aside className="relationship-workspace__sidebar" aria-label="Narzędzia grafu i relacji">
+    <aside
+      id="relationship-tools-panel"
+      className={`relationship-workspace__sidebar relationship-workspace__sidebar--${controller.panelMode}`}
+      aria-label="Narzędzia grafu i relacji"
+      aria-hidden={!controller.isPanelOpen}
+    >
       <div className="relationship-workspace__sidebar-heading">
-        <strong>Narzędzia relacji</strong>
-        <button type="button" onClick={controller.closePanel} aria-label="Zwiń panel narzędzi">×</button>
+        <strong>{panelTitle}</strong>
       </div>
-      <GraphFilters controller={controller} layoutPersistence={layoutPersistence} />
-      <SelectionDetails controller={controller} projectId={projectId} />
-      {typeof children === 'function' ? children(controller) : children}
+      <div className="relationship-workspace__sidebar-content">
+        {showsSelection ? <SelectionDetails controller={controller} projectId={projectId} /> : null}
+        {typeof children === 'function' ? children(controller) : children}
+      </div>
     </aside>
   );
 }

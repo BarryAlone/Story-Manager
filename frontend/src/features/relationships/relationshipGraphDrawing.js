@@ -129,3 +129,20 @@ export function drawLinkLabel(link, context, globalScale, isActive) {
   context.fillStyle = link.color;
   context.fillText(link.label, x, y);
 }
+
+export function drawRelationshipDraft(context, globalScale, draftRelationship) {
+  if (!draftRelationship) return;
+  const { source, target } = draftRelationship;
+  if (![source.x, source.y, target.x, target.y].every(Number.isFinite)) return;
+
+  context.save();
+  context.beginPath();
+  context.moveTo(source.x, source.y);
+  context.lineTo(target.x, target.y);
+  context.setLineDash([8 / globalScale, 6 / globalScale]);
+  context.lineWidth = 3 / globalScale;
+  context.strokeStyle = '#000000';
+  context.globalAlpha = 0.9;
+  context.stroke();
+  context.restore();
+}

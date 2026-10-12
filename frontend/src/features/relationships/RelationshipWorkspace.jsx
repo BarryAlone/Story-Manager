@@ -71,34 +71,38 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
   useImperativeHandle(ref, () => ({
     selectLink: controller.selectLinkById,
     completeRelationshipCreation: controller.completeRelationshipCreation,
-  }), [controller.completeRelationshipCreation, controller.selectLinkById]);
+    clearSelection: controller.clearSelection,
+  }), [
+    controller.clearSelection,
+    controller.completeRelationshipCreation,
+    controller.selectLinkById,
+  ]);
 
   return (
     <section
       className={`relationship-workspace${controller.isExpanded ? ' relationship-workspace--expanded' : ''}${controller.isPanelOpen ? '' : ' relationship-workspace--panel-closed'}`}
       aria-label="Przestrzeń robocza relacji postaci"
     >
-      <RelationshipSidebar
+      <RelationshipToolbar
         controller={controller}
-        layoutPersistence={layoutPersistence}
-        projectId={projectId}
-      >
-        {sidebarContent}
-      </RelationshipSidebar>
+        scenarioKey={scenarioKey}
+        onScenarioChange={onScenarioChange}
+      />
+      <RelationshipLegend relationTypes={controller.visibleRelationTypes} />
 
-      <div className="relationship-graph">
-        <RelationshipToolbar
-          controller={controller}
-          scenarioKey={scenarioKey}
-          onScenarioChange={onScenarioChange}
-        />
-        <RelationshipLegend relationTypes={controller.visibleRelationTypes} />
-        <RelationshipCanvas
-          ref={controller.canvasRef}
-          controller={controller}
-          layoutPersistence={layoutPersistence}
-          loadState={loadState}
-        />
+      <div className="relationship-workspace__stage">
+        <RelationshipSidebar controller={controller} projectId={projectId}>
+          {sidebarContent}
+        </RelationshipSidebar>
+
+        <div className="relationship-graph">
+          <RelationshipCanvas
+            ref={controller.canvasRef}
+            controller={controller}
+            layoutPersistence={layoutPersistence}
+            loadState={loadState}
+          />
+        </div>
       </div>
     </section>
   );
