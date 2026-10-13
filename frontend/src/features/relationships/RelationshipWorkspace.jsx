@@ -1,7 +1,6 @@
 import { forwardRef, useImperativeHandle } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import RelationshipCanvas from './RelationshipCanvas';
-import RelationshipLegend from './RelationshipLegend';
 import RelationshipSidebar from './RelationshipSidebar';
 import RelationshipToolbar from './RelationshipToolbar';
 import { DEV_SCENARIO_KEYS, SCENARIO_PARAM } from './relationshipConstants';
@@ -96,7 +95,6 @@ const RelationshipWorkspaceContent = forwardRef(function RelationshipWorkspaceCo
         scenarioKey={scenarioKey}
         onScenarioChange={onScenarioChange}
       />
-      <RelationshipLegend relationTypes={controller.visibleRelationTypes} />
 
       <div className="relationship-workspace__stage">
         <RelationshipSidebar controller={controller}>

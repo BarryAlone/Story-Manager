@@ -4,6 +4,7 @@ export default function RelationshipIconButton({
   children,
   className = '',
   label,
+  showTooltip = true,
   ...buttonProps
 }) {
   const tooltipId = useId();
@@ -14,14 +15,16 @@ export default function RelationshipIconButton({
         type="button"
         className="relationship-icon-button"
         aria-label={label}
-        aria-describedby={tooltipId}
+        aria-describedby={showTooltip ? tooltipId : undefined}
         {...buttonProps}
       >
         {children}
       </button>
-      <span id={tooltipId} role="tooltip" className="relationship-icon-button__tooltip">
-        {label}
-      </span>
+      {showTooltip ? (
+        <span id={tooltipId} role="tooltip" className="relationship-icon-button__tooltip">
+          {label}
+        </span>
+      ) : null}
     </span>
   );
 }
@@ -34,8 +37,10 @@ export function PanelChevronIcon({ direction }) {
 export function ExpandIcon() {
   return (
     <Icon>
-      <path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" />
-      <path d="M4 9l6-6M20 9l-6-6M4 15l6 6M20 15l-6 6" />
+      <path d="m10 10-6-6m0 0h5M4 4v5" />
+      <path d="m14 10 6-6m0 0h-5m5 0v5" />
+      <path d="m10 14-6 6m0 0h5m-5 0v-5" />
+      <path d="m14 14 6 6m0 0h-5m5 0v-5" />
     </Icon>
   );
 }

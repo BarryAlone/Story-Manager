@@ -94,7 +94,7 @@
 .relationship-workspace__panel-toggle {
   position: absolute;
   z-index: 2;
-  top: 58px;
+  top: 82px;
   left: -28px;
   pointer-events: auto;
 }
@@ -105,18 +105,6 @@
   padding: 4px;
   border-right: 0;
   border-radius: 7px 0 0 7px;
-}
-
-.relationship-workspace__panel-toggle .relationship-icon-button__tooltip {
-  top: 50%;
-  right: calc(100% + 7px);
-  left: auto;
-  transform: translate(3px, -50%);
-}
-
-.relationship-workspace__panel-toggle:hover .relationship-icon-button__tooltip,
-.relationship-workspace__panel-toggle:focus-within .relationship-icon-button__tooltip {
-  transform: translate(0, -50%);
 }
 
 @media (max-width: 560px) {

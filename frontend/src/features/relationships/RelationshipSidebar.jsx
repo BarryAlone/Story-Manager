@@ -14,6 +14,7 @@ export default function RelationshipSidebar({ controller, children }) {
       <RelationshipIconButton
         className="relationship-workspace__panel-toggle"
         label={controller.isPanelOpen ? 'Ukryj panel relacji' : 'Pokaż panel relacji'}
+        showTooltip={false}
         aria-expanded={controller.isPanelOpen}
         aria-controls="relationship-tools-panel"
         disabled={controller.isRelationshipEditDirty}

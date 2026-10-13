@@ -93,7 +93,10 @@ export function listCharacterGroups(nodes) {
 }
 
 export function filterGraphData(sourceGraphData, filters) {
-  const { group, relationType, neighborId } = filters;
+  const { group, relationTypes = [], neighborId } = filters;
+  const activeRelationTypes = relationTypes instanceof Set
+    ? relationTypes
+    : new Set(relationTypes);
   let nodes = sourceGraphData.nodes;
 
   if (group === UNGROUPED_FILTER) nodes = nodes.filter((node) => !node.groupName);
@@ -105,8 +108,8 @@ export function filterGraphData(sourceGraphData, filters) {
     && visibleNodeIds.has(graphEndpointId(link.target))
   ));
 
-  if (relationType) {
-    links = links.filter((link) => link.typeKey === relationType);
+  if (activeRelationTypes.size > 0) {
+    links = links.filter((link) => activeRelationTypes.has(link.typeKey));
     visibleNodeIds = new Set(links.flatMap((link) => [
       graphEndpointId(link.source),
       graphEndpointId(link.target),

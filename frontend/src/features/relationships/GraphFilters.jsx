@@ -1,6 +1,9 @@
+import { useId } from 'react';
 import { UNGROUPED_FILTER } from './relationshipConstants';
 
 export function GraphScopeToggle({ controller }) {
+  const neighborhoodTooltipId = useId();
+
   return (
     <fieldset className="relationship-graph__scope-toggle">
       <legend>Zakres grafu</legend>
@@ -13,9 +16,12 @@ export function GraphScopeToggle({ controller }) {
           disabled={controller.isRelationshipFormActive}
           onChange={() => controller.setViewMode('all')}
         />
-        Wszystkie
+        Cały graf
       </label>
-      <label className={controller.viewMode === 'neighbors' ? 'relationship-graph__scope-option relationship-graph__scope-option--active' : 'relationship-graph__scope-option'}>
+      <label
+        className={controller.viewMode === 'neighbors' ? 'relationship-graph__scope-option relationship-graph__scope-option--active' : 'relationship-graph__scope-option'}
+        aria-describedby={neighborhoodTooltipId}
+      >
         <input
           type="radio"
           name="graph-view-mode"
@@ -24,27 +30,16 @@ export function GraphScopeToggle({ controller }) {
           onChange={controller.showNeighbors}
           disabled={!controller.selectedNode || controller.isRelationshipFormActive}
         />
-        Wybrana postać
+        Sąsiedztwo
+        <span
+          id={neighborhoodTooltipId}
+          role="tooltip"
+          className="relationship-graph__scope-tooltip"
+        >
+          Wybrana postać i jej bezpośrednie relacje
+        </span>
       </label>
     </fieldset>
-  );
-}
-
-export function RelationTypeFilter({ controller }) {
-  return (
-    <label className="relationship-graph__toolbar-filter">
-      <span>Typ relacji</span>
-      <select
-        value={controller.relationTypeFilter}
-        disabled={controller.isRelationshipFormActive}
-        onChange={(event) => controller.setRelationTypeFilter(event.target.value)}
-      >
-        <option value="">Wszystkie typy</option>
-        {controller.relationTypes.map((type) => (
-          <option key={type.key} value={type.key}>{type.label}</option>
-        ))}
-      </select>
-    </label>
   );
 }
 
@@ -52,7 +47,7 @@ export function CharacterGroupFilter({ controller }) {
   if (controller.groups.length === 0 && !controller.hasUngroupedCharacters) return null;
 
   return (
-    <label className="relationship-graph__toolbar-filter">
+    <label className="relationship-graph__group-filter">
       <span>Grupa postaci</span>
       <select
         value={controller.groupFilter}

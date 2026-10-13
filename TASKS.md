@@ -7,7 +7,7 @@
 ## Następne
 
 - [ ] Ujednolicić niespójne trasy między SPA i API.
-- [ ] Udostępnić backendową trasę aktualizacji relacji i podłączyć formularz jej edycji w SPA.
+- [ ] Dodać kierunkowość relacji jako osobny kontrakt danych i interfejs.
 
 ## Później
 
@@ -28,7 +28,9 @@
 - [x] Dodano dwukolumnową przestrzeń roboczą grafu relacji: avatary, wspólny combobox, widok sąsiedztwa, filtry, interakcje bezpośrednie, tryb rozszerzony i lokalne scenariusze 100/200 postaci.
 - [x] Dodano lokalne zapisywanie i resetowanie układu grafu osobno dla użytkownika, projektu i scenariusza developerskiego.
 - [x] Dodano etapowy wybór źródła i celu relacji bezpośrednio na grafie, z anulowaniem, obsługą `Escape` i ochroną przed duplikowaniem par postaci.
+- [x] E1: Ukończono spójny interfejs grafu relacji obejmujący odchudzony toolbar, legendę-filtr na canvasie i kontekstowy prawy panel.
 - [x] T2: Ujednolicono szczegóły, formularz i pełną listę relacji w jednym kontekstowym panelu grafu.
 - [x] T4: Dodano tymczasową linię podglądu podczas wyboru i zatwierdzania nowej relacji.
+- [x] Dodano właścicielską zmianę nazwy relacji w API i podłączono ją do wspólnego kafelka edycji w SPA.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.

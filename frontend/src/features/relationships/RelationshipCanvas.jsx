@@ -8,6 +8,7 @@ import {
 } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import RelationshipIconButton, { ResetLayoutIcon } from './RelationshipIconButton';
+import RelationshipLegend from './RelationshipLegend';
 import { GRAPH_CAMERA, GRAPH_RENDERING } from './relationshipConstants';
 import { graphEndpointId } from './relationshipGraphData';
 import {
@@ -144,6 +145,8 @@ const RelationshipCanvas = forwardRef(function RelationshipCanvas({
 
   return (
     <div ref={containerRef} className="relationship-graph__canvas">
+      <RelationshipLegend controller={controller} />
+
       <RelationshipIconButton
         className="relationship-graph__reset-layout"
         label="Resetuj układ"
