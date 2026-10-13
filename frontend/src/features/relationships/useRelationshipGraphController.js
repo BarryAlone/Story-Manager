@@ -29,7 +29,7 @@ export default function useRelationshipGraphController({
   const canvasRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('all');
-  const [relationTypeFilter, setRelationTypeFilter] = useState('');
+  const [selectedRelationTypes, setSelectedRelationTypes] = useState([]);
   const [groupFilter, setGroupFilter] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedLinkId, setSelectedLinkId] = useState(null);
@@ -50,6 +50,10 @@ export default function useRelationshipGraphController({
     () => listRelationTypes(sourceGraphData.links),
     [sourceGraphData.links],
   );
+  const validSelectedRelationTypes = useMemo(() => {
+    const existingTypeKeys = new Set(relationTypes.map((type) => type.key));
+    return selectedRelationTypes.filter((typeKey) => existingTypeKeys.has(typeKey));
+  }, [relationTypes, selectedRelationTypes]);
   const groups = useMemo(
     () => listCharacterGroups(sourceGraphData.nodes),
     [sourceGraphData.nodes],
@@ -58,16 +62,28 @@ export default function useRelationshipGraphController({
     () => sourceGraphData.nodes.some((node) => !node.groupName),
     [sourceGraphData.nodes],
   );
-  const neighborFocusId = viewMode === 'neighbors' ? selectedNodeId : null;
+  const effectiveViewMode = viewMode === 'neighbors' && nodeById.has(selectedNodeId)
+    ? 'neighbors'
+    : 'all';
+  const neighborFocusId = effectiveViewMode === 'neighbors' ? selectedNodeId : null;
+  const graphDataBeforeTypeFilter = useMemo(() => filterGraphData(sourceGraphData, {
+    group: groupFilter,
+    relationTypes: [],
+    neighborId: neighborFocusId,
+  }), [groupFilter, neighborFocusId, sourceGraphData]);
+  const availableRelationTypes = useMemo(() => {
+    const availableTypeKeys = new Set(
+      graphDataBeforeTypeFilter.links.map((link) => link.typeKey),
+    );
+    return relationTypes.filter((type) => (
+      availableTypeKeys.has(type.key) || validSelectedRelationTypes.includes(type.key)
+    ));
+  }, [graphDataBeforeTypeFilter.links, relationTypes, validSelectedRelationTypes]);
   const visibleGraphData = useMemo(() => filterGraphData(sourceGraphData, {
     group: groupFilter,
-    relationType: relationTypeFilter,
+    relationTypes: validSelectedRelationTypes,
     neighborId: neighborFocusId,
-  }), [groupFilter, neighborFocusId, relationTypeFilter, sourceGraphData]);
-  const visibleRelationTypes = useMemo(() => {
-    const visibleKeys = new Set(visibleGraphData.links.map((link) => link.typeKey));
-    return relationTypes.filter((type) => visibleKeys.has(type.key));
-  }, [relationTypes, visibleGraphData.links]);
+  }), [groupFilter, neighborFocusId, validSelectedRelationTypes, sourceGraphData]);
 
   const selectedNode = selectedNodeId === null ? null : nodeById.get(selectedNodeId) || null;
   const selectedLink = useMemo(() => sourceGraphData.links.find((link) => (
@@ -148,7 +164,7 @@ export default function useRelationshipGraphController({
   const selectNode = useCallback((node, { center = false, resetFilters = false } = {}) => {
     if (relationshipCreationStage === 'form' || isRelationshipEditDirty) return;
     if (resetFilters) {
-      setRelationTypeFilter('');
+      setSelectedRelationTypes([]);
       setGroupFilter('');
       setViewMode('all');
     }
@@ -271,7 +287,10 @@ export default function useRelationshipGraphController({
     if (isRelationshipEditDirty && String(expandedRelationshipId) !== String(link.id)) return;
     if (!link.synthetic && onSelectRelationship?.(link) === false) return;
     resetRelationshipCreation();
-    if (nextPanelMode !== 'character') setSelectedNodeId(null);
+    if (nextPanelMode !== 'character') {
+      setSelectedNodeId(null);
+      setViewMode('all');
+    }
     setSelectedLinkId(link.id);
     setExpandedRelationshipId(link.id);
     setSearchQuery('');
@@ -308,7 +327,7 @@ export default function useRelationshipGraphController({
       String(candidate.id) === String(linkId)
     ));
     if (!link) return;
-    setRelationTypeFilter('');
+    setSelectedRelationTypes([]);
     setGroupFilter('');
     setViewMode('all');
     openRelationshipCard(
@@ -320,10 +339,22 @@ export default function useRelationshipGraphController({
 
   const clearFilters = () => {
     if (relationshipCreationStage === 'form') return;
-    setRelationTypeFilter('');
+    setSelectedRelationTypes([]);
     setGroupFilter('');
-    clearSelection();
+    setSearchQuery('');
+    setViewMode('all');
   };
+
+  const toggleRelationType = useCallback((typeKey) => {
+    if (isRelationshipFormActive) return;
+    const existingTypeKeys = new Set(relationTypes.map((type) => type.key));
+    setSelectedRelationTypes((currentTypes) => {
+      const validCurrentTypes = currentTypes.filter((key) => existingTypeKeys.has(key));
+      return validCurrentTypes.includes(typeKey)
+        ? validCurrentTypes.filter((key) => key !== typeKey)
+        : [...validCurrentTypes, typeKey];
+    });
+  }, [isRelationshipFormActive, relationTypes]);
 
   const showNeighbors = () => {
     if (!selectedNode) return;
@@ -358,6 +389,7 @@ export default function useRelationshipGraphController({
     setSelectedNodeId(null);
     setSelectedLinkId(null);
     setExpandedRelationshipId(null);
+    setViewMode('all');
     setPanelMode('list');
     onClearSelection?.();
   }, [isRelationshipFormActive, onClearSelection, resetRelationshipCreation]);
@@ -440,13 +472,13 @@ export default function useRelationshipGraphController({
     relationTypes,
     groups,
     hasUngroupedCharacters,
-    visibleRelationTypes,
+    availableRelationTypes,
     searchQuery,
     setSearchQuery,
-    viewMode,
+    viewMode: effectiveViewMode,
     setViewMode,
-    relationTypeFilter,
-    setRelationTypeFilter,
+    selectedRelationTypes: validSelectedRelationTypes,
+    toggleRelationType,
     groupFilter,
     setGroupFilter,
     selectedNodeId,
@@ -478,8 +510,15 @@ export default function useRelationshipGraphController({
     draftRelationship,
     draftTargetNode,
     duplicateRelationship,
+    activeFilterCount: Number(Boolean(searchQuery))
+      + validSelectedRelationTypes.length
+      + Number(Boolean(groupFilter))
+      + Number(effectiveViewMode !== 'all'),
     hasActiveFilters: Boolean(
-      searchQuery || relationTypeFilter || groupFilter || viewMode !== 'all'
+      searchQuery
+      || validSelectedRelationTypes.length > 0
+      || groupFilter
+      || effectiveViewMode !== 'all'
     ),
     selectNode,
     showNode,

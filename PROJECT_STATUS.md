@@ -20,7 +20,7 @@ Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybut
 
 ### Frontend
 
-SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Graf relacji ma wspólny pasek wyszukiwania i filtrów, pełnowymiarowy canvas oraz minimalistyczny prawy panel nakładany na graf. Pełna lista, relacje wybranej postaci i relacja wskazana na grafie korzystają ze wspólnego rozwijanego kafelka z edycją nazwy i potwierdzanym usuwaniem.
+SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Graf relacji ma odchudzony pasek wyszukiwania i ustawień, wielokrotny filtr typów w legendzie nakładanej na canvas oraz minimalistyczny prawy panel. Pełna lista, relacje wybranej postaci i relacja wskazana na grafie korzystają ze wspólnego rozwijanego kafelka z edycją nazwy i potwierdzanym usuwaniem.
 
 ### Uwierzytelnianie
 
@@ -45,7 +45,7 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 - zarządzanie profilem, zmiana hasła i usunięcie konta w SPA;
 - żądanie resetu i ustawienie nowego hasła przez formularze SPA;
 - dashboard użytkownika z liczbą projektów, wyróżnieniem ostatnio edytowanych i obsługą stanów listy;
-- graf relacji z avatarami, fallbackiem inicjałów, adaptacyjnymi etykietami, wyszukiwaniem, filtrami, bezpośrednimi interakcjami, lokalnym zapisem układu oraz scenariuszami wydajnościowymi dostępnymi tylko w trybie developerskim;
+- graf relacji z avatarami, fallbackiem inicjałów, adaptacyjnymi etykietami, wyszukiwaniem, łączonymi filtrami grupy, sąsiedztwa i wielu typów, bezpośrednimi interakcjami, lokalnym zapisem układu oraz scenariuszami wydajnościowymi dostępnymi tylko w trybie developerskim;
 - serwerowa ochrona istniejących endpointów domenowych i autoryzacja właściciela zasobów;
 - automatyczne kontrole backendu i React SPA w GitHub Actions;
 - testy podstawowego przepływu uwierzytelniania.

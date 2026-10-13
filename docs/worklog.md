@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-12 — Toolbar i legenda-filtr grafu relacji
+
+- Zakres: podział toolbara na wyszukiwanie i filtry oraz statystyki i akcje, osobny wybór grupy, ikonowe czyszczenie oraz pionowa legenda na canvasie z wielokrotnym wyborem typów relacji.
+- Wynik: toolbar pozostaje zwarty bez dodatkowego popovera; legenda przy lewej krawędzi zachowuje stabilny zestaw opcji przed filtrem typu, przygasza niewybrane wpisy, obsługuje klawiaturę i `aria-pressed`, a licznik relacji otwiera istniejący prawy panel.
+- Testy: lint i build React SPA zakończone powodzeniem; build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB. `git diff --check` uruchomiono po aktualizacji dokumentacji.
+
 ## 2026-10-12 — Prawy panel i wspólne kafelki relacji
 
 - Zakres: prawy panel nakładany na canvas, sterowanie panelem z poziomu grafu, wspólny kafelek listy i edycji oraz zwarty formularz nowej relacji.

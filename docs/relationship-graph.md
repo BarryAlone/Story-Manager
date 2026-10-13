@@ -5,20 +5,20 @@ Kod funkcji znajduje się w `frontend/src/features/relationships/`. Pliki `front
 ## Główne elementy
 
 - `RelationshipsPage` składa stronę, formularz, listę i przestrzeń roboczą.
-- `RelationshipWorkspace` łączy wspólny toolbar, nakładany panel narzędzi, legendę i canvas.
+- `RelationshipWorkspace` łączy wspólny toolbar, nakładany panel narzędzi i canvas z interaktywną legendą.
 - `useRelationshipCrud` obsługuje pobieranie postaci i relacji oraz ich tworzenie, zmianę nazwy i usuwanie.
 - `useRelationshipGraphData` pobiera dane grafu albo ładuje scenariusz developerski.
 - `useRelationshipGraphController` przechowuje lokalny stan filtrów, zaznaczenia, hovera, trybu panelu, tworzenia relacji i widoku rozszerzonego.
 - `RelationshipCanvas` konfiguruje `ForceGraph2D`, cache obrazów, kamerę oraz zdarzenia wskaźnika.
 - `relationshipGraphDrawing` zawiera funkcje rysujące avatary, inicjały, etykiety i opisy relacji.
-- `GraphFilters` udostępnia kontrolki zakresu, typu i grupy używane przez toolbar, a `SelectionDetails`, `RelationshipForm` i `RelationshipListPanel` odpowiadają za zawartość panelu narzędzi.
+- `GraphFilters` udostępnia kontrolki zakresu i grupy, a `RelationshipLegend` obsługuje wielokrotny wybór typów relacji. `SelectionDetails`, `RelationshipForm` i `RelationshipListPanel` odpowiadają za zawartość panelu narzędzi.
 - `RelationshipCard` jest wspólnym, rozwijanym kafelkiem pełnej listy, relacji wybranej postaci i relacji wskazanej na grafie.
 - `CharacterCombobox` obsługuje wyszukiwanie postaci w grafie.
 - `RelationshipIconButton` zapewnia lokalne przyciski ikonowe z etykietami i tooltipami dla panelu, widoku rozszerzonego oraz resetu układu.
 
 ## Układ przestrzeni roboczej
 
-Ten sam górny toolbar jest renderowany w zwykłym i rozszerzonym widoku. Zawiera klikalny licznik relacji, wyszukiwanie, zakres grafu, filtry typu i grupy, czyszczenie filtrów, scenariusz developerski oraz sterowanie widokiem. Panel jest pozycjonowany absolutnie nad prawą częścią canvasa, dlatego jego otwarcie nie zmienia wymiarów grafu ani nie uruchamia ponownie symulacji. Wąski przełącznik jest przytwierdzony do bocznej krawędzi panelu i przesuwa się razem z nim, a reset układu pozostaje wyżej na canvasie i po otwarciu panelu znajduje się pod jego warstwą.
+Ten sam górny toolbar jest renderowany w zwykłym i rozszerzonym widoku. Po lewej zawiera wyszukiwanie, przełącznik `Cały graf | Sąsiedztwo`, osobny wybór grupy i ikonową akcję czyszczenia filtrów z licznikiem, a po prawej liczniki, scenariusz developerski i sterowanie widokiem. Klikalny licznik relacji otwiera pełną listę w istniejącym panelu. Pionowa, przezroczysta legenda znajduje się przy lewej krawędzi canvasa i służy jako filtr jednego lub wielu typów relacji. Panel jest pozycjonowany absolutnie nad prawą częścią canvasa, dlatego jego otwarcie nie zmienia wymiarów grafu ani nie uruchamia ponownie symulacji. Wąski przełącznik jest przytwierdzony do bocznej krawędzi panelu i przesuwa się razem z nim, a reset układu pozostaje wyżej na canvasie i po otwarciu panelu znajduje się pod jego warstwą.
 
 Panel ma jedno źródło stanu w kontrolerze i przechodzi między trybami: zamknięty, szczegóły postaci, wybór celu, formularz tworzenia, szczegóły istniejącej relacji oraz pełna lista. Lista jest otwierana przez licznik i ma własny scroll. Tylko jeden kafelek relacji może być rozwinięty, a niezapisana zmiana nazwy blokuje przypadkowe przełączenie kontekstu do czasu zapisu, anulowania lub użycia `Escape`.
 
@@ -28,9 +28,9 @@ Dla rzeczywistych danych `useRelationshipGraphData` pobiera równolegle postacie
 
 ## Filtrowanie i zaznaczenie
 
-`filterGraphData` jest czystą funkcją działającą poza Reactem. Stosuje kolejno filtr grupy, typu relacji i bezpośredniego sąsiedztwa. Każda widoczna krawędź zawsze ma oba widoczne końce. Kontroler wylicza również podświetlenia hovera i zaznaczenia bez modyfikowania danych źródłowych.
+`filterGraphData` jest czystą funkcją działającą poza Reactem. Stosuje kolejno filtr grupy, zbiór wybranych typów relacji i bezpośrednie sąsiedztwo. Pusty zbiór typów oznacza wszystkie relacje, a każda widoczna krawędź zawsze ma oba widoczne końce. Kontroler wylicza również podświetlenia hovera i zaznaczenia bez modyfikowania danych źródłowych.
 
-Legenda jest budowana wyłącznie z typów relacji obecnych w aktualnie widocznym grafie. Pozostaje informacyjna i nie steruje filtrami.
+Legenda jest budowana z danych po filtrze grupy i zakresu, ale przed filtrem typu. Dzięki temu pozostałe opcje nie znikają po aktywowaniu jednego wpisu, zwykłe kliknięcia dodają lub usuwają kolejne typy, a `aria-pressed` przekazuje stan także użytkownikom klawiatury i technologii asystujących. Po aktywowaniu filtra wybrane typy pozostają wyraźne, a pozostałe są przygaszone. Ikonowa akcja obok wyboru grupy czyści frazę, grupę, typy oraz przywraca pełny zakres.
 
 Kliknięcie węzła zmienia zaznaczenie bez poruszania kamery. Jawny wybór wyniku wyszukiwania może wycentrować postać, a widok sąsiedztwa zgłasza żądanie `zoomToFit`; canvas wykonuje szybkie kadrowanie oraz końcowe dopasowanie po zatrzymaniu symulacji. Zmiana hovera nie tworzy nowych danych grafu i nie uruchamia kadrowania.
 
