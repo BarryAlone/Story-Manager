@@ -36,4 +36,5 @@
 - `description` pozostaje synopsisem, `description_long` właściwą treścią, a `notes` przechowuje zwykłe notatki.
 - Hierarchia ma maksymalnie dwa poziomy: rozdział najwyższego poziomu i jego bezpośrednie podrozdziały. Rodzic i dziecko muszą należeć do tego samego projektu i rękopisu.
 - `sort_order` jest techniczną kolejnością w obrębie struktury, niezależną od zachowanego dla zgodności pola `chapter_number`.
+- Numeracja widoczna w drzewie SPA jest wyliczana z aktualnej kolejności elementów i ich rodziców; `chapter_number` pozostaje przejściowo obsługiwane przez starsze operacje formularza i zamiany.
 - Rozdział posiadający dzieci nie jest usuwany kaskadowo. API blokuje taką operację odpowiedzią `409 Conflict`, dopóki dzieci nie zostaną przeniesione lub usunięte jawnie.
