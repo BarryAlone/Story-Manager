@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-19 — Przestrzeń robocza rozdziałów
+
+- Zakres: modułowy widok z drzewem rękopisu i szkiców, wyliczaną numeracją dwóch poziomów, centralnym obszarem dokumentu oraz prawym panelem synopsis, notatek i metadanych.
+- Wynik: lista i szczegóły korzystają ze wspólnego workspace wypełniającego obszar projektu. Kompaktowe drzewo ma menu akcji i oszczędne zaznaczenie, toolbar pokazuje wybrany dokument, a panel sterowany uchwytem na prawej krawędzi nakłada się na treść i zamyka także klawiszem `Escape`. Zachowano dotychczasowe tworzenie, edycję danych, usuwanie i zamianę kolejności bez podłączania edytora treści.
+- Testy: lint i build React SPA oraz pełny PHPUnit — 48 testów i 339 asercji — zakończone powodzeniem; build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-10-19 — Backendowa treść i struktura rozdziałów
 
 - Zakres: pola zwykłych notatek, rodzica, technicznej kolejności i przynależności do rękopisu, dwupoziomowa walidacja hierarchii oraz stabilne sortowanie list rozdziałów.
