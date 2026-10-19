@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-19 — Backendowa treść i struktura rozdziałów
+
+- Zakres: pola zwykłych notatek, rodzica, technicznej kolejności i przynależności do rękopisu, dwupoziomowa walidacja hierarchii oraz stabilne sortowanie list rozdziałów.
+- Wynik: migracja zachowuje dotychczasowy synopsis i właściwą treść, klasyfikuje starsze rekordy na podstawie `chapter_number` i nadaje im stabilne pozycje. API pozostaje zgodne ze starymi żądaniami, a usunięcie rodzica z dziećmi zwraca `409 Conflict`.
+- Testy: testy zakresowe rozdziałów — 21 testów i 192 asercje; pełny PHPUnit — 48 testów i 339 asercji; `composer validate --strict` oraz `git diff --check` zakończone powodzeniem.
+
 ## 2026-10-12 — Toolbar i legenda-filtr grafu relacji
 
 - Zakres: podział toolbara na wyszukiwanie i filtry oraz statystyki i akcje, osobny wybór grupy, ikonowe czyszczenie oraz pionowa legenda na canvasie z wielokrotnym wyborem typów relacji.
