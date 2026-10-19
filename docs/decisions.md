@@ -30,3 +30,10 @@
 - Weryfikacja e-mail pozostaje poza zakresem MVP.
 - SPA nie otrzymuje na tym etapie interfejsu weryfikacji, a trasy produktu nie korzystają z middleware `verified`.
 - Powrót do tej funkcji wymaga osobnej decyzji produktowej po ustabilizowaniu MVP.
+
+## Struktura rozdziałów
+
+- `description` pozostaje synopsisem, `description_long` właściwą treścią, a `notes` przechowuje zwykłe notatki.
+- Hierarchia ma maksymalnie dwa poziomy: rozdział najwyższego poziomu i jego bezpośrednie podrozdziały. Rodzic i dziecko muszą należeć do tego samego projektu i rękopisu.
+- `sort_order` jest techniczną kolejnością w obrębie struktury, niezależną od zachowanego dla zgodności pola `chapter_number`.
+- Rozdział posiadający dzieci nie jest usuwany kaskadowo. API blokuje taką operację odpowiedzią `409 Conflict`, dopóki dzieci nie zostaną przeniesione lub usunięte jawnie.

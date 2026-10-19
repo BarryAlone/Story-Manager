@@ -16,7 +16,7 @@ Story Manager to aplikacja webowa wspierająca tworzenie książek i komiksów. 
 
 ### Backend
 
-Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
+Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Rozdziały przechowują synopsis, właściwą treść i zwykłe notatki, rozróżniają rękopis od szkiców oraz obsługują dwupoziomową hierarchię i techniczną kolejność. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
 
 ### Frontend
 
@@ -39,6 +39,7 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 - relacyjny model danych i migracje;
 - API dla głównych zasobów narracyjnych;
 - podstawowe operacje na projektach, rozdziałach, postaciach, atrybutach i relacjach;
+- backendowa struktura treści rozdziałów z notatkami, rękopisem, szkicami, kolejnością i jednym poziomem podrozdziałów;
 - osobne SPA z widokami głównych obszarów produktu;
 - backendowa rejestracja, logowanie, wylogowanie i odczyt bieżącego użytkownika;
 - sesyjne logowanie, rejestracja i wylogowanie w SPA wraz z ochroną tras na poziomie UI;
@@ -56,7 +57,8 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 - pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
 - weryfikacja e-mail pozostaje poza MVP i nie ma interfejsu w SPA.
+- SPA nie korzysta jeszcze z nowych pól struktury rozdziałów ani nie udostępnia edytora ich właściwej treści.
 
 ## Ostatnia aktualizacja
 
-2026-10-12
+2026-10-19
