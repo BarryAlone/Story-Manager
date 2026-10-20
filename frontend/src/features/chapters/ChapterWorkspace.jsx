@@ -3,10 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ChapterDocument from './ChapterDocument';
 import ChapterFormModal from './ChapterFormModal';
 import ChapterInspector from './ChapterInspector';
+import ChapterStructureMoveModal from './ChapterStructureMoveModal';
 import ChapterSubchapterModal from './ChapterSubchapterModal';
 import ChapterSwapModal from './ChapterSwapModal';
 import ChapterToolbar from './ChapterToolbar';
 import ChapterTree from './ChapterTree';
+import { optimisticChapterMove, payloadForDrop } from './chapterDragAndDrop';
 import { buildChapterStructure } from './chapterStructure';
 import useChapters from './useChapters';
 import useChapterWriting from './useChapterWriting';
@@ -32,14 +34,15 @@ export default function ChapterWorkspace() {
   const [collapsedIds, setCollapsedIds] = useState(() => new Set());
   const [formChapter, setFormChapter] = useState(undefined);
   const [subchapterParent, setSubchapterParent] = useState(null);
+  const [pendingStructureMove, setPendingStructureMove] = useState(null);
   const [swapChapter, setSwapChapter] = useState(null);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [actionError, setActionError] = useState('');
   const expandedIds = useMemo(() => new Set(
-    structure.roots
+    [...structure.roots, ...structure.drafts]
       .map((root) => Number(root.chapter.id))
       .filter((id) => !collapsedIds.has(id)),
-  ), [collapsedIds, structure.roots]);
+  ), [collapsedIds, structure.drafts, structure.roots]);
 
   const discardWritingChanges = useCallback(() => {
     if (!isDirty) return true;
@@ -134,6 +137,61 @@ export default function ChapterWorkspace() {
     }
   };
 
+  const applyStructureUpdate = async (payload) => {
+    const optimisticChapters = optimisticChapterMove(chapterStore.chapters, payload);
+    setActionError('');
+
+    try {
+      await chapterStore.updateChapterStructure(payload, optimisticChapters);
+      if (payload.action === 'to_subchapter') {
+        setCollapsedIds((current) => {
+          const next = new Set(current);
+          next.delete(Number(payload.parent_id));
+          return next;
+        });
+      }
+    } catch (error) {
+      setActionError(error.message || 'Nie udało się zmienić struktury rozdziałów.');
+      throw error;
+    }
+  };
+
+  const handleChapterDrop = (chapter, target) => {
+    if (target.kind === 'manuscript') {
+      setPendingStructureMove({ chapter, kind: 'manuscript' });
+      return;
+    }
+
+    if (target.kind === 'parent') {
+      const parent = chapterStore.chapters.find(
+        (item) => Number(item.id) === Number(target.parentId),
+      );
+      if (parent) setPendingStructureMove({ chapter, kind: 'parent', parent });
+      return;
+    }
+
+    const payload = payloadForDrop(chapter, target);
+    if (payload) void applyStructureUpdate(payload).catch(() => {});
+  };
+
+  const confirmStructureMove = async (chapterNumber) => {
+    const payload = pendingStructureMove.kind === 'parent'
+      ? {
+        action: 'to_subchapter',
+        chapter_id: pendingStructureMove.chapter.id,
+        parent_id: pendingStructureMove.parent.id,
+        chapter_number: chapterNumber,
+      }
+      : {
+        action: 'to_manuscript',
+        chapter_id: pendingStructureMove.chapter.id,
+        chapter_number: chapterNumber,
+      };
+
+    await applyStructureUpdate(payload);
+    setPendingStructureMove(null);
+  };
+
   const toggleExpanded = (id) => {
     setCollapsedIds((current) => {
       const next = new Set(current);
@@ -149,11 +207,14 @@ export default function ChapterWorkspace() {
       <div className="chapter-workspace__stage">
         <ChapterTree
           activeId={chapterId}
+          chapters={chapterStore.chapters}
           expandedIds={expandedIds}
           isLoading={chapterStore.isLoading}
+          isStructureUpdating={chapterStore.isUpdatingStructure}
           onAddSubchapter={openSubchapterForm}
           onCreate={() => openChapterForm(null)}
           onDelete={handleDelete}
+          onDrop={handleChapterDrop}
           onEdit={openChapterForm}
           onMove={handleMove}
           onSelect={selectChapter}
@@ -217,6 +278,14 @@ export default function ChapterWorkspace() {
           onClose={closeSubchapterModal}
           onSubmit={handleCreateSubchapter}
           parent={subchapterParent}
+        />
+      )}
+
+      {pendingStructureMove && (
+        <ChapterStructureMoveModal
+          move={pendingStructureMove}
+          onClose={() => setPendingStructureMove(null)}
+          onSubmit={confirmStructureMove}
         />
       )}
 

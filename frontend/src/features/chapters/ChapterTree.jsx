@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { DragDropProvider, DragOverlay, useDraggable, useDroppable } from '@dnd-kit/react';
+import { isValidChapterDrop } from './chapterDragAndDrop';
 
 function ChapterMenu({
   canAddSubchapter,
@@ -36,15 +38,63 @@ function ChapterMenu({
   );
 }
 
+function ChapterDropLine({ activeChapter, beforeId, chapters, isInManuscript, parentId }) {
+  const target = { beforeId, isInManuscript, kind: 'reorder', parentId };
+  const isValid = isValidChapterDrop(activeChapter, target, chapters);
+  const { isDropTarget, ref } = useDroppable({
+    id: `chapter-line:${isInManuscript ? 'manuscript' : 'drafts'}:${parentId ?? 'root'}:${beforeId ?? 'end'}`,
+    type: 'chapter-line',
+    accept: 'chapter',
+    data: target,
+    disabled: !isValid,
+    collisionPriority: 30,
+  });
+
+  return (
+    <li
+      ref={ref}
+      className={`chapter-tree__drop-line${isValid ? ' chapter-tree__drop-line--valid' : ''}${isDropTarget ? ' chapter-tree__drop-line--over' : ''}`}
+      aria-hidden="true"
+    />
+  );
+}
+
+function ChapterSection({ activeChapter, chapters, children, kind, label, labelledBy }) {
+  const target = { kind };
+  const isValid = isValidChapterDrop(activeChapter, target, chapters);
+  const { isDropTarget, ref } = useDroppable({
+    id: `chapter-section:${kind}`,
+    type: 'chapter-section',
+    accept: 'chapter',
+    data: target,
+    disabled: !isValid,
+    collisionPriority: 10,
+  });
+
+  return (
+    <section
+      ref={ref}
+      className={`chapter-tree__section${kind === 'drafts' ? ' chapter-tree__section--drafts' : ''}${isValid ? ' chapter-tree__section--drop-valid' : ''}${isDropTarget ? ' chapter-tree__section--drop-over' : ''}`}
+      aria-labelledby={labelledBy}
+      aria-label={label}
+    >
+      {children}
+    </section>
+  );
+}
+
 function ChapterRow({
+  activeDragChapter,
   activeId,
   canAddSubchapter = false,
   canReorder = false,
   chapter,
+  chapters,
   depth = 0,
   hasChildren = false,
   isExpanded = false,
   isMenuOpen,
+  isStructureUpdating,
   menuRef,
   number,
   onAddSubchapter,
@@ -57,11 +107,50 @@ function ChapterRow({
   onToggle,
 }) {
   const isActive = Number(activeId) === Number(chapter.id);
+  const {
+    handleRef: dragHandleRef,
+    isDragging,
+    ref: draggableRef,
+  } = useDraggable({
+    id: `chapter:${chapter.id}`,
+    type: 'chapter',
+    data: { chapterId: chapter.id },
+    disabled: isStructureUpdating,
+  });
+  const parentTarget = { kind: 'parent', parentId: chapter.id };
+  const isValidParent = canAddSubchapter
+    && isValidChapterDrop(activeDragChapter, parentTarget, chapters);
+  const {
+    isDropTarget: isParentDropTarget,
+    ref: parentDropRef,
+  } = useDroppable({
+    id: `chapter-parent:${chapter.id}`,
+    type: 'chapter-parent',
+    accept: 'chapter',
+    data: parentTarget,
+    disabled: !isValidParent,
+    collisionPriority: 20,
+  });
 
   return (
-    <li className={`chapter-tree__item${isActive ? ' chapter-tree__item--active' : ''}`}>
-      <div className={`chapter-tree__row chapter-tree__row--depth-${depth}`}>
-        <span className="chapter-tree__drag-space" aria-hidden="true" />
+    <li
+      ref={draggableRef}
+      className={`chapter-tree__item${isActive ? ' chapter-tree__item--active' : ''}${isDragging ? ' chapter-tree__item--dragging' : ''}`}
+    >
+      <div
+        ref={parentDropRef}
+        className={`chapter-tree__row chapter-tree__row--depth-${depth}${isValidParent ? ' chapter-tree__row--drop-valid' : ''}${isParentDropTarget ? ' chapter-tree__row--drop-over' : ''}`}
+      >
+        <button
+          ref={dragHandleRef}
+          type="button"
+          className="chapter-tree__drag-handle"
+          aria-label={`Przeciągnij ${chapter.name}`}
+          title="Przeciągnij, aby zmienić położenie"
+          disabled={isStructureUpdating}
+        >
+          <span aria-hidden="true">⠿</span>
+        </button>
         {hasChildren ? (
           <button
             type="button"
@@ -117,13 +206,92 @@ function ChapterRow({
   );
 }
 
+function ChapterBranch({ branch, expandedIds, isInManuscript, isMenuOpen, ...rowProps }) {
+  const isExpanded = expandedIds.has(Number(branch.chapter.id));
+
+  return (
+    <li className="chapter-tree__branch">
+      <ul className="chapter-tree__list">
+        <ChapterRow
+          {...rowProps}
+          chapter={branch.chapter}
+          canAddSubchapter={isInManuscript}
+          canReorder={isInManuscript && Number(branch.chapter.chapter_number) > 0}
+          hasChildren={branch.children.length > 0}
+          isExpanded={isExpanded}
+          isMenuOpen={isMenuOpen(branch.chapter.id)}
+          number={branch.number}
+        />
+      </ul>
+      {isExpanded && branch.children.length > 0 && (
+        <ul className="chapter-tree__list chapter-tree__children">
+          {branch.children.map((child) => (
+            <Fragment key={child.chapter.id}>
+              <ChapterDropLine
+                activeChapter={rowProps.activeDragChapter}
+                beforeId={child.chapter.id}
+                chapters={rowProps.chapters}
+                isInManuscript={isInManuscript}
+                parentId={Number(branch.chapter.id)}
+              />
+              <ChapterRow
+                {...rowProps}
+                chapter={child.chapter}
+                depth={1}
+                isMenuOpen={isMenuOpen(child.chapter.id)}
+                number={child.number}
+              />
+            </Fragment>
+          ))}
+          <ChapterDropLine
+            activeChapter={rowProps.activeDragChapter}
+            beforeId={null}
+            chapters={rowProps.chapters}
+            isInManuscript={isInManuscript}
+            parentId={Number(branch.chapter.id)}
+          />
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function ChapterBranches({ branches, isInManuscript, ...branchProps }) {
+  return (
+    <ul className="chapter-tree__list">
+      {branches.map((branch) => (
+        <Fragment key={branch.chapter.id}>
+          <ChapterDropLine
+            activeChapter={branchProps.activeDragChapter}
+            beforeId={branch.chapter.id}
+            chapters={branchProps.chapters}
+            isInManuscript={isInManuscript}
+            parentId={null}
+          />
+          <ChapterBranch {...branchProps} branch={branch} isInManuscript={isInManuscript} />
+        </Fragment>
+      ))}
+      <ChapterDropLine
+        activeChapter={branchProps.activeDragChapter}
+        beforeId={null}
+        chapters={branchProps.chapters}
+        isInManuscript={isInManuscript}
+        parentId={null}
+      />
+    </ul>
+  );
+}
+
 export default function ChapterTree({
   activeId,
+  chapters,
   expandedIds,
   isLoading,
+  isStructureUpdating,
   onAddSubchapter,
   onCreate,
   onDelete,
+  onDrop,
   onEdit,
   onMove,
   onSelect,
@@ -132,6 +300,7 @@ export default function ChapterTree({
   structure,
 }) {
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [activeDragChapter, setActiveDragChapter] = useState(null);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -155,9 +324,14 @@ export default function ChapterTree({
   const toggleMenu = (id) => {
     setOpenMenuId((current) => (Number(current) === Number(id) ? null : id));
   };
-
-  const rowProps = {
+  const isMenuOpen = (id) => Number(openMenuId) === Number(id);
+  const branchProps = {
+    activeDragChapter,
     activeId,
+    chapters,
+    expandedIds,
+    isMenuOpen,
+    isStructureUpdating,
     menuRef,
     onAddSubchapter,
     onDelete,
@@ -169,86 +343,68 @@ export default function ChapterTree({
     onToggle,
   };
 
+  const handleDragStart = ({ operation }) => {
+    const chapter = chapters.find(
+      (item) => Number(item.id) === Number(operation.source?.data.chapterId),
+    );
+    setOpenMenuId(null);
+    setActiveDragChapter(chapter || null);
+  };
+
+  const handleDragEnd = ({ canceled, operation }) => {
+    const sourceChapter = chapters.find(
+      (item) => Number(item.id) === Number(operation.source?.data.chapterId),
+    );
+    const target = operation.target?.data;
+    setActiveDragChapter(null);
+
+    if (canceled || !sourceChapter || !isValidChapterDrop(sourceChapter, target, chapters)) return;
+    onDrop(sourceChapter, target);
+  };
+
   return (
-    <nav className="chapter-tree" aria-label="Struktura rozdziałów">
-      <div className="chapter-tree__heading">
-        <div>
-          <span className="chapter-tree__eyebrow">Struktura</span>
-          <h1>Rozdziały</h1>
+    <DragDropProvider onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <nav className="chapter-tree" aria-label="Struktura rozdziałów">
+        <div className="chapter-tree__heading">
+          <div>
+            <span className="chapter-tree__eyebrow">Struktura</span>
+            <h1>Rozdziały</h1>
+          </div>
+          <button type="button" className="chapter-tree__add" onClick={onCreate} aria-label="Dodaj rozdział">+</button>
         </div>
-        <button type="button" className="chapter-tree__add" onClick={onCreate} aria-label="Dodaj rozdział">+</button>
-      </div>
 
-      {isLoading ? (
-        <p className="chapter-tree__state" role="status">Ładowanie struktury…</p>
-      ) : (
-        <>
-          <section className="chapter-tree__section" aria-labelledby="manuscript-heading">
-            <h2 id="manuscript-heading">Rękopis</h2>
-            {structure.roots.length === 0 ? (
-              <p className="chapter-tree__state">Brak rozdziałów w rękopisie.</p>
-            ) : (
-              <ul className="chapter-tree__list">
-                {structure.roots.map((root) => {
-                  const isExpanded = expandedIds.has(Number(root.chapter.id));
+        {isLoading ? (
+          <p className="chapter-tree__state" role="status">Ładowanie struktury…</p>
+        ) : (
+          <>
+            <ChapterSection activeChapter={activeDragChapter} chapters={chapters} kind="manuscript" label="Upuść szkic jako rozdział główny" labelledBy="manuscript-heading">
+              <h2 id="manuscript-heading">Rękopis</h2>
+              {structure.roots.length === 0 && !activeDragChapter ? (
+                <p className="chapter-tree__state">Brak rozdziałów w rękopisie.</p>
+              ) : (
+                <ChapterBranches {...branchProps} branches={structure.roots} isInManuscript />
+              )}
+            </ChapterSection>
 
-                  return (
-                    <li key={root.chapter.id} className="chapter-tree__branch">
-                      <ul className="chapter-tree__list">
-                        <ChapterRow
-                          {...rowProps}
-                          chapter={root.chapter}
-                          canAddSubchapter={
-                            root.chapter.parent_id === null
-                            || root.chapter.parent_id === undefined
-                          }
-                          canReorder={Number(root.chapter.chapter_number) > 0}
-                          hasChildren={root.children.length > 0}
-                          isExpanded={isExpanded}
-                          isMenuOpen={Number(openMenuId) === Number(root.chapter.id)}
-                          number={root.number}
-                        />
-                      </ul>
-                      {isExpanded && root.children.length > 0 && (
-                        <ul className="chapter-tree__list chapter-tree__children">
-                          {root.children.map((child) => (
-                            <ChapterRow
-                              {...rowProps}
-                              key={child.chapter.id}
-                              chapter={child.chapter}
-                              depth={1}
-                              isMenuOpen={Number(openMenuId) === Number(child.chapter.id)}
-                              number={child.number}
-                            />
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
-
-          <section className="chapter-tree__section chapter-tree__section--drafts" aria-labelledby="drafts-heading">
-            <h2 id="drafts-heading">Szkice</h2>
-            {structure.drafts.length === 0 ? (
-              <p className="chapter-tree__state">Brak szkiców.</p>
-            ) : (
-              <ul className="chapter-tree__list">
-                {structure.drafts.map((chapter) => (
-                  <ChapterRow
-                    {...rowProps}
-                    key={chapter.id}
-                    chapter={chapter}
-                    isMenuOpen={Number(openMenuId) === Number(chapter.id)}
-                  />
-                ))}
-              </ul>
-            )}
-          </section>
-        </>
-      )}
-    </nav>
+            <ChapterSection activeChapter={activeDragChapter} chapters={chapters} kind="drafts" label="Upuść jako szkic" labelledBy="drafts-heading">
+              <h2 id="drafts-heading">Szkice</h2>
+              {structure.drafts.length === 0 && !activeDragChapter ? (
+                <p className="chapter-tree__state">Brak szkiców.</p>
+              ) : (
+                <ChapterBranches {...branchProps} branches={structure.drafts} isInManuscript={false} />
+              )}
+            </ChapterSection>
+          </>
+        )}
+        <DragOverlay className="chapter-tree__drag-overlay">
+          {activeDragChapter ? (
+            <div>
+              <span aria-hidden="true">⠿</span>
+              <strong>{activeDragChapter.name}</strong>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </nav>
+    </DragDropProvider>
   );
 }

@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-20 — Drag-and-drop struktury rozdziałów
+
+- Zakres: uchwyty przeciągania dla rękopisu, podrozdziałów i szkiców, dostępne strefy upuszczania, mały formularz numeru oraz jedna autoryzowana operacja API aktualizująca strukturę w transakcji.
+- Wynik: rozdziały i dzieci można porządkować w swoich grupach z zachowaniem istniejącego zestawu numerów. Szkic można przenieść jako rozdział lub podrozdział, a rozdział z dziećmi trafia do szkiców bez utraty hierarchii, treści, numerów i metadanych. Zmiana optymistyczna jest cofana po błędzie, a otwarty dokument i niezapisana treść edytora pozostają aktywne.
+- Testy: testy zakresowe struktury i autoryzacji — 31 testów i 294 asercje; pełny PHPUnit — 64 testy i 483 asercje; lint i build React SPA zakończone powodzeniem. Build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-10-20 — Obsługa podrozdziałów w przestrzeni roboczej
 
 - Zakres: tworzenie jednego poziomu podrozdziałów z menu rodzica, zwijane drzewo, numeracja prezentacyjna, wspólny edytor oraz obsługa usuwania i błędów kontraktu API.
