@@ -42,7 +42,11 @@ export default function ChapterSwapModal({ chapter, chapters, onClose, onSubmit 
           <select value={targetId} onChange={(event) => setTargetId(event.target.value)} required autoFocus>
             <option value="">Wybierz rozdział</option>
             {chapters
-              .filter((item) => item.id !== chapter.id && Number(item.chapter_number) > 0)
+              .filter((item) => (
+                item.id !== chapter.id
+                && (item.parent_id === null || item.parent_id === undefined)
+                && Number(item.chapter_number) > 0
+              ))
               .map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>

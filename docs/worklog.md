@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-20 — Obsługa podrozdziałów w przestrzeni roboczej
+
+- Zakres: tworzenie jednego poziomu podrozdziałów z menu rodzica, zwijane drzewo, numeracja prezentacyjna, wspólny edytor oraz obsługa usuwania i błędów kontraktu API.
+- Wynik: użytkownik nadaje dziecku dodatni numer lokalny, a SPA prezentuje go razem z numerem rodzica, np. `3.2`. Numery główne są unikalne w projekcie, a lokalne tylko wśród dzieci jednego rodzica; obie listy są sortowane liczbowo bez automatycznego uzupełniania luk. Formularz edycji pozwala przenieść szkic do rękopisu jako rozdział główny albo podrozdział. Nowo utworzony rozdział otrzymuje kompletny stan lokalny, więc akcja dodania podrozdziału jest dostępna bez odświeżenia strony.
+- Testy: testy zakresowe struktury, treści i migracji rozdziałów — 16 testów i 136 asercji; pełny PHPUnit — 56 testów i 419 asercji; lint i build React SPA zakończone powodzeniem. Build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-10-19 — Pisanie i zapis treści rozdziału
 
 - Zakres: niekontrolowany edytor TinyMCE dla `description_long`, typowe formatowanie tekstu, edycja synopsis i notatek w panelu, wspólny zapis, status dirty, skrót `Ctrl+S`/`Cmd+S` oraz ostrzeżenia przed utratą zmian.

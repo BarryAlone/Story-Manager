@@ -34,5 +34,6 @@
 - [x] E2: Dodano backendowy model treści i dwupoziomowej struktury rozdziałów z migracją istniejących danych.
 - [x] E2: Dodano frontendową przestrzeń roboczą rozdziałów z drzewem rękopisu, szkicami i panelem informacji.
 - [x] E2: Dodano edycję treści rozdziału w TinyMCE, wspólny zapis synopsis i notatek oraz serwerową sanitację HTML.
+- [x] E2: Dodano tworzenie, zwijanie, edycję i usuwanie jednego poziomu podrozdziałów z lokalną numeracją użytkownika.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.

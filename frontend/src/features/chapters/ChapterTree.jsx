@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 
-function ChapterMenu({ chapter, onClose, onDelete, onEdit, onMove, onSwap }) {
-  const canReorder = Number(chapter.chapter_number) > 0;
-
+function ChapterMenu({
+  canAddSubchapter,
+  canReorder,
+  chapter,
+  onAddSubchapter,
+  onClose,
+  onDelete,
+  onEdit,
+  onMove,
+  onSwap,
+}) {
   const runAction = (action) => {
     onClose();
     action();
@@ -10,6 +18,11 @@ function ChapterMenu({ chapter, onClose, onDelete, onEdit, onMove, onSwap }) {
 
   return (
     <div className="chapter-tree__menu" role="menu" aria-label={`Akcje dla ${chapter.name}`}>
+      {canAddSubchapter && (
+        <button type="button" role="menuitem" onClick={() => runAction(() => onAddSubchapter(chapter))}>
+          Dodaj podrozdział
+        </button>
+      )}
       {canReorder && (
         <>
           <button type="button" role="menuitem" onClick={() => runAction(() => onMove(chapter, 'up'))}>Przesuń wyżej</button>
@@ -25,6 +38,8 @@ function ChapterMenu({ chapter, onClose, onDelete, onEdit, onMove, onSwap }) {
 
 function ChapterRow({
   activeId,
+  canAddSubchapter = false,
+  canReorder = false,
   chapter,
   depth = 0,
   hasChildren = false,
@@ -32,6 +47,7 @@ function ChapterRow({
   isMenuOpen,
   menuRef,
   number,
+  onAddSubchapter,
   onDelete,
   onEdit,
   onMenuToggle,
@@ -84,7 +100,10 @@ function ChapterRow({
           </button>
           {isMenuOpen && (
             <ChapterMenu
+              canAddSubchapter={canAddSubchapter}
+              canReorder={canReorder}
               chapter={chapter}
+              onAddSubchapter={onAddSubchapter}
               onClose={() => onMenuToggle(null)}
               onDelete={onDelete}
               onEdit={onEdit}
@@ -102,6 +121,7 @@ export default function ChapterTree({
   activeId,
   expandedIds,
   isLoading,
+  onAddSubchapter,
   onCreate,
   onDelete,
   onEdit,
@@ -139,6 +159,7 @@ export default function ChapterTree({
   const rowProps = {
     activeId,
     menuRef,
+    onAddSubchapter,
     onDelete,
     onEdit,
     onMenuToggle: toggleMenu,
@@ -177,6 +198,11 @@ export default function ChapterTree({
                         <ChapterRow
                           {...rowProps}
                           chapter={root.chapter}
+                          canAddSubchapter={
+                            root.chapter.parent_id === null
+                            || root.chapter.parent_id === undefined
+                          }
+                          canReorder={Number(root.chapter.chapter_number) > 0}
                           hasChildren={root.children.length > 0}
                           isExpanded={isExpanded}
                           isMenuOpen={Number(openMenuId) === Number(root.chapter.id)}
