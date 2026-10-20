@@ -8,6 +8,7 @@ import ChapterToolbar from './ChapterToolbar';
 import ChapterTree from './ChapterTree';
 import { buildChapterStructure } from './chapterStructure';
 import useChapters from './useChapters';
+import useChapterWriting from './useChapterWriting';
 import './chapterWorkspace.css';
 
 export default function ChapterWorkspace() {
@@ -16,6 +17,17 @@ export default function ChapterWorkspace() {
   const chapterStore = useChapters(projectId);
   const structure = useMemo(() => buildChapterStructure(chapterStore.chapters), [chapterStore.chapters]);
   const activeChapter = chapterStore.chapters.find((chapter) => Number(chapter.id) === Number(chapterId)) || null;
+  const {
+    draft,
+    isDirty,
+    isSaving,
+    markEditorDirty,
+    registerEditor,
+    resetFromChapter,
+    save: saveWriting,
+    status: writingStatus,
+    updateDraft,
+  } = useChapterWriting(activeChapter, chapterStore.updateChapterContent);
   const [collapsedIds, setCollapsedIds] = useState(() => new Set());
   const [formChapter, setFormChapter] = useState(undefined);
   const [swapChapter, setSwapChapter] = useState(null);
@@ -27,20 +39,42 @@ export default function ChapterWorkspace() {
       .filter((id) => !collapsedIds.has(id)),
   ), [collapsedIds, structure.roots]);
 
+  const discardWritingChanges = useCallback(() => {
+    if (!isDirty) return true;
+
+    const shouldDiscard = window.confirm(
+      'Ten dokument ma niezapisane zmiany. Czy chcesz je odrzucić?',
+    );
+
+    if (shouldDiscard) resetFromChapter();
+    return shouldDiscard;
+  }, [isDirty, resetFromChapter]);
+
   const selectChapter = useCallback((chapter) => {
+    if (Number(chapter.id) === Number(chapterId)) return;
+    if (!discardWritingChanges()) return;
+
     setActionError('');
     setIsInspectorOpen(false);
     navigate(`/project/${projectId}/chapters/${chapter.id}`);
-  }, [navigate, projectId]);
+  }, [chapterId, discardWritingChanges, navigate, projectId]);
 
   const closeModal = useCallback(() => setFormChapter(undefined), []);
   const closeInspector = useCallback(() => setIsInspectorOpen(false), []);
 
   const handleSave = async (payload) => {
     const savedChapter = await chapterStore.saveChapter(payload);
+    if (Number(savedChapter.id) === Number(activeChapter?.id)) {
+      resetFromChapter(savedChapter);
+    }
     setFormChapter(undefined);
     selectChapter(savedChapter);
   };
+
+  const openChapterForm = useCallback((chapter) => {
+    if (!discardWritingChanges()) return;
+    setFormChapter(chapter);
+  }, [discardWritingChanges]);
 
   const handleDelete = async (chapter) => {
     if (!window.confirm(`Czy na pewno chcesz trwale usunąć „${chapter.name}”?`)) return;
@@ -82,9 +116,9 @@ export default function ChapterWorkspace() {
           activeId={chapterId}
           expandedIds={expandedIds}
           isLoading={chapterStore.isLoading}
-          onCreate={() => setFormChapter(null)}
+          onCreate={() => openChapterForm(null)}
           onDelete={handleDelete}
-          onEdit={setFormChapter}
+          onEdit={openChapterForm}
           onMove={handleMove}
           onSelect={selectChapter}
           onSwap={setSwapChapter}
@@ -96,7 +130,11 @@ export default function ChapterWorkspace() {
           <ChapterToolbar
             chapter={activeChapter}
             documentNumber={structure.numberById.get(Number(activeChapter?.id))}
-            onEdit={setFormChapter}
+            isDirty={isDirty}
+            isSaving={isSaving}
+            onEdit={openChapterForm}
+            onSave={saveWriting}
+            status={writingStatus}
           />
 
           <div className="chapter-workspace__content">
@@ -112,13 +150,17 @@ export default function ChapterWorkspace() {
               hasDocuments={chapterStore.chapters.length > 0}
               isLoading={chapterStore.isLoading}
               loadError={chapterStore.loadError}
+              onEditorDirty={markEditorDirty}
+              onEditorInit={registerEditor}
               onRetry={chapterStore.loadChapters}
             />
 
             <ChapterInspector
               chapter={activeChapter}
+              draft={draft}
               isOpen={isInspectorOpen && Boolean(activeChapter)}
               onClose={closeInspector}
+              onFieldChange={updateDraft}
               onToggle={() => setIsInspectorOpen((current) => !current)}
             />
           </div>

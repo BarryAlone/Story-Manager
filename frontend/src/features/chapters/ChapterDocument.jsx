@@ -1,4 +1,14 @@
-export default function ChapterDocument({ chapter, hasDocuments, isLoading, loadError, onRetry }) {
+import ChapterEditor from './ChapterEditor';
+
+export default function ChapterDocument({
+  chapter,
+  hasDocuments,
+  isLoading,
+  loadError,
+  onEditorDirty,
+  onEditorInit,
+  onRetry,
+}) {
   if (isLoading) {
     return <div className="chapter-document__state" role="status">Ładowanie rozdziałów…</div>;
   }
@@ -33,11 +43,12 @@ export default function ChapterDocument({ chapter, hasDocuments, isLoading, load
 
   return (
     <article className="chapter-document" aria-label={`Treść dokumentu ${chapter.name}`}>
-      <div className="chapter-document__canvas">
-        <div className="chapter-document__placeholder-icon" aria-hidden="true">¶</div>
-        <strong>Obszar treści jest przygotowany.</strong>
-        <p>Edytor tekstu zostanie podłączony w kolejnym etapie E2.</p>
-      </div>
+      <ChapterEditor
+        key={chapter.id}
+        chapter={chapter}
+        onDirty={onEditorDirty}
+        onInit={onEditorInit}
+      />
     </article>
   );
 }

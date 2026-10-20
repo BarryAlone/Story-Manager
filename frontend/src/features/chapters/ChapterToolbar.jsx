@@ -1,4 +1,12 @@
-export default function ChapterToolbar({ chapter, documentNumber, onEdit }) {
+export default function ChapterToolbar({
+  chapter,
+  documentNumber,
+  isDirty,
+  isSaving,
+  onEdit,
+  onSave,
+  status,
+}) {
   return (
     <header className="chapter-toolbar">
       <div className="chapter-toolbar__document">
@@ -11,7 +19,25 @@ export default function ChapterToolbar({ chapter, documentNumber, onEdit }) {
           <h1>Wybierz dokument</h1>
         )}
       </div>
-      <button type="button" onClick={() => onEdit(chapter)} disabled={!chapter}>Edytuj dane</button>
+      <div className="chapter-toolbar__actions">
+        {status.message && (
+          <span
+            className={`chapter-toolbar__status chapter-toolbar__status--${status.kind}`}
+            role={status.kind === 'error' ? 'alert' : 'status'}
+          >
+            {status.message}
+          </span>
+        )}
+        <button type="button" onClick={() => onEdit(chapter)} disabled={!chapter || isSaving}>Edytuj dane</button>
+        <button
+          type="button"
+          className="chapter-toolbar__save"
+          onClick={onSave}
+          disabled={!chapter || !isDirty || isSaving}
+        >
+          {isSaving ? 'Zapisywanie…' : 'Zapisz'}
+        </button>
+      </div>
     </header>
   );
 }

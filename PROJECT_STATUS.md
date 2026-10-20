@@ -16,11 +16,11 @@ Story Manager to aplikacja webowa wspierająca tworzenie książek i komiksów. 
 
 ### Backend
 
-Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Rozdziały przechowują synopsis, właściwą treść i zwykłe notatki, rozróżniają rękopis od szkiców oraz obsługują dwupoziomową hierarchię i techniczną kolejność. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
+Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Rozdziały przechowują synopsis, właściwą treść i zwykłe notatki, rozróżniają rękopis od szkiców oraz obsługują dwupoziomową hierarchię i techniczną kolejność. HTML właściwej treści jest przed zapisem oczyszczany po stronie serwera według jawnej listy elementów i wartości stylów zgodnej z funkcjami edytora. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
 
 ### Frontend
 
-SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Rozdziały korzystają z przestrzeni roboczej z drzewem rękopisu i szkiców, centralnym obszarem dokumentu oraz nakładanym panelem synopsis, notatek i metadanych. Graf relacji ma odchudzony pasek wyszukiwania i ustawień, wielokrotny filtr typów w legendzie nakładanej na canvas oraz minimalistyczny prawy panel. Pełna lista, relacje wybranej postaci i relacja wskazana na grafie korzystają ze wspólnego rozwijanego kafelka z edycją nazwy i potwierdzanym usuwaniem.
+SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Rozdziały korzystają z przestrzeni roboczej z drzewem rękopisu i szkiców, centralnym edytorem TinyMCE oraz nakładanym panelem edytowalnego synopsis, notatek i metadanych. Wspólny zapis sygnalizuje stan zmian, obsługuje skrót klawiaturowy i ostrzega przed utratą niezapisanej pracy. Graf relacji ma odchudzony pasek wyszukiwania i ustawień, wielokrotny filtr typów w legendzie nakładanej na canvas oraz minimalistyczny prawy panel. Pełna lista, relacje wybranej postaci i relacja wskazana na grafie korzystają ze wspólnego rozwijanego kafelka z edycją nazwy i potwierdzanym usuwaniem.
 
 ### Uwierzytelnianie
 
@@ -40,7 +40,8 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 - API dla głównych zasobów narracyjnych;
 - podstawowe operacje na projektach, rozdziałach, postaciach, atrybutach i relacjach;
 - backendowa struktura treści rozdziałów z notatkami, rękopisem, szkicami, kolejnością i jednym poziomem podrozdziałów;
-- frontendowa przestrzeń rozdziałów z wyliczaną numeracją, zwijanym drzewem, oddzielnymi szkicami i nakładanym panelem informacji;
+- frontendowa przestrzeń rozdziałów z numeracją podaną przez użytkownika, zwijanym drzewem, oddzielnymi szkicami i nakładanym panelem informacji;
+- edycja właściwej treści rozdziału w TinyMCE oraz wspólny zapis treści, synopsis i notatek z ochroną niezapisanych zmian;
 - osobne SPA z widokami głównych obszarów produktu;
 - backendowa rejestracja, logowanie, wylogowanie i odczyt bieżącego użytkownika;
 - sesyjne logowanie, rejestracja i wylogowanie w SPA wraz z ochroną tras na poziomie UI;
@@ -58,7 +59,7 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 - pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
 - weryfikacja e-mail pozostaje poza MVP i nie ma interfejsu w SPA.
-- SPA prezentuje strukturę i metadane rozdziałów, ale nie udostępnia jeszcze edytora ich właściwej treści ani edycji nowych pól strukturalnych.
+- SPA nie udostępnia jeszcze interfejsu tworzenia i przenoszenia podrozdziałów ani drag-and-drop struktury.
 
 ## Ostatnia aktualizacja
 

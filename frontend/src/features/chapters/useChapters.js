@@ -115,6 +115,40 @@ export default function useChapters(projectId) {
     await loadChapters({ showLoading: false });
   };
 
+  const updateChapterContent = useCallback(async (chapter, content) => {
+    const payload = {
+      project_id: Number(projectId),
+      chapter_number: chapter.chapter_number,
+      name: chapter.name,
+      description: content.description,
+      description_long: content.description_long,
+      notes: content.notes,
+      parent_id: chapter.parent_id,
+      sort_order: chapter.sort_order,
+      is_in_manuscript: chapter.is_in_manuscript,
+      timeline_point_start: chapter.timeline_point_start,
+      timeline_point_end: chapter.timeline_point_end,
+      display_label: chapter.display_label,
+    };
+    const response = await apiFetch(`/api/chapters/${chapter.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await readJson(response);
+
+    if (!response.ok) {
+      const validationMessage = Object.values(data?.errors || {}).flat()[0];
+      throw new Error(validationMessage || responseMessage(data, 'Nie udało się zapisać treści rozdziału.'));
+    }
+
+    setChapters((current) => current.map((item) => (
+      Number(item.id) === Number(chapter.id) ? data : item
+    )));
+
+    return data;
+  }, [projectId]);
+
   return {
     chapters,
     deleteChapter,
@@ -123,5 +157,6 @@ export default function useChapters(projectId) {
     loadError,
     saveChapter,
     swapChapters,
+    updateChapterContent,
   };
 }

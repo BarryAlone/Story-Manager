@@ -35,6 +35,13 @@
 
 - `description` pozostaje synopsisem, `description_long` właściwą treścią, a `notes` przechowuje zwykłe notatki.
 - Hierarchia ma maksymalnie dwa poziomy: rozdział najwyższego poziomu i jego bezpośrednie podrozdziały. Rodzic i dziecko muszą należeć do tego samego projektu i rękopisu.
-- `sort_order` jest techniczną kolejnością w obrębie struktury, niezależną od zachowanego dla zgodności pola `chapter_number`.
-- Numeracja widoczna w drzewie SPA jest wyliczana z aktualnej kolejności elementów i ich rodziców; `chapter_number` pozostaje przejściowo obsługiwane przez starsze operacje formularza i zamiany.
+- `chapter_number` jest numerem nadawanym przez użytkownika, wyświetlanym bez przeliczania i stanowiącym podstawową kolejność rozdziałów rękopisu.
+- `sort_order` pozostaje technicznym polem struktury i kolejnością zapasową dla elementów bez właściwego numeru; nie zastępuje numeracji użytkownika.
 - Rozdział posiadający dzieci nie jest usuwany kaskadowo. API blokuje taką operację odpowiedzią `409 Conflict`, dopóki dzieci nie zostaną przeniesione lub usunięte jawnie.
+
+## Treść HTML rozdziałów
+
+- Właściwa treść rozdziału pozostaje HTML-em w polu `description_long` i jest edytowana w SPA przez TinyMCE Cloud bez dodatków premium i bez obrazów osadzanych w treści.
+- TinyMCE działa jako komponent niekontrolowany: React przechowuje stan zmiany, a HTML jest pobierany z instancji dopiero podczas jawnego zapisu.
+- Backend oczyszcza nową i aktualizowaną treść przez `symfony/html-sanitizer` według jawnej listy obejmującej akapity, nagłówki, podstawowe formatowanie, listy, cytaty, łamania wiersza i bezpieczne odnośniki.
+- Style czcionki, rozmiaru, interlinii, wyrównania, wcięcia i kolorów są zachowywane wyłącznie dla wartości udostępnionych przez edytor. Pozostałe właściwości CSS, skrypty, ramki, atrybuty zdarzeń i niebezpieczne schematy adresów nie są zapisywane. Istniejące rekordy nie są przepisywane migracją.

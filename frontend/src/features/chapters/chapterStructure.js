@@ -3,6 +3,27 @@ function compareByOrder(left, right) {
   return orderDifference || Number(left.id) - Number(right.id);
 }
 
+function compareByChapterNumber(left, right) {
+  const leftNumber = Number(left.chapter_number);
+  const rightNumber = Number(right.chapter_number);
+  const leftHasNumber = Number.isFinite(leftNumber) && leftNumber > 0;
+  const rightHasNumber = Number.isFinite(rightNumber) && rightNumber > 0;
+
+  if (leftHasNumber && rightHasNumber && leftNumber !== rightNumber) {
+    return leftNumber - rightNumber;
+  }
+  if (leftHasNumber !== rightHasNumber) {
+    return leftHasNumber ? -1 : 1;
+  }
+
+  return compareByOrder(left, right);
+}
+
+function displayNumber(chapter) {
+  const number = Number(chapter.chapter_number);
+  return Number.isFinite(number) && number > 0 ? String(number) : '';
+}
+
 function belongsToManuscript(chapter) {
   if (typeof chapter.is_in_manuscript === 'boolean') {
     return chapter.is_in_manuscript;
@@ -27,15 +48,15 @@ export function buildChapterStructure(chapters) {
 
   const roots = manuscript
     .filter((chapter) => chapter.parent_id === null || !manuscriptIds.has(Number(chapter.parent_id)))
-    .sort(compareByOrder)
-    .map((chapter, rootIndex) => ({
+    .sort(compareByChapterNumber)
+    .map((chapter) => ({
       chapter,
-      number: String(rootIndex + 1),
+      number: displayNumber(chapter),
       children: (childrenByParent.get(Number(chapter.id)) || [])
-        .sort(compareByOrder)
-        .map((child, childIndex) => ({
+        .sort(compareByChapterNumber)
+        .map((child) => ({
           chapter: child,
-          number: `${rootIndex + 1}.${childIndex + 1}`,
+          number: displayNumber(child),
         })),
     }));
 
