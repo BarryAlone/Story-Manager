@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ChapterDocument from './ChapterDocument';
 import ChapterFormModal from './ChapterFormModal';
 import ChapterInspector from './ChapterInspector';
+import ChapterSubchapterModal from './ChapterSubchapterModal';
 import ChapterSwapModal from './ChapterSwapModal';
 import ChapterToolbar from './ChapterToolbar';
 import ChapterTree from './ChapterTree';
@@ -30,6 +31,7 @@ export default function ChapterWorkspace() {
   } = useChapterWriting(activeChapter, chapterStore.updateChapterContent);
   const [collapsedIds, setCollapsedIds] = useState(() => new Set());
   const [formChapter, setFormChapter] = useState(undefined);
+  const [subchapterParent, setSubchapterParent] = useState(null);
   const [swapChapter, setSwapChapter] = useState(null);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [actionError, setActionError] = useState('');
@@ -60,10 +62,18 @@ export default function ChapterWorkspace() {
   }, [chapterId, discardWritingChanges, navigate, projectId]);
 
   const closeModal = useCallback(() => setFormChapter(undefined), []);
+  const closeSubchapterModal = useCallback(() => setSubchapterParent(null), []);
   const closeInspector = useCallback(() => setIsInspectorOpen(false), []);
 
   const handleSave = async (payload) => {
     const savedChapter = await chapterStore.saveChapter(payload);
+    if (savedChapter.parent_id !== null && savedChapter.parent_id !== undefined) {
+      setCollapsedIds((current) => {
+        const next = new Set(current);
+        next.delete(Number(savedChapter.parent_id));
+        return next;
+      });
+    }
     if (Number(savedChapter.id) === Number(activeChapter?.id)) {
       resetFromChapter(savedChapter);
     }
@@ -76,14 +86,39 @@ export default function ChapterWorkspace() {
     setFormChapter(chapter);
   }, [discardWritingChanges]);
 
+  const openSubchapterForm = useCallback((parent) => {
+    if (!discardWritingChanges()) return;
+    setActionError('');
+    setSubchapterParent(parent);
+  }, [discardWritingChanges]);
+
+  const handleCreateSubchapter = async (payload) => {
+    const savedChapter = await chapterStore.createSubchapter(payload);
+    const parentId = Number(payload.parent.id);
+
+    setCollapsedIds((current) => {
+      const next = new Set(current);
+      next.delete(parentId);
+      return next;
+    });
+    setSubchapterParent(null);
+    selectChapter(savedChapter);
+  };
+
   const handleDelete = async (chapter) => {
     if (!window.confirm(`Czy na pewno chcesz trwale usunąć „${chapter.name}”?`)) return;
+    if (Number(chapter.id) === Number(chapterId) && !discardWritingChanges()) return;
     setActionError('');
 
     try {
       await chapterStore.deleteChapter(chapter.id);
       if (Number(chapter.id) === Number(chapterId)) {
-        navigate(`/project/${projectId}/chapters`);
+        const parent = chapterStore.chapters.find(
+          (item) => Number(item.id) === Number(chapter.parent_id),
+        );
+        navigate(parent
+          ? `/project/${projectId}/chapters/${parent.id}`
+          : `/project/${projectId}/chapters`);
       }
     } catch (error) {
       setActionError(error.message || 'Nie udało się usunąć rozdziału.');
@@ -116,6 +151,7 @@ export default function ChapterWorkspace() {
           activeId={chapterId}
           expandedIds={expandedIds}
           isLoading={chapterStore.isLoading}
+          onAddSubchapter={openSubchapterForm}
           onCreate={() => openChapterForm(null)}
           onDelete={handleDelete}
           onEdit={openChapterForm}
@@ -168,7 +204,20 @@ export default function ChapterWorkspace() {
       </div>
 
       {formChapter !== undefined && (
-        <ChapterFormModal chapter={formChapter} onClose={closeModal} onSubmit={handleSave} />
+        <ChapterFormModal
+          chapter={formChapter}
+          onClose={closeModal}
+          onSubmit={handleSave}
+          parentOptions={structure.roots.map((root) => root.chapter)}
+        />
+      )}
+
+      {subchapterParent && (
+        <ChapterSubchapterModal
+          onClose={closeSubchapterModal}
+          onSubmit={handleCreateSubchapter}
+          parent={subchapterParent}
+        />
       )}
 
       {swapChapter && (

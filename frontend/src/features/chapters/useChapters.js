@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiFetch, readJson } from '../../api';
 
 function responseMessage(data, fallback) {
-  return data?.message || fallback;
+  const validationMessage = Object.values(data?.errors || {}).flat()[0];
+  return validationMessage || data?.message || fallback;
 }
 
 async function requestChapters(projectId) {
@@ -64,7 +65,15 @@ export default function useChapters(projectId) {
     formData.append('name', fields.name);
     formData.append('description', fields.description || '');
 
-    if (fields.chapterNumber) formData.append('chapter_number', fields.chapterNumber);
+    if (chapter) {
+      const isDraft = fields.placement === 'draft';
+      const isSubchapter = fields.placement === 'subchapter';
+      formData.append('chapter_number', isDraft ? '' : fields.chapterNumber);
+      formData.append('is_in_manuscript', isDraft ? '0' : '1');
+      formData.append('parent_id', isSubchapter ? fields.parentId : '');
+    } else if (fields.chapterNumber) {
+      formData.append('chapter_number', fields.chapterNumber);
+    }
     if (fields.timelinePointStart) formData.append('timeline_point_start', fields.timelinePointStart);
     if (fields.timelinePointEnd) formData.append('timeline_point_end', fields.timelinePointEnd);
     if (fields.displayLabel) formData.append('display_label', fields.displayLabel);
@@ -98,6 +107,29 @@ export default function useChapters(projectId) {
     }
 
     setChapters((current) => current.filter((chapter) => chapter.id !== chapterId));
+  };
+
+  const createSubchapter = async ({ parent, fields }) => {
+    const response = await apiFetch('/api/chapters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_id: Number(projectId),
+        parent_id: parent.id,
+        is_in_manuscript: true,
+        chapter_number: Number(fields.chapterNumber),
+        name: fields.name,
+        description: fields.description || '',
+      }),
+    });
+    const data = await readJson(response);
+
+    if (!response.ok) {
+      throw new Error(responseMessage(data, 'Nie udało się utworzyć podrozdziału.'));
+    }
+
+    setChapters((current) => [...current, data]);
+    return data;
   };
 
   const swapChapters = async (chapterId, payload) => {
@@ -151,6 +183,7 @@ export default function useChapters(projectId) {
 
   return {
     chapters,
+    createSubchapter,
     deleteChapter,
     isLoading,
     loadChapters,

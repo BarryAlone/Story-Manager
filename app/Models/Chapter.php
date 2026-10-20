@@ -48,6 +48,7 @@ class Chapter extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id')
+            ->orderBy('chapter_number')
             ->orderBy('sort_order')
             ->orderBy('id');
     }

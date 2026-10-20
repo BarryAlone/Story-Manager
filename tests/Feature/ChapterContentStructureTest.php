@@ -25,6 +25,7 @@ class ChapterContentStructureTest extends TestCase
             'description_long' => '<p>Long content</p>',
             'notes' => 'Plain notes',
         ])->assertCreated()
+            ->assertJsonStructure(['parent_id'])
             ->assertJsonPath('description', 'Synopsis')
             ->assertJsonPath('description_long', '<p>Long content</p>')
             ->assertJsonPath('notes', 'Plain notes')
@@ -71,16 +72,146 @@ class ChapterContentStructureTest extends TestCase
             'project_id' => $project->id,
             'parent_id' => $parent->id,
             'is_in_manuscript' => true,
+            'chapter_number' => 1,
             'sort_order' => 1,
             'name' => 'Scene one',
         ])->assertCreated()
             ->assertJsonPath('parent_id', $parent->id)
-            ->assertJsonPath('is_in_manuscript', true);
+            ->assertJsonPath('is_in_manuscript', true)
+            ->assertJsonPath('chapter_number', 1);
 
         $child = Chapter::findOrFail($response->json('id'));
 
         $this->assertTrue($child->parent->is($parent));
         $this->assertTrue($parent->children()->first()->is($child));
+    }
+
+    public function test_subchapter_numbers_are_local_to_the_parent_and_sorted_numerically(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->project($user, 'Novel');
+        $parent = $this->chapter($project, 'Chapter three', true, null, 1);
+        $parent->update(['chapter_number' => 3]);
+        $laterChild = $this->chapter($project, 'Seventh scene', true, $parent->id, 4);
+        $laterChild->update(['chapter_number' => 7]);
+
+        $response = $this->actingAs($user)->postJson('/api/chapters', [
+            'project_id' => $project->id,
+            'parent_id' => $parent->id,
+            'is_in_manuscript' => true,
+            'sort_order' => 99,
+            'chapter_number' => 2,
+            'name' => 'Second scene',
+        ])->assertCreated()
+            ->assertJsonPath('parent_id', $parent->id)
+            ->assertJsonPath('chapter_number', 2)
+            ->assertJsonPath('sort_order', 5);
+
+        $this->assertDatabaseHas('chapters', [
+            'id' => $response->json('id'),
+            'parent_id' => $parent->id,
+            'chapter_number' => 2,
+            'sort_order' => 5,
+        ]);
+        $this->assertSame(
+            [$response->json('id'), $laterChild->id],
+            $parent->children()->pluck('id')->all(),
+        );
+
+        $otherParent = $this->chapter($project, 'Chapter seven', true, null, 2);
+        $otherParent->update(['chapter_number' => 7]);
+
+        $this->actingAs($user)->postJson('/api/chapters', [
+            'project_id' => $project->id,
+            'parent_id' => $otherParent->id,
+            'is_in_manuscript' => true,
+            'chapter_number' => 2,
+            'name' => 'Another second scene',
+        ])->assertCreated();
+
+        $this->actingAs($user)->postJson('/api/chapters', [
+            'project_id' => $project->id,
+            'parent_id' => $parent->id,
+            'is_in_manuscript' => true,
+            'chapter_number' => 2,
+            'name' => 'Duplicate second scene',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_number');
+    }
+
+    public function test_root_numbers_are_unique_and_manuscript_numbers_are_positive(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->project($user, 'Novel');
+
+        $this->actingAs($user)->postJson('/api/chapters', [
+            'project_id' => $project->id,
+            'chapter_number' => 3,
+            'name' => 'Chapter three',
+        ])->assertCreated();
+
+        $this->actingAs($user)->postJson('/api/chapters', [
+            'project_id' => $project->id,
+            'chapter_number' => 3,
+            'name' => 'Duplicate chapter three',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_number');
+
+        foreach ([0, -1, '3a', '1.5'] as $invalidNumber) {
+            $this->actingAs($user)->postJson('/api/chapters', [
+                'project_id' => $project->id,
+                'chapter_number' => $invalidNumber,
+                'name' => 'Invalid chapter '.$invalidNumber,
+            ])->assertUnprocessable()
+                ->assertJsonValidationErrors('chapter_number');
+        }
+
+        $this->actingAs($user)->postJson('/api/chapters', [
+            'project_id' => $project->id,
+            'is_in_manuscript' => true,
+            'name' => 'Missing number',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_number');
+
+        $this->actingAs($user)->postJson('/api/chapters', [
+            'project_id' => $project->id,
+            'is_in_manuscript' => false,
+            'chapter_number' => 9,
+            'name' => 'Numbered draft',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_number');
+    }
+
+    public function test_draft_can_be_moved_to_manuscript_as_a_root_or_subchapter(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->project($user, 'Novel');
+        $parent = $this->chapter($project, 'Chapter three', true);
+        $parent->update(['chapter_number' => 3]);
+        $rootDraft = $this->chapter($project, 'Future root', false, null, 2);
+        $childDraft = $this->chapter($project, 'Future child', false, null, 3);
+
+        $this->actingAs($user)->putJson("/api/chapters/{$rootDraft->id}", [
+            'project_id' => $project->id,
+            'parent_id' => null,
+            'is_in_manuscript' => true,
+            'chapter_number' => 7,
+            'name' => $rootDraft->name,
+        ])->assertOk()
+            ->assertJsonPath('parent_id', null)
+            ->assertJsonPath('chapter_number', 7)
+            ->assertJsonPath('is_in_manuscript', true);
+
+        $this->actingAs($user)->putJson("/api/chapters/{$childDraft->id}", [
+            'project_id' => $project->id,
+            'parent_id' => $parent->id,
+            'is_in_manuscript' => true,
+            'chapter_number' => 2,
+            'name' => $childDraft->name,
+        ])->assertOk()
+            ->assertJsonPath('parent_id', $parent->id)
+            ->assertJsonPath('chapter_number', 2)
+            ->assertJsonPath('is_in_manuscript', true);
     }
 
     public function test_parent_must_belong_to_the_same_project_and_owner(): void

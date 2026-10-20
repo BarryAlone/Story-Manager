@@ -62,7 +62,7 @@ class ChapterController extends Controller
 
         $chapter = Chapter::create($validated);
 
-        return response()->json($chapter, 201);
+        return response()->json($chapter->refresh(), 201);
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -124,8 +124,8 @@ class ChapterController extends Controller
             'direction' => 'nullable|in:up,down',
         ]);
 
-        if (! $chapter->chapter_number) {
-            return response()->json(['message' => 'Szkiców nie można przesuwać.'], 400);
+        if (! $chapter->chapter_number || $chapter->parent_id !== null) {
+            return response()->json(['message' => 'Można zamieniać tylko numerowane rozdziały główne.'], 400);
         }
 
         $targetChapter = null;
@@ -134,13 +134,20 @@ class ChapterController extends Controller
             $targetChapter = Chapter::findOrFail($validated['target_id']);
             Gate::authorize('update', $targetChapter);
             abort_unless($targetChapter->project_id === $chapter->project_id, 404);
+            if ($targetChapter->parent_id !== null) {
+                return response()->json([
+                    'message' => 'Można zamieniać tylko rozdziały główne.',
+                ], 400);
+            }
         } elseif ($request->input('direction') === 'up') {
             $targetChapter = Chapter::where('project_id', $chapter->project_id)
+                ->whereNull('parent_id')
                 ->where('chapter_number', '<', $chapter->chapter_number)
                 ->orderByDesc('chapter_number')
                 ->first();
         } elseif ($request->input('direction') === 'down') {
             $targetChapter = Chapter::where('project_id', $chapter->project_id)
+                ->whereNull('parent_id')
                 ->where('chapter_number', '>', $chapter->chapter_number)
                 ->orderBy('chapter_number')
                 ->first();
@@ -170,14 +177,25 @@ class ChapterController extends Controller
     /** @return array<string, mixed> */
     private function validateChapter(Request $request, ?Chapter $chapter = null): array
     {
+        $parentId = $request->exists('parent_id')
+            ? ($request->filled('parent_id') ? $request->integer('parent_id') : null)
+            : $chapter?->parent_id;
+        $chapterNumberRule = Rule::unique('chapters', 'chapter_number')
+            ->where('project_id', $request->integer('project_id'))
+            ->where(function ($query) use ($parentId): void {
+                $parentId === null
+                    ? $query->whereNull('parent_id')
+                    : $query->where('parent_id', $parentId);
+            })
+            ->ignore($chapter?->id);
+
         $validated = $request->validate([
             'project_id' => ['required', 'integer', 'exists:projects,id'],
             'chapter_number' => [
                 'nullable',
                 'integer',
-                Rule::unique('chapters')
-                    ->where('project_id', $request->integer('project_id'))
-                    ->ignore($chapter?->id),
+                'min:1',
+                $chapterNumberRule,
             ],
             'name' => [
                 'required',
@@ -230,6 +248,9 @@ class ChapterController extends Controller
             ? ($validated['parent_id'] ?? null)
             : $chapter?->parent_id;
         $isInManuscript = $validated['is_in_manuscript'] ?? $chapter?->is_in_manuscript ?? false;
+        $chapterNumber = array_key_exists('chapter_number', $validated)
+            ? $validated['chapter_number']
+            : $chapter?->chapter_number;
         $errors = [];
         $parent = null;
 
@@ -265,11 +286,27 @@ class ChapterController extends Controller
             }
         }
 
+        if ($isInManuscript && ($chapterNumber === null || $chapterNumber < 1)) {
+            $errors['chapter_number'][] = 'Rozdział w rękopisie musi mieć dodatni numer całkowity.';
+        }
+
+        if (! $isInManuscript) {
+            if ($request->filled('chapter_number')) {
+                $errors['chapter_number'][] = 'Szkic nie może mieć numeru.';
+            }
+
+            $validated['chapter_number'] = null;
+        }
+
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }
 
-        if (! array_key_exists('sort_order', $validated) && $chapter === null) {
+        if ($chapter === null && $parentId !== null) {
+            $siblings = Chapter::where('project_id', $project->id)
+                ->where('parent_id', $parentId);
+            $validated['sort_order'] = ((int) $siblings->max('sort_order')) + 1;
+        } elseif (! array_key_exists('sort_order', $validated) && $chapter === null) {
             $siblings = Chapter::where('project_id', $project->id);
             $parentId === null
                 ? $siblings->whereNull('parent_id')

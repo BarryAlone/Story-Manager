@@ -36,7 +36,9 @@
 - `description` pozostaje synopsisem, `description_long` właściwą treścią, a `notes` przechowuje zwykłe notatki.
 - Hierarchia ma maksymalnie dwa poziomy: rozdział najwyższego poziomu i jego bezpośrednie podrozdziały. Rodzic i dziecko muszą należeć do tego samego projektu i rękopisu.
 - `chapter_number` jest numerem nadawanym przez użytkownika, wyświetlanym bez przeliczania i stanowiącym podstawową kolejność rozdziałów rękopisu.
-- `sort_order` pozostaje technicznym polem struktury i kolejnością zapasową dla elementów bez właściwego numeru; nie zastępuje numeracji użytkownika.
+- `chapter_number` podrozdziału jest dodatnim lokalnym numerem nadawanym przez użytkownika. Interfejs łączy go z numerem rodzica, np. lokalny numer `2` pod rodzicem `3` wyświetla jako `3.2`.
+- Numer główny jest unikalny wśród głównych rozdziałów projektu, a numer lokalny podrozdziału tylko wśród dzieci tego samego rodzica. Luki są dozwolone i usunięcie elementu nie przenumerowuje pozostałych.
+- `sort_order` pozostaje technicznym polem struktury i kolejnością zapasową dla elementów bez właściwego numeru; nie zastępuje numeracji użytkownika. Listy rękopisu są prezentowane rosnąco według `chapter_number`.
 - Rozdział posiadający dzieci nie jest usuwany kaskadowo. API blokuje taką operację odpowiedzią `409 Conflict`, dopóki dzieci nie zostaną przeniesione lub usunięte jawnie.
 
 ## Treść HTML rozdziałów
