@@ -7,7 +7,14 @@ function formatDate(value) {
   return Number.isNaN(date.getTime()) ? null : date.toLocaleString('pl-PL');
 }
 
-export default function ChapterInspector({ chapter, isOpen, onClose, onToggle }) {
+export default function ChapterInspector({
+  chapter,
+  draft,
+  isOpen,
+  onClose,
+  onFieldChange,
+  onToggle,
+}) {
   useEffect(() => {
     if (!isOpen) return undefined;
 
@@ -55,13 +62,25 @@ export default function ChapterInspector({ chapter, isOpen, onClose, onToggle })
           {imageUrl && <img className="chapter-inspector__image" src={imageUrl} alt="Ilustracja rozdziału" />}
 
           <section>
-            <h2>Synopsis</h2>
-            <p>{chapter?.description || 'Brak synopsis.'}</p>
+            <label htmlFor="chapter-synopsis">Synopsis</label>
+            <textarea
+              id="chapter-synopsis"
+              rows="7"
+              value={draft.synopsis}
+              onChange={(event) => onFieldChange('synopsis', event.target.value)}
+              placeholder="Krótko opisz zawartość dokumentu"
+            />
           </section>
 
           <section>
-            <h2>Notatki</h2>
-            <p>{chapter?.notes || 'Brak notatek.'}</p>
+            <label htmlFor="chapter-notes">Notatki</label>
+            <textarea
+              id="chapter-notes"
+              rows="10"
+              value={draft.notes}
+              onChange={(event) => onFieldChange('notes', event.target.value)}
+              placeholder="Zapisz robocze notatki"
+            />
           </section>
 
           <section>

@@ -2,10 +2,16 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-10-19 — Pisanie i zapis treści rozdziału
+
+- Zakres: niekontrolowany edytor TinyMCE dla `description_long`, typowe formatowanie tekstu, edycja synopsis i notatek w panelu, wspólny zapis, status dirty, skrót `Ctrl+S`/`Cmd+S` oraz ostrzeżenia przed utratą zmian.
+- Wynik: zapis aktualizuje lokalny dokument bez przeładowania strony i zachowuje jego strukturę oraz metadane. Obszar pisania ma stałą prowadnicę przewijania i odsuniętą kartę dokumentu. Backend oczyszcza HTML według jawnej listy elementów oraz wartości stylów, usuwa aktywną treść i niebezpieczne adresy oraz ogranicza długość właściwej treści i notatek.
+- Testy: testy zakresowe rozdziałów — 25 testów i 222 asercje; pełny PHPUnit — 53 testy i 377 asercji; lint i build React SPA oraz `composer validate --strict` zakończone powodzeniem. `composer audit` wykrył 39 advisories w 11 istniejących pakietach; nowy `symfony/html-sanitizer` 7.4.20 nie znajduje się na liście pakietów objętych zgłoszeniami.
+
 ## 2026-10-19 — Przestrzeń robocza rozdziałów
 
-- Zakres: modułowy widok z drzewem rękopisu i szkiców, wyliczaną numeracją dwóch poziomów, centralnym obszarem dokumentu oraz prawym panelem synopsis, notatek i metadanych.
-- Wynik: lista i szczegóły korzystają ze wspólnego workspace wypełniającego obszar projektu. Kompaktowe drzewo ma menu akcji i oszczędne zaznaczenie, toolbar pokazuje wybrany dokument, a panel sterowany uchwytem na prawej krawędzi nakłada się na treść i zamyka także klawiszem `Escape`. Zachowano dotychczasowe tworzenie, edycję danych, usuwanie i zamianę kolejności bez podłączania edytora treści.
+- Zakres: modułowy widok z drzewem rękopisu i szkiców, numeracją użytkownika, centralnym obszarem dokumentu oraz prawym panelem synopsis, notatek i metadanych.
+- Wynik: lista i szczegóły korzystają ze wspólnego workspace wypełniającego obszar projektu. Kompaktowe drzewo ma menu akcji i oszczędne zaznaczenie, toolbar pokazuje wybrany dokument, a panel sterowany uchwytem na prawej krawędzi nakłada się na treść i zamyka także klawiszem `Escape`. `chapter_number` jest wyświetlany bez przeliczania i porządkuje rękopis liczbowo, dlatego np. rozdziały 1, 5 i 333 zachowują właśnie te numery oraz kolejność. Zachowano dotychczasowe tworzenie, edycję danych, usuwanie i zamianę kolejności.
 - Testy: lint i build React SPA oraz pełny PHPUnit — 48 testów i 339 asercji — zakończone powodzeniem; build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
 
 ## 2026-10-19 — Backendowa treść i struktura rozdziałów

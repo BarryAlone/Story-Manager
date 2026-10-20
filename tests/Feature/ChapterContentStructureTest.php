@@ -169,20 +169,28 @@ class ChapterContentStructureTest extends TestCase
         $this->assertDatabaseMissing('chapters', ['id' => $child->id]);
     }
 
-    public function test_chapter_list_has_stable_structural_sorting(): void
+    public function test_chapter_list_uses_user_numbers_as_the_primary_order(): void
     {
         $user = User::factory()->create();
         $project = $this->project($user, 'Novel');
-        $later = $this->chapter($project, 'Later', true, null, 20);
-        $earlier = $this->chapter($project, 'Earlier', true, null, 10);
+        $chapter333 = $this->chapter($project, 'Far future', true, null, 1);
+        $chapter333->update(['chapter_number' => 333]);
+        $chapterOne = $this->chapter($project, 'Opening', true, null, 30);
+        $chapterOne->update(['chapter_number' => 1]);
+        $chapterFive = $this->chapter($project, 'Middle', true, null, 20);
+        $chapterFive->update(['chapter_number' => 5]);
         $draft = $this->chapter($project, 'Draft', false, null, 1);
 
         $this->actingAs($user)
             ->getJson("/api/chapters/{$project->id}/chapters")
             ->assertOk()
-            ->assertJsonPath('0.id', $earlier->id)
-            ->assertJsonPath('1.id', $later->id)
-            ->assertJsonPath('2.id', $draft->id);
+            ->assertJsonPath('0.id', $chapterOne->id)
+            ->assertJsonPath('0.chapter_number', 1)
+            ->assertJsonPath('1.id', $chapterFive->id)
+            ->assertJsonPath('1.chapter_number', 5)
+            ->assertJsonPath('2.id', $chapter333->id)
+            ->assertJsonPath('2.chapter_number', 333)
+            ->assertJsonPath('3.id', $draft->id);
     }
 
     private function project(User $user, string $name): Project

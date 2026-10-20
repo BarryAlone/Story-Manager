@@ -2,11 +2,10 @@
 
 ## Teraz
 
-- [ ] E2: podłączyć edycję właściwej treści rozdziałów w React SPA.
+- [ ] Ujednolicić niespójne trasy między SPA i API.
 
 ## Następne
 
-- [ ] Ujednolicić niespójne trasy między SPA i API.
 - [ ] Dodać kierunkowość relacji jako osobny kontrakt danych i interfejs.
 
 ## Później
@@ -34,5 +33,6 @@
 - [x] Dodano właścicielską zmianę nazwy relacji w API i podłączono ją do wspólnego kafelka edycji w SPA.
 - [x] E2: Dodano backendowy model treści i dwupoziomowej struktury rozdziałów z migracją istniejących danych.
 - [x] E2: Dodano frontendową przestrzeń roboczą rozdziałów z drzewem rękopisu, szkicami i panelem informacji.
+- [x] E2: Dodano edycję treści rozdziału w TinyMCE, wspólny zapis synopsis i notatek oraz serwerową sanitację HTML.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.

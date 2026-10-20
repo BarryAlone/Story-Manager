@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Chapter;
 use App\Models\Project;
+use App\Services\ChapterContentSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,12 @@ use Illuminate\Validation\ValidationException;
 
 class ChapterController extends Controller
 {
+    private const MAX_NOTES_LENGTH = 100_000;
+
+    public function __construct(private readonly ChapterContentSanitizer $contentSanitizer)
+    {
+    }
+
     public function index(Request $request, ?int $project = null): JsonResponse
     {
         if ($project) {
@@ -32,6 +39,8 @@ class ChapterController extends Controller
         $chapters = $query
             ->orderBy('project_id')
             ->orderByDesc('is_in_manuscript')
+            ->orderByRaw('CASE WHEN chapter_number IS NULL OR chapter_number <= 0 THEN 1 ELSE 0 END')
+            ->orderBy('chapter_number')
             ->orderByRaw('CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END')
             ->orderBy('parent_id')
             ->orderBy('sort_order')
@@ -161,7 +170,7 @@ class ChapterController extends Controller
     /** @return array<string, mixed> */
     private function validateChapter(Request $request, ?Chapter $chapter = null): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'project_id' => ['required', 'integer', 'exists:projects,id'],
             'chapter_number' => [
                 'nullable',
@@ -179,8 +188,8 @@ class ChapterController extends Controller
                     ->ignore($chapter?->id),
             ],
             'description' => ['nullable', 'string'],
-            'description_long' => ['nullable', 'string'],
-            'notes' => ['nullable', 'string'],
+            'description_long' => ['nullable', 'string', 'max:'.ChapterContentSanitizer::MAX_CONTENT_LENGTH],
+            'notes' => ['nullable', 'string', 'max:'.self::MAX_NOTES_LENGTH],
             'parent_id' => ['nullable', 'integer'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
             'is_in_manuscript' => ['sometimes', 'boolean'],
@@ -189,6 +198,12 @@ class ChapterController extends Controller
             'timeline_point_end' => ['nullable', 'integer'],
             'display_label' => ['nullable', 'string'],
         ]);
+
+        if (array_key_exists('description_long', $validated)) {
+            $validated['description_long'] = $this->contentSanitizer->sanitize($validated['description_long']);
+        }
+
+        return $validated;
     }
 
     private function ownedProject(Request $request, int $projectId): Project
