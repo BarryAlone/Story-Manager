@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChapterController;
+use App\Http\Controllers\ChapterStructureController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterRelationshipController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -27,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/chapters/{id}', [ChapterController::class, 'show']);
     Route::delete('/chapters/{id}', [ChapterController::class, 'destroy']);
     Route::post('/chapters/{chapter}/swap', [ChapterController::class, 'swap']);
+    Route::patch('/projects/{project}/chapter-structure', [ChapterStructureController::class, 'update']);
 
     // Character
     Route::get('/characters', [CharacterController::class, 'index']);

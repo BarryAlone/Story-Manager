@@ -10,7 +10,7 @@ function initialFields(chapter) {
     displayLabel: chapter?.display_label || '',
     name: chapter?.name || '',
     parentId: isSubchapter ? String(chapter.parent_id) : '',
-    placement: isSubchapter ? 'subchapter' : (isDraft ? 'draft' : 'root'),
+    placement: isDraft ? 'draft' : (isSubchapter ? 'subchapter' : 'root'),
     timelinePointEnd: chapter?.timeline_point_end || '',
     timelinePointStart: chapter?.timeline_point_start || '',
   };
@@ -37,9 +37,6 @@ export default function ChapterFormModal({ chapter, onClose, onSubmit, parentOpt
     setFields((current) => ({
       ...current,
       [field]: value,
-      ...(field === 'placement' && value === 'draft'
-        ? { chapterNumber: '', parentId: '' }
-        : {}),
       ...(field === 'placement' && value === 'root' ? { parentId: '' } : {}),
     }));
   };

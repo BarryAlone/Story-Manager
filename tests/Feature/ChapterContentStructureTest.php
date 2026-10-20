@@ -139,7 +139,7 @@ class ChapterContentStructureTest extends TestCase
             ->assertJsonValidationErrors('chapter_number');
     }
 
-    public function test_root_numbers_are_unique_and_manuscript_numbers_are_positive(): void
+    public function test_root_numbers_are_unique_and_manuscript_numbers_are_positive_while_drafts_may_retain_a_number(): void
     {
         $user = User::factory()->create();
         $project = $this->project($user, 'Novel');
@@ -178,8 +178,9 @@ class ChapterContentStructureTest extends TestCase
             'is_in_manuscript' => false,
             'chapter_number' => 9,
             'name' => 'Numbered draft',
-        ])->assertUnprocessable()
-            ->assertJsonValidationErrors('chapter_number');
+        ])->assertCreated()
+            ->assertJsonPath('is_in_manuscript', false)
+            ->assertJsonPath('chapter_number', 9);
     }
 
     public function test_draft_can_be_moved_to_manuscript_as_a_root_or_subchapter(): void
@@ -257,7 +258,7 @@ class ChapterContentStructureTest extends TestCase
             'is_in_manuscript' => true,
             'name' => 'Child of draft',
         ])->assertUnprocessable()
-            ->assertJsonValidationErrors('parent_id');
+            ->assertJsonValidationErrors('is_in_manuscript');
 
         $this->actingAs($user)->postJson('/api/chapters', [
             'project_id' => $project->id,
@@ -266,6 +267,17 @@ class ChapterContentStructureTest extends TestCase
             'name' => 'Draft child',
         ])->assertUnprocessable()
             ->assertJsonValidationErrors('is_in_manuscript');
+
+        $this->actingAs($user)->postJson('/api/chapters', [
+            'project_id' => $project->id,
+            'parent_id' => $draft->id,
+            'is_in_manuscript' => false,
+            'chapter_number' => 2,
+            'name' => 'Nested draft',
+        ])->assertCreated()
+            ->assertJsonPath('parent_id', $draft->id)
+            ->assertJsonPath('is_in_manuscript', false)
+            ->assertJsonPath('chapter_number', 2);
     }
 
     public function test_chapter_cannot_be_its_own_parent(): void

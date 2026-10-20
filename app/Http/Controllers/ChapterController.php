@@ -180,23 +180,28 @@ class ChapterController extends Controller
         $parentId = $request->exists('parent_id')
             ? ($request->filled('parent_id') ? $request->integer('parent_id') : null)
             : $chapter?->parent_id;
-        $chapterNumberRule = Rule::unique('chapters', 'chapter_number')
-            ->where('project_id', $request->integer('project_id'))
-            ->where(function ($query) use ($parentId): void {
-                $parentId === null
-                    ? $query->whereNull('parent_id')
-                    : $query->where('parent_id', $parentId);
-            })
-            ->ignore($chapter?->id);
+        $isInManuscript = $request->exists('is_in_manuscript')
+            ? $request->boolean('is_in_manuscript')
+            : (($chapter === null || $request->exists('chapter_number'))
+                ? $request->integer('chapter_number') > 0
+                : (bool) $chapter?->is_in_manuscript);
+        $chapterNumberRules = ['nullable', 'integer', 'min:1'];
+
+        if ($isInManuscript) {
+            $chapterNumberRules[] = Rule::unique('chapters', 'chapter_number')
+                ->where('project_id', $request->integer('project_id'))
+                ->where('is_in_manuscript', true)
+                ->where(function ($query) use ($parentId): void {
+                    $parentId === null
+                        ? $query->whereNull('parent_id')
+                        : $query->where('parent_id', $parentId);
+                })
+                ->ignore($chapter?->id);
+        }
 
         $validated = $request->validate([
             'project_id' => ['required', 'integer', 'exists:projects,id'],
-            'chapter_number' => [
-                'nullable',
-                'integer',
-                'min:1',
-                $chapterNumberRule,
-            ],
+            'chapter_number' => $chapterNumberRules,
             'name' => [
                 'required',
                 'string',
@@ -263,12 +268,8 @@ class ChapterController extends Controller
                 $errors['parent_id'][] = 'Wybrany rodzic nie należy do tego projektu.';
             } elseif ($parent->parent_id !== null) {
                 $errors['parent_id'][] = 'Hierarchia rozdziałów może mieć maksymalnie dwa poziomy.';
-            } elseif (! $parent->is_in_manuscript) {
-                $errors['parent_id'][] = 'Rodzicem może być tylko rozdział należący do rękopisu.';
-            }
-
-            if (! $isInManuscript) {
-                $errors['is_in_manuscript'][] = 'Podrozdział musi należeć do rękopisu.';
+            } elseif ((bool) $parent->is_in_manuscript !== (bool) $isInManuscript) {
+                $errors['is_in_manuscript'][] = 'Rodzic i podrozdział muszą należeć do tej samej sekcji.';
             }
 
             if ($chapter?->children()->exists()) {
@@ -281,21 +282,13 @@ class ChapterController extends Controller
                 $errors['project_id'][] = 'Rozdział posiadający podrozdziały nie może zmienić projektu.';
             }
 
-            if (! $isInManuscript) {
-                $errors['is_in_manuscript'][] = 'Rozdział posiadający podrozdziały musi należeć do rękopisu.';
+            if ((bool) $chapter->is_in_manuscript !== (bool) $isInManuscript) {
+                $errors['is_in_manuscript'][] = 'Rozdział z podrozdziałami przenoś między sekcjami jako całą strukturę.';
             }
         }
 
         if ($isInManuscript && ($chapterNumber === null || $chapterNumber < 1)) {
             $errors['chapter_number'][] = 'Rozdział w rękopisie musi mieć dodatni numer całkowity.';
-        }
-
-        if (! $isInManuscript) {
-            if ($request->filled('chapter_number')) {
-                $errors['chapter_number'][] = 'Szkic nie może mieć numeru.';
-            }
-
-            $validated['chapter_number'] = null;
         }
 
         if ($errors !== []) {

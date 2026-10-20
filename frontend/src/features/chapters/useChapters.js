@@ -17,9 +17,29 @@ async function requestChapters(projectId) {
   return data;
 }
 
+function mergeChapterStructure(chapters, structureSource) {
+  const structureById = new Map(
+    structureSource.map((chapter) => [Number(chapter.id), chapter]),
+  );
+
+  return chapters.map((chapter) => {
+    const structure = structureById.get(Number(chapter.id));
+    if (!structure) return chapter;
+
+    return {
+      ...chapter,
+      chapter_number: structure.chapter_number,
+      is_in_manuscript: structure.is_in_manuscript,
+      parent_id: structure.parent_id,
+      sort_order: structure.sort_order,
+    };
+  });
+}
+
 export default function useChapters(projectId) {
   const [chapters, setChapters] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingStructure, setIsUpdatingStructure] = useState(false);
   const [loadError, setLoadError] = useState('');
 
   const loadChapters = useCallback(async ({ showLoading = true } = {}) => {
@@ -68,9 +88,15 @@ export default function useChapters(projectId) {
     if (chapter) {
       const isDraft = fields.placement === 'draft';
       const isSubchapter = fields.placement === 'subchapter';
-      formData.append('chapter_number', isDraft ? '' : fields.chapterNumber);
+      formData.append(
+        'chapter_number',
+        isDraft ? (chapter.chapter_number ?? '') : fields.chapterNumber,
+      );
       formData.append('is_in_manuscript', isDraft ? '0' : '1');
-      formData.append('parent_id', isSubchapter ? fields.parentId : '');
+      formData.append(
+        'parent_id',
+        isDraft ? (fields.parentId || '') : (isSubchapter ? fields.parentId : ''),
+      );
     } else if (fields.chapterNumber) {
       formData.append('chapter_number', fields.chapterNumber);
     }
@@ -147,6 +173,33 @@ export default function useChapters(projectId) {
     await loadChapters({ showLoading: false });
   };
 
+  const updateChapterStructure = async (payload, optimisticChapters) => {
+    const previousChapters = chapters;
+    setIsUpdatingStructure(true);
+    setChapters(optimisticChapters);
+
+    try {
+      const response = await apiFetch(`/api/projects/${projectId}/chapter-structure`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await readJson(response);
+
+      if (!response.ok || !Array.isArray(data?.chapters)) {
+        throw new Error(responseMessage(data, 'Nie udało się zmienić struktury rozdziałów.'));
+      }
+
+      setChapters((current) => mergeChapterStructure(current, data.chapters));
+      return data.chapters;
+    } catch (error) {
+      setChapters((current) => mergeChapterStructure(current, previousChapters));
+      throw error;
+    } finally {
+      setIsUpdatingStructure(false);
+    }
+  };
+
   const updateChapterContent = useCallback(async (chapter, content) => {
     const payload = {
       project_id: Number(projectId),
@@ -186,10 +239,12 @@ export default function useChapters(projectId) {
     createSubchapter,
     deleteChapter,
     isLoading,
+    isUpdatingStructure,
     loadChapters,
     loadError,
     saveChapter,
     swapChapters,
+    updateChapterStructure,
     updateChapterContent,
   };
 }

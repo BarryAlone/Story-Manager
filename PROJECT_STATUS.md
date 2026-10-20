@@ -20,7 +20,7 @@ Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybut
 
 ### Frontend
 
-SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Rozdziały korzystają z przestrzeni roboczej z drzewem rękopisu, jednym poziomem podrozdziałów i szkicami, centralnym edytorem TinyMCE oraz nakładanym panelem edytowalnego synopsis, notatek i metadanych. Podrozdział można utworzyć z menu rodzica, a użytkownik nadaje mu lokalny numer prezentowany razem z numerem rodzica. Wspólny zapis sygnalizuje stan zmian, obsługuje skrót klawiaturowy i ostrzega przed utratą niezapisanej pracy. Graf relacji ma odchudzony pasek wyszukiwania i ustawień, wielokrotny filtr typów w legendzie nakładanej na canvas oraz minimalistyczny prawy panel. Pełna lista, relacje wybranej postaci i relacja wskazana na grafie korzystają ze wspólnego rozwijanego kafelka z edycją nazwy i potwierdzanym usuwaniem.
+SPA zawiera główne widoki Story Managera i komunikuje się z API przez współdzielony klient. Ma ekrany logowania, rejestracji, profilu i resetowania hasła, odtwarzanie bieżącej sesji, ochronę tras na poziomie UI, prezentację zalogowanego użytkownika i wylogowanie. Główny widok jest dashboardem użytkownika z podsumowaniem, listą projektów uporządkowaną według ostatniej edycji oraz stanami ładowania, błędu i pustej listy. Rozdziały korzystają z przestrzeni roboczej z drzewem rękopisu, jednym poziomem podrozdziałów i szkicami, centralnym edytorem TinyMCE oraz nakładanym panelem edytowalnego synopsis, notatek i metadanych. Podrozdział można utworzyć z menu rodzica, a użytkownik nadaje mu lokalny numer prezentowany razem z numerem rodzica. Strukturę można porządkować myszą lub klawiaturą przez uchwyty drag-and-drop: w obrębie grup, między szkicami i rękopisem oraz przez przypisanie szkicu do rozdziału głównego. Wspólny zapis sygnalizuje stan zmian, obsługuje skrót klawiaturowy i ostrzega przed utratą niezapisanej pracy. Graf relacji ma odchudzony pasek wyszukiwania i ustawień, wielokrotny filtr typów w legendzie nakładanej na canvas oraz minimalistyczny prawy panel. Pełna lista, relacje wybranej postaci i relacja wskazana na grafie korzystają ze wspólnego rozwijanego kafelka z edycją nazwy i potwierdzanym usuwaniem.
 
 ### Uwierzytelnianie
 
@@ -41,6 +41,7 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 - podstawowe operacje na projektach, rozdziałach, postaciach, atrybutach i relacjach;
 - backendowa struktura treści rozdziałów z notatkami, rękopisem, szkicami, kolejnością i jednym poziomem podrozdziałów;
 - frontendowa przestrzeń rozdziałów z numeracją głównych rozdziałów podaną przez użytkownika, tworzeniem i zwijaniem podrozdziałów, oddzielnymi szkicami i nakładanym panelem informacji;
+- transakcyjne porządkowanie struktury rozdziałów przez drag-and-drop z zachowaniem numeracji, hierarchii, treści i metadanych;
 - edycja właściwej treści rozdziału w TinyMCE oraz wspólny zapis treści, synopsis i notatek z ochroną niezapisanych zmian;
 - osobne SPA z widokami głównych obszarów produktu;
 - backendowa rejestracja, logowanie, wylogowanie i odczyt bieżącego użytkownika;
@@ -59,7 +60,7 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 - pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
 - weryfikacja e-mail pozostaje poza MVP i nie ma interfejsu w SPA.
-- SPA nie udostępnia jeszcze przenoszenia podrozdziałów między rodzicami, ręcznej zmiany ich kolejności ani drag-and-drop struktury.
+- SPA nie udostępnia przenoszenia podrozdziałów bezpośrednio między różnymi rodzicami ani hierarchii głębszej niż dwa poziomy.
 
 ## Ostatnia aktualizacja
 

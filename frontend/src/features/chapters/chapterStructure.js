@@ -34,8 +34,11 @@ function belongsToManuscript(chapter) {
 
 export function buildChapterStructure(chapters) {
   const manuscript = chapters.filter(belongsToManuscript);
+  const drafts = chapters.filter((chapter) => !belongsToManuscript(chapter));
   const manuscriptIds = new Set(manuscript.map((chapter) => Number(chapter.id)));
-  const childrenByParent = new Map();
+  const draftIds = new Set(drafts.map((chapter) => Number(chapter.id)));
+  const manuscriptChildrenByParent = new Map();
+  const draftChildrenByParent = new Map();
 
   manuscript.forEach((chapter) => {
     const parentId = chapter.parent_id === null || chapter.parent_id === undefined
@@ -43,9 +46,20 @@ export function buildChapterStructure(chapters) {
       : Number(chapter.parent_id);
     if (parentId === null || !manuscriptIds.has(parentId)) return;
 
-    const children = childrenByParent.get(parentId) || [];
+    const children = manuscriptChildrenByParent.get(parentId) || [];
     children.push(chapter);
-    childrenByParent.set(parentId, children);
+    manuscriptChildrenByParent.set(parentId, children);
+  });
+
+  drafts.forEach((chapter) => {
+    const parentId = chapter.parent_id === null || chapter.parent_id === undefined
+      ? null
+      : Number(chapter.parent_id);
+    if (parentId === null || !draftIds.has(parentId)) return;
+
+    const children = draftChildrenByParent.get(parentId) || [];
+    children.push(chapter);
+    draftChildrenByParent.set(parentId, children);
   });
 
   const roots = manuscript
@@ -58,7 +72,7 @@ export function buildChapterStructure(chapters) {
     .map((chapter) => ({
       chapter,
       number: displayNumber(chapter),
-      children: (childrenByParent.get(Number(chapter.id)) || [])
+      children: (manuscriptChildrenByParent.get(Number(chapter.id)) || [])
         .sort(compareByChapterNumber)
         .map((child) => {
           const parentNumber = displayNumber(chapter);
@@ -71,9 +85,20 @@ export function buildChapterStructure(chapters) {
         }),
     }));
 
-  const drafts = chapters
-    .filter((chapter) => !belongsToManuscript(chapter))
-    .sort(compareByOrder);
+  const draftRoots = drafts
+    .filter((chapter) => (
+      chapter.parent_id === null
+      || chapter.parent_id === undefined
+      || !draftIds.has(Number(chapter.parent_id))
+    ))
+    .sort(compareByOrder)
+    .map((chapter) => ({
+      chapter,
+      number: '',
+      children: (draftChildrenByParent.get(Number(chapter.id)) || [])
+        .sort(compareByOrder)
+        .map((child) => ({ chapter: child, number: '' })),
+    }));
 
   const numberById = new Map();
   roots.forEach((root) => {
@@ -81,5 +106,5 @@ export function buildChapterStructure(chapters) {
     root.children.forEach((child) => numberById.set(Number(child.chapter.id), child.number));
   });
 
-  return { roots, drafts, numberById };
+  return { roots, drafts: draftRoots, numberById };
 }

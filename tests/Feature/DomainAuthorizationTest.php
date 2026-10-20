@@ -32,6 +32,7 @@ class DomainAuthorizationTest extends TestCase
             ['PUT', '/api/chapters/1'],
             ['DELETE', '/api/chapters/1'],
             ['POST', '/api/chapters/1/swap'],
+            ['PATCH', '/api/projects/1/chapter-structure'],
             ['GET', '/api/characters'],
             ['POST', '/api/characters'],
             ['GET', '/api/projects/1/characters'],
