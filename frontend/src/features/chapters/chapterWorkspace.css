@@ -393,14 +393,14 @@
 
 .chapter-toolbar {
   z-index: 4;
-  display: flex;
+  display: grid;
   min-height: 44px;
   box-sizing: border-box;
   flex: 0 0 44px;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  padding: 8px 14px 8px 18px;
+  padding: 4px 14px 4px 18px;
   border-bottom: 1px solid #dbe2ea;
   background: #fff;
 }
@@ -410,6 +410,7 @@
   min-width: 0;
   align-items: baseline;
   gap: 10px;
+  justify-self: start;
 }
 
 .chapter-toolbar__number {
@@ -435,6 +436,45 @@
   align-items: center;
   justify-content: flex-end;
   gap: 9px;
+  justify-self: end;
+}
+
+.chapter-toolbar__modes {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f1f5f9;
+  justify-self: center;
+}
+
+.chapter-toolbar .chapter-toolbar__mode {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.chapter-toolbar .chapter-toolbar__mode--active {
+  background: #fff;
+  color: #1d4ed8;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.14);
+}
+
+.chapter-toolbar__mode svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .chapter-toolbar__status {
@@ -494,6 +534,195 @@
   box-sizing: border-box;
   overflow: hidden;
   background: #fff;
+}
+
+.chapter-plan {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+.chapter-plan__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #dbe2ea;
+  background: #fff;
+}
+
+.chapter-plan__search > label {
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.chapter-plan__search-field {
+  position: relative;
+  width: min(440px, 100%);
+}
+
+.chapter-plan__search-field svg {
+  position: absolute;
+  top: 50%;
+  left: 9px;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: #64748b;
+  stroke-width: 1.8;
+  pointer-events: none;
+}
+
+.chapter-plan__search-field input {
+  width: 100%;
+  min-height: 34px;
+  box-sizing: border-box;
+  padding: 6px 32px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+}
+
+.chapter-plan__search-field button {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.chapter-plan__content {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px clamp(12px, 4vw, 40px) 36px;
+}
+
+.chapter-plan__sections {
+  width: min(960px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.chapter-plan__section + .chapter-plan__section {
+  border-top: 1px solid #dbe2ea;
+}
+
+.chapter-plan__section h2 {
+  margin: 0;
+  padding: 9px 13px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.78rem;
+}
+
+.chapter-plan__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chapter-plan__item + .chapter-plan__item,
+.chapter-plan__branch + .chapter-plan__branch,
+.chapter-plan__children {
+  border-top: 1px solid #edf1f5;
+}
+
+.chapter-plan__children {
+  margin-left: 24px;
+  border-left: 2px solid #e2e8f0;
+}
+
+.chapter-plan__row {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(44px, max-content) minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 13px;
+  border: 0;
+  background: transparent;
+  color: #1e293b;
+  cursor: pointer;
+  text-align: left;
+}
+
+.chapter-plan__row:hover,
+.chapter-plan__row:focus-visible {
+  background: #f1f5f9;
+}
+
+.chapter-plan__row--active {
+  background: #eff6ff;
+  box-shadow: inset 3px 0 #2563eb;
+}
+
+.chapter-plan__number {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.chapter-plan__summary {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chapter-plan__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.chapter-plan__context-label {
+  margin-left: 8px;
+  color: #64748b;
+  font-size: 0.65rem;
+}
+
+.chapter-plan__synopsis {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #475569;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.chapter-plan__synopsis--empty {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.chapter-plan__state {
+  display: flex;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: #64748b;
+  text-align: center;
+}
+
+.chapter-plan__state--error {
+  color: #9f1239;
 }
 
 .chapter-editor {
