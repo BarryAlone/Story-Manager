@@ -31,7 +31,7 @@ export function isValidChapterDrop(chapter, target, chapters) {
   }
 
   if (target.kind === 'manuscript') {
-    return !chapter.is_in_manuscript;
+    return !chapter.is_in_manuscript || parentIdOf(chapter) !== null;
   }
 
   if (target.kind === 'drafts') {
@@ -39,8 +39,8 @@ export function isValidChapterDrop(chapter, target, chapters) {
   }
 
   if (target.kind === 'parent') {
-    return !chapter.is_in_manuscript
-      && Number(chapter.id) !== Number(target.parentId)
+    return Number(chapter.id) !== Number(target.parentId)
+      && parentIdOf(chapter) !== Number(target.parentId)
       && !chapterHasChildren(chapters, chapter.id);
   }
 

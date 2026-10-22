@@ -5,7 +5,6 @@ import ChapterFormModal from './ChapterFormModal';
 import ChapterInspector from './ChapterInspector';
 import ChapterStructureMoveModal from './ChapterStructureMoveModal';
 import ChapterSubchapterModal from './ChapterSubchapterModal';
-import ChapterSwapModal from './ChapterSwapModal';
 import ChapterToolbar from './ChapterToolbar';
 import ChapterTree from './ChapterTree';
 import { optimisticChapterMove, payloadForDrop } from './chapterDragAndDrop';
@@ -35,7 +34,6 @@ export default function ChapterWorkspace() {
   const [formChapter, setFormChapter] = useState(undefined);
   const [subchapterParent, setSubchapterParent] = useState(null);
   const [pendingStructureMove, setPendingStructureMove] = useState(null);
-  const [swapChapter, setSwapChapter] = useState(null);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [actionError, setActionError] = useState('');
   const expandedIds = useMemo(() => new Set(
@@ -109,8 +107,12 @@ export default function ChapterWorkspace() {
   };
 
   const handleDelete = async (chapter) => {
-    if (!window.confirm(`Czy na pewno chcesz trwale usunąć „${chapter.name}”?`)) return;
-    if (Number(chapter.id) === Number(chapterId) && !discardWritingChanges()) return;
+    if (!window.confirm(`Czy na pewno chcesz trwale usunąć „${chapter.name}”?`)) {
+      return { deleted: false };
+    }
+    if (Number(chapter.id) === Number(chapterId) && !discardWritingChanges()) {
+      return { deleted: false };
+    }
     setActionError('');
 
     try {
@@ -123,17 +125,11 @@ export default function ChapterWorkspace() {
           ? `/project/${projectId}/chapters/${parent.id}`
           : `/project/${projectId}/chapters`);
       }
+      return { deleted: true };
     } catch (error) {
-      setActionError(error.message || 'Nie udało się usunąć rozdziału.');
-    }
-  };
-
-  const handleMove = async (chapter, direction) => {
-    setActionError('');
-    try {
-      await chapterStore.swapChapters(chapter.id, { direction });
-    } catch (error) {
-      setActionError(error.message || 'Nie udało się zmienić kolejności.');
+      const message = error.message || 'Nie udało się usunąć rozdziału.';
+      setActionError(message);
+      return { deleted: false, error: message };
     }
   };
 
@@ -216,9 +212,7 @@ export default function ChapterWorkspace() {
           onDelete={handleDelete}
           onDrop={handleChapterDrop}
           onEdit={openChapterForm}
-          onMove={handleMove}
           onSelect={selectChapter}
-          onSwap={setSwapChapter}
           onToggle={toggleExpanded}
           structure={structure}
         />
@@ -268,6 +262,7 @@ export default function ChapterWorkspace() {
         <ChapterFormModal
           chapter={formChapter}
           onClose={closeModal}
+          onDelete={handleDelete}
           onSubmit={handleSave}
           parentOptions={structure.roots.map((root) => root.chapter)}
         />
@@ -289,14 +284,6 @@ export default function ChapterWorkspace() {
         />
       )}
 
-      {swapChapter && (
-        <ChapterSwapModal
-          chapter={swapChapter}
-          chapters={chapterStore.chapters}
-          onClose={() => setSwapChapter(null)}
-          onSubmit={chapterStore.swapChapters}
-        />
-      )}
     </section>
   );
 }

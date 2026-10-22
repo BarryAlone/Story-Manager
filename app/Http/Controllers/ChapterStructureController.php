@@ -135,10 +135,17 @@ class ChapterStructureController extends Controller
 
     private function moveToManuscript(Project $project, Chapter $chapter, ?int $chapterNumber): void
     {
-        $this->assertDraft($chapter);
+        if ($chapter->is_in_manuscript && $chapter->parent_id === null) {
+            throw ValidationException::withMessages([
+                'chapter_id' => 'Wybrany element jest już głównym rozdziałem rękopisu.',
+            ]);
+        }
+
         $this->assertPositiveNumber($chapterNumber);
         $this->assertNumberAvailable($project, null, $chapterNumber, $chapter->id);
 
+        $previousParentId = $chapter->parent_id;
+        $wasInManuscript = (bool) $chapter->is_in_manuscript;
         $children = $chapter->children()->lockForUpdate()->get();
         $childNumbers = $children->pluck('chapter_number')->map(fn ($number): int => (int) $number);
 
@@ -160,6 +167,8 @@ class ChapterStructureController extends Controller
         if ($children->isNotEmpty()) {
             Chapter::whereIn('id', $children->modelKeys())->update(['is_in_manuscript' => true]);
         }
+
+        $this->normalizeSortOrders($project, $wasInManuscript, $previousParentId);
     }
 
     private function moveToSubchapter(
@@ -168,17 +177,22 @@ class ChapterStructureController extends Controller
         ?int $parentId,
         ?int $chapterNumber,
     ): void {
-        $this->assertDraft($chapter);
         $this->assertPositiveNumber($chapterNumber);
 
         if ($chapter->children()->lockForUpdate()->exists()) {
             throw ValidationException::withMessages([
-                'chapter_id' => 'Szkic posiadający podrozdziały nie może stać się podrozdziałem.',
+                'chapter_id' => 'Rozdział posiadający podrozdziały nie może stać się podrozdziałem.',
             ]);
         }
 
         if ($parentId === null) {
             throw ValidationException::withMessages(['parent_id' => 'Wybierz rozdział nadrzędny.']);
+        }
+
+        if ($parentId === $chapter->id) {
+            throw ValidationException::withMessages([
+                'parent_id' => 'Rozdział nie może być własnym rodzicem.',
+            ]);
         }
 
         $parent = $project->chapters()->whereKey($parentId)->lockForUpdate()->firstOrFail();
@@ -189,12 +203,23 @@ class ChapterStructureController extends Controller
         }
 
         $this->assertNumberAvailable($project, $parent->id, $chapterNumber, $chapter->id);
+        $previousParentId = $chapter->parent_id;
+        $wasInManuscript = (bool) $chapter->is_in_manuscript;
+
+        if ($wasInManuscript && $previousParentId === $parent->id) {
+            $chapter->update(['chapter_number' => $chapterNumber]);
+
+            return;
+        }
+
         $chapter->update([
             'parent_id' => $parent->id,
             'is_in_manuscript' => true,
             'chapter_number' => $chapterNumber,
             'sort_order' => $this->nextSortOrder($project, true, $parent->id),
         ]);
+
+        $this->normalizeSortOrders($project, $wasInManuscript, $previousParentId);
     }
 
     private function moveToDrafts(Project $project, Chapter $chapter): void
@@ -223,15 +248,6 @@ class ChapterStructureController extends Controller
 
         if ($children->isNotEmpty()) {
             Chapter::whereIn('id', $children->modelKeys())->update(['is_in_manuscript' => false]);
-        }
-    }
-
-    private function assertDraft(Chapter $chapter): void
-    {
-        if ($chapter->is_in_manuscript) {
-            throw ValidationException::withMessages([
-                'chapter_id' => 'Tylko szkic można przenieść w to miejsce.',
-            ]);
         }
     }
 
@@ -270,6 +286,23 @@ class ChapterStructureController extends Controller
         $parentId === null ? $query->whereNull('parent_id') : $query->where('parent_id', $parentId);
 
         return ((int) $query->max('sort_order')) + 1;
+    }
+
+    private function normalizeSortOrders(Project $project, bool $isInManuscript, ?int $parentId): void
+    {
+        $query = $project->chapters()->where('is_in_manuscript', $isInManuscript);
+        $parentId === null ? $query->whereNull('parent_id') : $query->where('parent_id', $parentId);
+
+        $chapters = ($isInManuscript ? $query->orderBy('chapter_number') : $query->orderBy('sort_order'))
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($chapters as $index => $item) {
+            if ($item->sort_order !== $index + 1) {
+                $item->update(['sort_order' => $index + 1]);
+            }
+        }
     }
 
     /** @param array<int, Chapter> $chapters */

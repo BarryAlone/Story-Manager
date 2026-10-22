@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { backendUrl } from '../../api';
 
 function initialFields(chapter) {
   const isSubchapter = chapter?.parent_id !== null && chapter?.parent_id !== undefined;
@@ -16,21 +17,36 @@ function initialFields(chapter) {
   };
 }
 
-export default function ChapterFormModal({ chapter, onClose, onSubmit, parentOptions = [] }) {
-  const isSubchapter = chapter?.parent_id !== null && chapter?.parent_id !== undefined;
+export default function ChapterFormModal({ chapter, onClose, onDelete, onSubmit, parentOptions = [] }) {
   const isExistingDraft = Boolean(chapter) && !chapter.is_in_manuscript;
   const [fields, setFields] = useState(() => initialFields(chapter));
   const [image, setImage] = useState(null);
+  const [isImageRemoved, setIsImageRemoved] = useState(false);
   const [error, setError] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const imageInputRef = useRef(null);
+  const isBusy = isDeleting || isSubmitting;
+  const selectedImageUrl = useMemo(
+    () => (image ? URL.createObjectURL(image) : null),
+    [image],
+  );
+  const currentImageUrl = chapter?.chapter_image && !isImageRemoved
+    ? backendUrl(`/storage/${chapter.chapter_image}`)
+    : null;
+  const imagePreviewUrl = selectedImageUrl || currentImageUrl;
+
+  useEffect(() => () => {
+    if (selectedImageUrl) URL.revokeObjectURL(selectedImageUrl);
+  }, [selectedImageUrl]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && !isSubmitting) onClose();
+      if (event.key === 'Escape' && !isBusy) onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSubmitting, onClose]);
+  }, [isBusy, onClose]);
 
   const updateField = (field) => (event) => {
     const value = event.target.value;
@@ -47,11 +63,37 @@ export default function ChapterFormModal({ chapter, onClose, onSubmit, parentOpt
     setIsSubmitting(true);
 
     try {
-      await onSubmit({ chapter, fields, image });
+      await onSubmit({ chapter, fields, image, removeImage: isImageRemoved });
     } catch (submitError) {
       setError(submitError.message || 'Nie udało się zapisać rozdziału.');
       setIsSubmitting(false);
     }
+  };
+
+  const handleDelete = async () => {
+    setError('');
+    setIsDeleting(true);
+
+    const result = await onDelete(chapter);
+    if (result?.deleted) {
+      onClose();
+      return;
+    }
+
+    if (result?.error) setError(result.error);
+    setIsDeleting(false);
+  };
+
+  const handleImageChange = (event) => {
+    const nextImage = event.target.files?.[0] || null;
+    setImage(nextImage);
+    if (nextImage) setIsImageRemoved(false);
+  };
+
+  const removeImage = () => {
+    setImage(null);
+    setIsImageRemoved(true);
+    if (imageInputRef.current) imageInputRef.current.value = '';
   };
 
   return (
@@ -59,9 +101,9 @@ export default function ChapterFormModal({ chapter, onClose, onSubmit, parentOpt
       <form className="chapter-modal__card" onSubmit={handleSubmit} aria-labelledby="chapter-form-title">
         <div className="chapter-modal__header">
           <h2 id="chapter-form-title">
-            {chapter ? (isSubchapter ? 'Edytuj podrozdział' : 'Edytuj rozdział') : 'Nowy rozdział'}
+            {chapter ? 'Edytuj dane rozdziału' : 'Nowy rozdział'}
           </h2>
-          <button type="button" onClick={onClose} disabled={isSubmitting} aria-label="Zamknij formularz">×</button>
+          <button type="button" onClick={onClose} disabled={isBusy} aria-label="Zamknij formularz">×</button>
         </div>
 
         {error && <p className="chapter-modal__error" role="alert">{error}</p>}
@@ -91,57 +133,103 @@ export default function ChapterFormModal({ chapter, onClose, onSubmit, parentOpt
           </label>
         )}
 
-        {fields.placement === 'draft' && chapter ? (
-          <p className="chapter-modal__hint">Szkic nie ma numeru.</p>
-        ) : (
-          <label>
-            {fields.placement === 'subchapter' ? 'Numer lokalny' : 'Numer'}
-            {!chapter && <span>(puste pole tworzy szkic)</span>}
-            <input
-              type="number"
-              min="1"
-              step="1"
-              required={Boolean(chapter)}
-              value={fields.chapterNumber}
-              onChange={updateField('chapterNumber')}
-            />
-            {fields.placement === 'subchapter' && (
-              <span>Numer jest unikalny tylko wśród dzieci wybranego rodzica.</span>
-            )}
-          </label>
-        )}
-        <label>
-          Tytuł
-          <input type="text" required value={fields.name} onChange={updateField('name')} autoFocus />
-        </label>
-        <label>
-          Synopsis
-          <textarea rows="4" value={fields.description} onChange={updateField('description')} />
-        </label>
-        <label>
-          Obraz
-          <input type="file" accept="image/*" onChange={(event) => setImage(event.target.files?.[0] || null)} />
-        </label>
-        <div className="chapter-modal__columns">
-          <label>
-            Początek osi czasu
-            <input type="number" value={fields.timelinePointStart} onChange={updateField('timelinePointStart')} />
-          </label>
-          <label>
-            Koniec osi czasu
-            <input type="number" value={fields.timelinePointEnd} onChange={updateField('timelinePointEnd')} />
+        <div className="chapter-modal__identity">
+          {fields.placement === 'draft' && chapter ? (
+            <div className="chapter-modal__draft-number">
+              <span>Numer</span>
+              <strong>Szkic</strong>
+            </div>
+          ) : (
+            <label className="chapter-modal__number-field">
+              {fields.placement === 'subchapter' ? 'Numer lokalny' : 'Numer'}
+              <input
+                type="number"
+                min="1"
+                step="1"
+                required={Boolean(chapter)}
+                value={fields.chapterNumber}
+                onChange={updateField('chapterNumber')}
+              />
+            </label>
+          )}
+          <label className="chapter-modal__title-field">
+            Tytuł
+            <input type="text" required value={fields.name} onChange={updateField('name')} autoFocus />
           </label>
         </div>
-        <label>
-          Etykieta osi
-          <input type="text" value={fields.displayLabel} onChange={updateField('displayLabel')} />
-        </label>
+
+        {!chapter && <p className="chapter-modal__hint">Puste pole numeru utworzy szkic.</p>}
+        {fields.placement === 'subchapter' && (
+          <p className="chapter-modal__hint">Numer jest unikalny tylko wśród dzieci wybranego rodzica.</p>
+        )}
+
+        <div className="chapter-modal__image-field">
+          <span className="chapter-modal__field-label">Obraz rozdziału</span>
+          <input
+            ref={imageInputRef}
+            className="chapter-modal__file-input"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            aria-label="Wybierz obraz rozdziału"
+          />
+          {imagePreviewUrl ? (
+            <div className="chapter-modal__image-row">
+              <img src={imagePreviewUrl} alt={`Podgląd obrazu dla ${fields.name || 'rozdziału'}`} />
+              <div className="chapter-modal__image-actions">
+                <button type="button" onClick={() => imageInputRef.current?.click()} disabled={isBusy}>
+                  Zmień obraz
+                </button>
+                <button type="button" className="chapter-modal__image-remove" onClick={removeImage} disabled={isBusy}>
+                  Usuń obraz
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="chapter-modal__image-empty">
+              <span>Brak obrazu</span>
+              <button type="button" onClick={() => imageInputRef.current?.click()} disabled={isBusy}>
+                Dodaj obraz
+              </button>
+            </div>
+          )}
+        </div>
+
+        <details className="chapter-modal__metadata">
+          <summary>Metadane opcjonalne</summary>
+          <div className="chapter-modal__metadata-content">
+            <div className="chapter-modal__columns">
+              <label>
+                Początek osi czasu
+                <input type="number" value={fields.timelinePointStart} onChange={updateField('timelinePointStart')} />
+              </label>
+              <label>
+                Koniec osi czasu
+                <input type="number" value={fields.timelinePointEnd} onChange={updateField('timelinePointEnd')} />
+              </label>
+            </div>
+            <label>
+              Etykieta osi
+              <input type="text" value={fields.displayLabel} onChange={updateField('displayLabel')} />
+            </label>
+          </div>
+        </details>
 
         <div className="chapter-modal__actions">
-          <button type="button" className="chapter-button chapter-button--secondary" onClick={onClose} disabled={isSubmitting}>
+          {chapter && (
+            <button
+              type="button"
+              className="chapter-button chapter-button--danger"
+              onClick={handleDelete}
+              disabled={isBusy}
+            >
+              {isDeleting ? 'Usuwanie…' : 'Usuń'}
+            </button>
+          )}
+          <button type="button" className="chapter-button chapter-button--secondary" onClick={onClose} disabled={isBusy}>
             Anuluj
           </button>
-          <button type="submit" className="chapter-button chapter-button--primary" disabled={isSubmitting}>
+          <button type="submit" className="chapter-button chapter-button--primary" disabled={isBusy}>
             {isSubmitting ? 'Zapisywanie…' : 'Zapisz'}
           </button>
         </div>

@@ -54,7 +54,7 @@ export default function ChapterInspector({
         inert={!isOpen ? '' : undefined}
       >
         <header className="chapter-inspector__header">
-          <span>Informacje o dokumencie</span>
+          <span>Informacje rozdziału</span>
           <strong>{chapter?.name || 'Brak wyboru'}</strong>
         </header>
 
