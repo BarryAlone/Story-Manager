@@ -116,6 +116,234 @@ class ChapterStructureDragDropTest extends TestCase
         $this->assertSame(2, $childDraft->chapter_number);
     }
 
+    public function test_subchapter_moves_to_another_parent_and_preserves_content_and_metadata(): void
+    {
+        [$user, $project] = $this->fixture();
+        $oldParent = $this->chapter($project, 'Old parent', true, 7);
+        $newParent = $this->chapter($project, 'New parent', true, 5);
+        $this->chapter($project, 'Existing child', true, 1, $newParent->id, 1);
+        $child = $this->chapter($project, 'Moved child', true, 3, $oldParent->id, 4, [
+            'description' => 'Synopsis',
+            'description_long' => '<p>Content</p>',
+            'notes' => 'Notes',
+            'chapter_image' => 'chapters/image.jpg',
+            'timeline_point_start' => 10,
+            'timeline_point_end' => 20,
+            'display_label' => 'Day one',
+        ]);
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $child->id,
+            'parent_id' => $newParent->id,
+            'chapter_number' => 3,
+        ])->assertOk();
+
+        $child->refresh();
+        $this->assertSame($newParent->id, $child->parent_id);
+        $this->assertSame(3, $child->chapter_number);
+        $this->assertSame(2, $child->sort_order);
+        $this->assertSame('Synopsis', $child->description);
+        $this->assertSame('<p>Content</p>', $child->description_long);
+        $this->assertSame('Notes', $child->notes);
+        $this->assertSame('chapters/image.jpg', $child->chapter_image);
+        $this->assertSame(10, $child->timeline_point_start);
+        $this->assertSame(20, $child->timeline_point_end);
+        $this->assertSame('Day one', $child->display_label);
+    }
+
+    public function test_root_without_children_becomes_a_subchapter_and_preserves_content_and_metadata(): void
+    {
+        [$user, $project] = $this->fixture();
+        $parent = $this->chapter($project, 'Target parent', true, 5, null, 1);
+        $root = $this->chapter($project, 'Moved root', true, 7, null, 4, [
+            'description' => 'Synopsis',
+            'description_long' => '<p>Content</p>',
+            'notes' => 'Notes',
+            'chapter_image' => 'chapters/image.jpg',
+            'timeline_point_start' => 10,
+            'timeline_point_end' => 20,
+            'display_label' => 'Day one',
+        ]);
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $root->id,
+            'parent_id' => $parent->id,
+            'chapter_number' => 3,
+        ])->assertOk();
+
+        $root->refresh();
+        $this->assertSame($parent->id, $root->parent_id);
+        $this->assertTrue($root->is_in_manuscript);
+        $this->assertSame(3, $root->chapter_number);
+        $this->assertSame(1, $root->sort_order);
+        $this->assertSame(1, $parent->refresh()->sort_order);
+        $this->assertSame('Synopsis', $root->description);
+        $this->assertSame('<p>Content</p>', $root->description_long);
+        $this->assertSame('Notes', $root->notes);
+        $this->assertSame('chapters/image.jpg', $root->chapter_image);
+        $this->assertSame(10, $root->timeline_point_start);
+        $this->assertSame(20, $root->timeline_point_end);
+        $this->assertSame('Day one', $root->display_label);
+    }
+
+    public function test_root_to_subchapter_number_conflict_rolls_back_all_changes(): void
+    {
+        [$user, $project] = $this->fixture();
+        $parent = $this->chapter($project, 'Target parent', true, 5, null, 1);
+        $this->chapter($project, 'Occupied child', true, 3, $parent->id, 1);
+        $root = $this->chapter($project, 'Moved root', true, 7, null, 4, [
+            'description' => 'Synopsis',
+            'description_long' => '<p>Unchanged</p>',
+            'notes' => 'Notes',
+            'display_label' => 'Day one',
+        ]);
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $root->id,
+            'parent_id' => $parent->id,
+            'chapter_number' => 3,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_number');
+
+        $root->refresh();
+        $this->assertNull($root->parent_id);
+        $this->assertTrue($root->is_in_manuscript);
+        $this->assertSame(7, $root->chapter_number);
+        $this->assertSame(4, $root->sort_order);
+        $this->assertSame('Synopsis', $root->description);
+        $this->assertSame('<p>Unchanged</p>', $root->description_long);
+        $this->assertSame('Notes', $root->notes);
+        $this->assertSame('Day one', $root->display_label);
+    }
+
+    public function test_subchapter_can_be_promoted_to_a_root_chapter(): void
+    {
+        [$user, $project] = $this->fixture();
+        $parent = $this->chapter($project, 'Parent', true, 7);
+        $child = $this->chapter($project, 'Child', true, 3, $parent->id, 4, [
+            'description_long' => '<p>Keep me</p>',
+            'notes' => 'Keep notes',
+        ]);
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_manuscript',
+            'chapter_id' => $child->id,
+            'chapter_number' => 5,
+        ])->assertOk();
+
+        $child->refresh();
+        $this->assertNull($child->parent_id);
+        $this->assertTrue($child->is_in_manuscript);
+        $this->assertSame(5, $child->chapter_number);
+        $this->assertSame('<p>Keep me</p>', $child->description_long);
+        $this->assertSame('Keep notes', $child->notes);
+    }
+
+    public function test_number_conflicts_for_reparenting_and_promotion_roll_back_the_move(): void
+    {
+        [$user, $project] = $this->fixture();
+        $oldParent = $this->chapter($project, 'Old parent', true, 7);
+        $newParent = $this->chapter($project, 'New parent', true, 5);
+        $this->chapter($project, 'Occupied child number', true, 3, $newParent->id);
+        $this->chapter($project, 'Occupied root number', true, 9);
+        $child = $this->chapter($project, 'Child', true, 3, $oldParent->id, 4, [
+            'description_long' => '<p>Unchanged</p>',
+        ]);
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $child->id,
+            'parent_id' => $newParent->id,
+            'chapter_number' => 3,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_number');
+
+        $child->refresh();
+        $this->assertSame($oldParent->id, $child->parent_id);
+        $this->assertSame(3, $child->chapter_number);
+        $this->assertSame(4, $child->sort_order);
+        $this->assertSame('<p>Unchanged</p>', $child->description_long);
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_manuscript',
+            'chapter_id' => $child->id,
+            'chapter_number' => 9,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_number');
+
+        $child->refresh();
+        $this->assertSame($oldParent->id, $child->parent_id);
+        $this->assertSame(3, $child->chapter_number);
+        $this->assertSame(4, $child->sort_order);
+        $this->assertSame('<p>Unchanged</p>', $child->description_long);
+    }
+
+    public function test_third_level_cycles_roots_with_children_and_self_parenting_are_rejected(): void
+    {
+        [$user, $project] = $this->fixture();
+        $root = $this->chapter($project, 'Root', true, 3);
+        $otherRoot = $this->chapter($project, 'Other root', true, 7);
+        $selfTarget = $this->chapter($project, 'Self target', true, 9);
+        $child = $this->chapter($project, 'Child', true, 1, $root->id);
+        $draftTree = $this->chapter($project, 'Draft tree', false, 4);
+        $draftChild = $this->chapter($project, 'Draft child', false, 1, $draftTree->id);
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $child->id,
+            'parent_id' => $child->id,
+            'chapter_number' => 2,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('parent_id');
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $child->id,
+            'parent_id' => $draftChild->id,
+            'chapter_number' => 2,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('parent_id');
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $root->id,
+            'parent_id' => $otherRoot->id,
+            'chapter_number' => 2,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_id');
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $root->id,
+            'parent_id' => $child->id,
+            'chapter_number' => 2,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_id');
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $selfTarget->id,
+            'parent_id' => $selfTarget->id,
+            'chapter_number' => 2,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('parent_id');
+
+        $this->actingAs($user)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $draftTree->id,
+            'parent_id' => $draftChild->id,
+            'chapter_number' => 2,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('chapter_id');
+
+        $this->assertSame($root->id, $child->refresh()->parent_id);
+        $this->assertNull($selfTarget->refresh()->parent_id);
+        $this->assertSame($draftTree->id, $draftChild->refresh()->parent_id);
+    }
+
     public function test_root_with_children_moves_to_drafts_without_losing_structure_or_content(): void
     {
         [$user, $project] = $this->fixture();
@@ -211,6 +439,9 @@ class ChapterStructureDragDropTest extends TestCase
         [$owner, $project] = $this->fixture();
         $otherProject = Project::create(['user_id' => $owner->id, 'name' => 'Other project']);
         $foreignChapter = $this->chapter($otherProject, 'Foreign', true, 1);
+        $ownedParent = $this->chapter($project, 'Owned parent', true, 3);
+        $ownedChild = $this->chapter($project, 'Owned child', true, 1, $ownedParent->id);
+        $ownedRoot = $this->chapter($project, 'Owned root', true, 7);
         $otherUser = User::factory()->create();
 
         $this->actingAs($owner)->patchJson($this->endpoint($project), [
@@ -222,6 +453,23 @@ class ChapterStructureDragDropTest extends TestCase
             'action' => 'to_drafts',
             'chapter_id' => $foreignChapter->id,
         ])->assertNotFound();
+
+        $this->actingAs($owner)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $ownedChild->id,
+            'parent_id' => $foreignChapter->id,
+            'chapter_number' => 2,
+        ])->assertNotFound();
+
+        $this->actingAs($owner)->patchJson($this->endpoint($project), [
+            'action' => 'to_subchapter',
+            'chapter_id' => $ownedRoot->id,
+            'parent_id' => $foreignChapter->id,
+            'chapter_number' => 2,
+        ])->assertNotFound();
+
+        $this->assertSame($ownedParent->id, $ownedChild->refresh()->parent_id);
+        $this->assertNull($ownedRoot->refresh()->parent_id);
     }
 
     /** @return array{User, Project} */

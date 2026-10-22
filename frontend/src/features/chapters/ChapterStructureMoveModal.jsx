@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 
 export default function ChapterStructureMoveModal({ move, onClose, onSubmit }) {
-  const [chapterNumber, setChapterNumber] = useState('');
+  const suggestedNumber = Number(move.chapter.chapter_number) > 0
+    ? String(move.chapter.chapter_number)
+    : '';
+  const [chapterNumber, setChapterNumber] = useState(suggestedNumber);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubchapter = move.kind === 'parent';
@@ -23,7 +26,7 @@ export default function ChapterStructureMoveModal({ move, onClose, onSubmit }) {
     try {
       await onSubmit(Number(chapterNumber));
     } catch (submitError) {
-      setError(submitError.message || 'Nie udało się przenieść szkicu.');
+      setError(submitError.message || 'Nie udało się przenieść rozdziału.');
       setIsSubmitting(false);
     }
   };
@@ -33,19 +36,22 @@ export default function ChapterStructureMoveModal({ move, onClose, onSubmit }) {
       <form className="chapter-modal__card chapter-modal__card--small" onSubmit={handleSubmit} aria-labelledby="chapter-move-title">
         <div className="chapter-modal__header">
           <h2 id="chapter-move-title">
-            {isSubchapter ? 'Przenieś jako podrozdział' : 'Przenieś do rękopisu'}
+            {isSubchapter ? 'Przenieś podrozdział' : 'Przenieś jako rozdział główny'}
           </h2>
           <button type="button" onClick={onClose} disabled={isSubmitting} aria-label="Zamknij formularz">×</button>
         </div>
 
         <p className="chapter-modal__parent">
-          <span>{isSubchapter ? 'Rozdział nadrzędny' : 'Przenoszony szkic'}</span>
-          <strong>
-            {isSubchapter
-              ? `${move.parent.chapter_number}. ${move.parent.name}`
-              : move.chapter.name}
-          </strong>
+          <span>Przenoszony dokument</span>
+          <strong>{move.chapter.name}</strong>
         </p>
+
+        {isSubchapter && (
+          <p className="chapter-modal__parent">
+            <span>Nowy rozdział nadrzędny</span>
+            <strong>{`${move.parent.chapter_number}. ${move.parent.name}`}</strong>
+          </p>
+        )}
 
         {error && <p className="chapter-modal__error" role="alert">{error}</p>}
 

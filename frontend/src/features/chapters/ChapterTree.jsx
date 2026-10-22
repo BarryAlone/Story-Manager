@@ -4,14 +4,11 @@ import { isValidChapterDrop } from './chapterDragAndDrop';
 
 function ChapterMenu({
   canAddSubchapter,
-  canReorder,
   chapter,
   onAddSubchapter,
   onClose,
   onDelete,
   onEdit,
-  onMove,
-  onSwap,
 }) {
   const runAction = (action) => {
     onClose();
@@ -24,13 +21,6 @@ function ChapterMenu({
         <button type="button" role="menuitem" onClick={() => runAction(() => onAddSubchapter(chapter))}>
           Dodaj podrozdział
         </button>
-      )}
-      {canReorder && (
-        <>
-          <button type="button" role="menuitem" onClick={() => runAction(() => onMove(chapter, 'up'))}>Przesuń wyżej</button>
-          <button type="button" role="menuitem" onClick={() => runAction(() => onMove(chapter, 'down'))}>Przesuń niżej</button>
-          <button type="button" role="menuitem" onClick={() => runAction(() => onSwap(chapter))}>Zamień z…</button>
-        </>
       )}
       <button type="button" role="menuitem" onClick={() => runAction(() => onEdit(chapter))}>Edytuj dane</button>
       <button type="button" role="menuitem" className="chapter-tree__menu-delete" onClick={() => runAction(() => onDelete(chapter))}>Usuń</button>
@@ -74,7 +64,7 @@ function ChapterSection({ activeChapter, chapters, children, kind, label, labell
   return (
     <section
       ref={ref}
-      className={`chapter-tree__section${kind === 'drafts' ? ' chapter-tree__section--drafts' : ''}${isValid ? ' chapter-tree__section--drop-valid' : ''}${isDropTarget ? ' chapter-tree__section--drop-over' : ''}`}
+      className={`chapter-tree__section chapter-tree__section--${kind}${activeChapter ? ' chapter-tree__section--drag-active' : ''}${isValid ? ' chapter-tree__section--drop-valid' : ''}${isDropTarget ? ' chapter-tree__section--drop-over' : ''}`}
       aria-labelledby={labelledBy}
       aria-label={label}
     >
@@ -87,7 +77,6 @@ function ChapterRow({
   activeDragChapter,
   activeId,
   canAddSubchapter = false,
-  canReorder = false,
   chapter,
   chapters,
   depth = 0,
@@ -101,14 +90,11 @@ function ChapterRow({
   onDelete,
   onEdit,
   onMenuToggle,
-  onMove,
   onSelect,
-  onSwap,
   onToggle,
 }) {
   const isActive = Number(activeId) === Number(chapter.id);
   const {
-    handleRef: dragHandleRef,
     isDragging,
     ref: draggableRef,
   } = useDraggable({
@@ -136,21 +122,14 @@ function ChapterRow({
     <li
       ref={draggableRef}
       className={`chapter-tree__item${isActive ? ' chapter-tree__item--active' : ''}${isDragging ? ' chapter-tree__item--dragging' : ''}`}
+      tabIndex={isStructureUpdating ? -1 : 0}
+      aria-label={`Przenieś ${chapter.name}`}
+      aria-disabled={isStructureUpdating || undefined}
     >
       <div
         ref={parentDropRef}
         className={`chapter-tree__row chapter-tree__row--depth-${depth}${isValidParent ? ' chapter-tree__row--drop-valid' : ''}${isParentDropTarget ? ' chapter-tree__row--drop-over' : ''}`}
       >
-        <button
-          ref={dragHandleRef}
-          type="button"
-          className="chapter-tree__drag-handle"
-          aria-label={`Przeciągnij ${chapter.name}`}
-          title="Przeciągnij, aby zmienić położenie"
-          disabled={isStructureUpdating}
-        >
-          <span aria-hidden="true">⠿</span>
-        </button>
         {hasChildren ? (
           <button
             type="button"
@@ -165,18 +144,30 @@ function ChapterRow({
           <span className="chapter-tree__chevron-spacer" aria-hidden="true" />
         )}
 
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex="0"
           className="chapter-tree__select"
           onClick={() => onSelect(chapter)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onSelect(chapter);
+            }
+          }}
           aria-current={isActive ? 'page' : undefined}
+          aria-label={`${number ? `${number}. ` : ''}${chapter.name}`}
           title={chapter.name}
         >
           <span className="chapter-tree__number">{number || ''}</span>
           <span className="chapter-tree__name">{chapter.name}</span>
-        </button>
+        </div>
 
-        <div className="chapter-tree__menu-wrap" ref={isMenuOpen ? menuRef : undefined}>
+        <div
+          className="chapter-tree__menu-wrap"
+          ref={isMenuOpen ? menuRef : undefined}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
           <button
             type="button"
             className="chapter-tree__menu-toggle"
@@ -190,14 +181,11 @@ function ChapterRow({
           {isMenuOpen && (
             <ChapterMenu
               canAddSubchapter={canAddSubchapter}
-              canReorder={canReorder}
               chapter={chapter}
               onAddSubchapter={onAddSubchapter}
               onClose={() => onMenuToggle(null)}
               onDelete={onDelete}
               onEdit={onEdit}
-              onMove={onMove}
-              onSwap={onSwap}
             />
           )}
         </div>
@@ -216,7 +204,6 @@ function ChapterBranch({ branch, expandedIds, isInManuscript, isMenuOpen, ...row
           {...rowProps}
           chapter={branch.chapter}
           canAddSubchapter={isInManuscript}
-          canReorder={isInManuscript && Number(branch.chapter.chapter_number) > 0}
           hasChildren={branch.children.length > 0}
           isExpanded={isExpanded}
           isMenuOpen={isMenuOpen(branch.chapter.id)}
@@ -293,9 +280,7 @@ export default function ChapterTree({
   onDelete,
   onDrop,
   onEdit,
-  onMove,
   onSelect,
-  onSwap,
   onToggle,
   structure,
 }) {
@@ -337,9 +322,7 @@ export default function ChapterTree({
     onDelete,
     onEdit,
     onMenuToggle: toggleMenu,
-    onMove,
     onSelect,
-    onSwap,
     onToggle,
   };
 
@@ -366,10 +349,7 @@ export default function ChapterTree({
     <DragDropProvider onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <nav className="chapter-tree" aria-label="Struktura rozdziałów">
         <div className="chapter-tree__heading">
-          <div>
-            <span className="chapter-tree__eyebrow">Struktura</span>
-            <h1>Rozdziały</h1>
-          </div>
+          <h1>Rozdziały</h1>
           <button type="button" className="chapter-tree__add" onClick={onCreate} aria-label="Dodaj rozdział">+</button>
         </div>
 
@@ -377,8 +357,7 @@ export default function ChapterTree({
           <p className="chapter-tree__state" role="status">Ładowanie struktury…</p>
         ) : (
           <>
-            <ChapterSection activeChapter={activeDragChapter} chapters={chapters} kind="manuscript" label="Upuść szkic jako rozdział główny" labelledBy="manuscript-heading">
-              <h2 id="manuscript-heading">Rękopis</h2>
+            <ChapterSection activeChapter={activeDragChapter} chapters={chapters} kind="manuscript" label="Upuść szkic lub podrozdział jako rozdział główny.">
               {structure.roots.length === 0 && !activeDragChapter ? (
                 <p className="chapter-tree__state">Brak rozdziałów w rękopisie.</p>
               ) : (

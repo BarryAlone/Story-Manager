@@ -86,6 +86,7 @@ export default function ChapterEditor({ chapter, onDirty, onInit }) {
           resize: false,
           branding: false,
           promotion: false,
+          language: 'pl',
           plugins: EDITOR_PLUGINS,
           toolbar_mode: 'wrap',
           toolbar:
