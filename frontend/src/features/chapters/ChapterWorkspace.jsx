@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ChapterDocument from './ChapterDocument';
 import ChapterFormModal from './ChapterFormModal';
 import ChapterInspector from './ChapterInspector';
+import ChapterSynopsisList from './ChapterSynopsisList';
 import ChapterStructureMoveModal from './ChapterStructureMoveModal';
 import ChapterSubchapterModal from './ChapterSubchapterModal';
 import ChapterToolbar from './ChapterToolbar';
@@ -36,6 +37,7 @@ export default function ChapterWorkspace() {
   const [pendingStructureMove, setPendingStructureMove] = useState(null);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [actionError, setActionError] = useState('');
+  const [viewMode, setViewMode] = useState('editor');
   const expandedIds = useMemo(() => new Set(
     [...structure.roots, ...structure.drafts]
       .map((root) => Number(root.chapter.id))
@@ -65,6 +67,24 @@ export default function ChapterWorkspace() {
   const closeModal = useCallback(() => setFormChapter(undefined), []);
   const closeSubchapterModal = useCallback(() => setSubchapterParent(null), []);
   const closeInspector = useCallback(() => setIsInspectorOpen(false), []);
+
+  const changeViewMode = useCallback((nextMode) => {
+    if (nextMode === viewMode) return;
+    if (nextMode === 'plan' && !discardWritingChanges()) return;
+
+    setIsInspectorOpen(false);
+    setViewMode(nextMode);
+  }, [discardWritingChanges, viewMode]);
+
+  const openChapterFromPlan = useCallback((chapter) => {
+    setActionError('');
+    setIsInspectorOpen(false);
+    setViewMode('editor');
+
+    if (Number(chapter.id) !== Number(chapterId)) {
+      navigate(`/project/${projectId}/chapters/${chapter.id}`);
+    }
+  }, [chapterId, navigate, projectId]);
 
   const handleSave = async (payload) => {
     const savedChapter = await chapterStore.saveChapter(payload);
@@ -224,8 +244,10 @@ export default function ChapterWorkspace() {
             isDirty={isDirty}
             isSaving={isSaving}
             onEdit={openChapterForm}
+            onModeChange={changeViewMode}
             onSave={saveWriting}
             status={writingStatus}
+            viewMode={viewMode}
           />
 
           <div className="chapter-workspace__content">
@@ -236,24 +258,37 @@ export default function ChapterWorkspace() {
               </div>
             )}
 
-            <ChapterDocument
-              chapter={activeChapter}
-              hasDocuments={chapterStore.chapters.length > 0}
-              isLoading={chapterStore.isLoading}
-              loadError={chapterStore.loadError}
-              onEditorDirty={markEditorDirty}
-              onEditorInit={registerEditor}
-              onRetry={chapterStore.loadChapters}
-            />
+            {viewMode === 'editor' ? (
+              <>
+                <ChapterDocument
+                  chapter={activeChapter}
+                  hasDocuments={chapterStore.chapters.length > 0}
+                  isLoading={chapterStore.isLoading}
+                  loadError={chapterStore.loadError}
+                  onEditorDirty={markEditorDirty}
+                  onEditorInit={registerEditor}
+                  onRetry={chapterStore.loadChapters}
+                />
 
-            <ChapterInspector
-              chapter={activeChapter}
-              draft={draft}
-              isOpen={isInspectorOpen && Boolean(activeChapter)}
-              onClose={closeInspector}
-              onFieldChange={updateDraft}
-              onToggle={() => setIsInspectorOpen((current) => !current)}
-            />
+                <ChapterInspector
+                  chapter={activeChapter}
+                  draft={draft}
+                  isOpen={isInspectorOpen && Boolean(activeChapter)}
+                  onClose={closeInspector}
+                  onFieldChange={updateDraft}
+                  onToggle={() => setIsInspectorOpen((current) => !current)}
+                />
+              </>
+            ) : (
+              <ChapterSynopsisList
+                activeId={chapterId}
+                isLoading={chapterStore.isLoading}
+                loadError={chapterStore.loadError}
+                onRetry={chapterStore.loadChapters}
+                onSelect={openChapterFromPlan}
+                structure={structure}
+              />
+            )}
           </div>
         </main>
       </div>
