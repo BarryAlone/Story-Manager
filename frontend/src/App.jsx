@@ -16,6 +16,7 @@ import Register from './Register';
 import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
 import Profile from './Profile';
+import NotesPage from './features/notes/NotesPage';
 import useAuth from './useAuth';
 
 function ProtectedRoutes() {
@@ -59,6 +60,7 @@ function App() {
               <Route path="chapters/:chapterId" element={<ChapterDetail />} />
               <Route path="attributes" element={<AttributeList />} />
               <Route path="relationships" element={<RelationshipList />} />
+              <Route path="notes" element={<NotesPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
