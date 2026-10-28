@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import NoteCard from './NoteCard';
 import NoteCreateDialog from './NoteCreateDialog';
+import useMasonryLayout from './useMasonryLayout';
 import useProjectNotes from './useProjectNotes';
 import './notes.css';
 
@@ -12,6 +13,7 @@ export default function NotesPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [activeNoteId, setActiveNoteId] = useState(null);
   const [activeMode, setActiveMode] = useState('collapsed');
+  const masonryRef = useMasonryLayout();
 
   const changeCardMode = (noteId, mode) => {
     if (mode === 'collapsed') {
@@ -57,16 +59,17 @@ export default function NotesPage() {
         )}
 
         {!isLoading && !loadError && notes.length > 0 && (
-          <div className="notes-grid" aria-label="Notatki projektu">
+          <div ref={masonryRef} className="notes-masonry" aria-label="Notatki projektu">
             {notes.map((note) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                mode={activeNoteId === note.id ? activeMode : 'collapsed'}
-                onDelete={deleteNote}
-                onUpdate={updateNote}
-                onModeChange={(mode) => changeCardMode(note.id, mode)}
-              />
+              <div key={note.id} className="notes-masonry__item" data-masonry-item>
+                <NoteCard
+                  note={note}
+                  mode={activeNoteId === note.id ? activeMode : 'collapsed'}
+                  onDelete={deleteNote}
+                  onUpdate={updateNote}
+                  onModeChange={(mode) => changeCardMode(note.id, mode)}
+                />
+              </div>
             ))}
           </div>
         )}
