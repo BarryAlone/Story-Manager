@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectAttributeController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectNoteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/projects/{project}/characters', [CharacterController::class, 'index']);
     Route::put('/projects/{id}', [ProjectController::class, 'update']);
     Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
+
+    // ProjectNote
+    Route::get('/projects/{project}/notes', [ProjectNoteController::class, 'index']);
+    Route::post('/projects/{project}/notes', [ProjectNoteController::class, 'store']);
+    Route::get('/project-notes/{projectNote}', [ProjectNoteController::class, 'show']);
+    Route::patch('/project-notes/{projectNote}', [ProjectNoteController::class, 'update']);
+    Route::delete('/project-notes/{projectNote}', [ProjectNoteController::class, 'destroy']);
 
     // Chapter
     Route::get('/chapters', [ChapterController::class, 'index']);

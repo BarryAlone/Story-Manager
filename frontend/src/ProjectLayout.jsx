@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Link, NavLink, useParams } from 'react-router-dom';
+import { Outlet, Link, NavLink, useLocation, useParams } from 'react-router-dom';
 
 import logoIcon from './assets/icons/logo.png';
 import charactersIcon from "./assets/icons/woman.png"; 
@@ -11,6 +11,8 @@ import { apiFetch } from './api';
 
 function ProjectLayout() {
   const { projectId } = useParams();
+  const location = useLocation();
+  const isNotesView = location.pathname === `/project/${projectId}/notes`;
   const [projectName, setProjectName] = useState('Ładowanie...');
 
   useEffect(() => {
@@ -101,6 +103,10 @@ function ProjectLayout() {
             />
         )}
         </NavLink>
+
+        <NavLink to={`/project/${projectId}/notes`} title="Notatki" className="sidebar-icon">
+          {({ isActive }) => <NotesIcon isActive={isActive} />}
+        </NavLink>
         
       </nav>
 
@@ -125,7 +131,7 @@ function ProjectLayout() {
         </header>
 
         {/* GŁÓWNY OBSZAR ROBOCZY */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: '30px' }}>
+        <main style={{ flex: 1, overflowY: 'auto', padding: isNotesView ? 0 : '30px' }}>
           <Outlet />
         </main>
 
@@ -135,3 +141,25 @@ function ProjectLayout() {
 }
 
 export default ProjectLayout;
+
+function NotesIcon({ isActive }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-label="Notatki"
+      style={{
+        width: '32px',
+        height: '32px',
+        opacity: isActive ? 1 : 0.4,
+        fill: 'none',
+        stroke: 'currentColor',
+        strokeWidth: 1.8,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+      }}
+    >
+      <path d="M6 3h9l4 4v14H6z" />
+      <path d="M15 3v5h4M9 12h7M9 16h7" />
+    </svg>
+  );
+}
