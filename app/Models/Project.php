@@ -36,9 +36,9 @@ class Project extends Model
         return $this->hasMany(Event::class);
     }
 
-    public function projectNotes(): HasMany
+    public function projectInspirations(): HasMany
     {
-        return $this->hasMany(ProjectNote::class);
+        return $this->hasMany(ProjectInspiration::class);
     }
 
     // Relacja polimorficzna pozwalająca przypisać wiele obrazów.

@@ -1,0 +1,869 @@
+.inspirations-page {
+  min-height: 100%;
+  margin: 0;
+  color: #1f2937;
+  background: #f8fafc;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.inspirations-page button,
+.inspirations-page input,
+.inspirations-page textarea {
+  font: inherit;
+}
+
+.inspirations-page button:focus-visible,
+.inspirations-page input:focus-visible,
+.inspirations-page textarea:focus-visible,
+.inspiration-card:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.32);
+  outline-offset: 2px;
+}
+
+.inspirations-toolbar {
+  position: sticky;
+  z-index: 4;
+  top: 0;
+  display: flex;
+  min-height: 58px;
+  box-sizing: border-box;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 9px 20px;
+  border-bottom: 1px solid #dbe2ea;
+  background: #fff;
+}
+
+.inspirations-toolbar__search {
+  position: relative;
+  flex: 1 1 220px;
+  max-width: 380px;
+}
+
+.inspirations-toolbar__search svg {
+  position: absolute;
+  top: 50%;
+  left: 11px;
+  width: 17px;
+  height: 17px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: #94a3b8;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.inspirations-toolbar__search input {
+  width: 100%;
+  min-height: 38px;
+  box-sizing: border-box;
+  padding: 7px 12px 7px 36px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.inspirations-filters {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.inspirations-filter-toggle {
+  display: inline-flex;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.inspirations-filter-toggle legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.inspirations-filter-option {
+  position: relative;
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  padding: 6px 9px;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.inspirations-filter-option svg {
+  width: 15px;
+  height: 15px;
+  margin-right: 5px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.inspirations-filter-option + .inspirations-filter-option {
+  border-left: 1px solid #cbd5e1;
+}
+
+.inspirations-filter-option:hover {
+  background: #f8fafc;
+}
+
+.inspirations-filter-option--active {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.inspirations-filter-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.inspirations-filter-option:has(input:focus-visible) {
+  z-index: 1;
+  outline: 3px solid rgba(37, 99, 235, 0.32);
+  outline-offset: -2px;
+}
+
+button.inspirations-filter-option:focus-visible {
+  z-index: 1;
+  outline-offset: -2px;
+}
+
+.inspirations-filter-dates {
+  display: flex;
+  min-height: 34px;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 5px;
+  padding: 0 7px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.inspirations-filter-dates label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.inspirations-filter-dates input {
+  width: 112px;
+  min-height: 30px;
+  box-sizing: border-box;
+  padding: 4px 2px;
+  border: 0;
+  background: transparent;
+  color: #334155;
+  font-size: 0.74rem;
+}
+
+.inspirations-filter-dates__icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: #64748b;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.inspirations-filter-dates__separator {
+  width: 1px;
+  height: 20px;
+  flex: 0 0 auto;
+  background: #e2e8f0;
+}
+
+.inspirations-filter-reset {
+  position: relative;
+}
+
+.inspirations-filter-reset > button {
+  position: relative;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.inspirations-filter-reset > button:hover:not(:disabled) {
+  border-color: #60a5fa;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.inspirations-filter-reset > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.inspirations-filter-reset svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.inspirations-filter-reset > button > span {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  place-items: center;
+  border-radius: 999px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.inspirations-filter-reset > [role='tooltip'] {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 7px);
+  right: 0;
+  width: max-content;
+  padding: 5px 8px;
+  transform: translateY(-3px);
+  border-radius: 5px;
+  background: #111827;
+  color: #fff;
+  font-size: 0.72rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.inspirations-filter-reset:hover > [role='tooltip'],
+.inspirations-filter-reset:focus-within > [role='tooltip'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.inspirations-toolbar__add,
+.inspirations-state button,
+.inspiration-dialog__actions button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.inspirations-toolbar__add {
+  margin-left: auto;
+}
+
+.inspirations-toolbar__add,
+.inspiration-dialog__actions .inspiration-button--primary {
+  border-color: #334155;
+  background: #334155;
+  color: #fff;
+}
+
+.inspirations-toolbar__add:hover,
+.inspiration-dialog__actions .inspiration-button--primary:hover:not(:disabled) {
+  background: #1e293b;
+}
+
+.inspirations-toolbar__add span {
+  margin-right: 4px;
+  font-size: 1.05rem;
+}
+
+.inspirations-page__content {
+  padding: 24px;
+}
+
+.inspirations-masonry {
+  position: relative;
+  width: 100%;
+  transition: height 180ms ease;
+}
+
+.inspirations-masonry__item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 0;
+  transition: top 180ms ease, left 180ms ease;
+}
+
+.inspirations-masonry:not([data-masonry-ready='true']) .inspirations-masonry__item,
+.inspirations-masonry__item:not([data-masonry-positioned='true']) {
+  visibility: hidden;
+}
+
+.inspiration-card-slot {
+  width: 100%;
+  min-width: 0;
+}
+
+.inspiration-card-slot--placeholder {
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+
+.inspiration-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  background: #fff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+
+.inspiration-card--collapsed:hover,
+.inspiration-card--collapsed:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.13);
+}
+
+.inspiration-card--overlay {
+  position: fixed;
+  z-index: 21;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  border: 0;
+  scrollbar-color: rgba(51, 65, 85, 0.68) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  visibility: hidden;
+  cursor: default;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.32);
+}
+
+.inspiration-card--overlay::-webkit-scrollbar {
+  width: 10px;
+}
+
+.inspiration-card--overlay::-webkit-scrollbar-track {
+  margin-block: 9px;
+  background: transparent;
+}
+
+.inspiration-card--overlay::-webkit-scrollbar-thumb {
+  min-height: 36px;
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  background: rgba(51, 65, 85, 0.66);
+  background-clip: padding-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 23, 42, 0.12),
+    0 1px 4px rgba(15, 23, 42, 0.32);
+}
+
+.inspiration-card--overlay::-webkit-scrollbar-thumb:hover {
+  background: rgba(30, 41, 59, 0.8);
+  background-clip: padding-box;
+}
+
+.inspiration-card--overlay::-webkit-scrollbar-button {
+  display: none;
+}
+
+.inspiration-card--overlay::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.inspiration-card--overlay > .inspiration-card__preview,
+.inspiration-card--overlay > .inspiration-card__edit {
+  width: calc(100% + var(--inspiration-scrollbar-gutter, 0px));
+  box-sizing: border-box;
+}
+
+.inspiration-card--preview {
+  cursor: pointer;
+}
+
+.inspiration-card__backdrop,
+.inspiration-dialog__backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.42);
+  animation: inspiration-fade-in 0ms ease-out;
+}
+
+.inspiration-card__image-wrap {
+  position: relative;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.inspiration-card__image-wrap > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.inspiration-card--preview .inspiration-card__image-wrap > img {
+  max-height: 58vh;
+}
+
+.inspiration-card__body {
+  padding: 17px 18px 19px;
+}
+
+.inspiration-card__body h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.inspiration-card__body p {
+  display: -webkit-box;
+  margin: 8px 0 0;
+  overflow: hidden;
+  color: #475569;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+.inspiration-card--preview .inspiration-card__body p {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
+
+.inspiration-card__source-row {
+  padding: 0 18px 16px;
+}
+
+.inspiration-card__source {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.inspiration-card__source {
+  text-decoration: underline;
+  text-decoration-color: rgba(100, 116, 139, 0.45);
+  text-underline-offset: 2px;
+}
+
+.inspiration-card__image-wrap .inspiration-card__source {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 24px 12px 9px;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.76), transparent);
+  color: #f8fafc;
+}
+
+.inspiration-card__source--expanded {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.inspiration-card__menu {
+  position: absolute;
+  z-index: 3;
+  top: 10px;
+  right: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.inspiration-card:hover .inspiration-card__menu,
+.inspiration-card:focus-within .inspiration-card__menu,
+.inspiration-card__menu:has(> button[aria-expanded='true']) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.inspiration-card__menu > button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0 0 7px;
+  place-items: center;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #475569;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.inspiration-card__menu-popover {
+  position: fixed;
+  z-index: 70;
+  width: max-content;
+  min-width: 92px;
+  padding: 4px;
+  visibility: hidden;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  background: #fff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+}
+
+.inspiration-card__menu-popover button {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #334155;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.inspiration-card__menu-popover button:hover,
+.inspiration-card__menu-popover button:focus-visible {
+  background: #f1f5f9;
+}
+
+.inspiration-card__menu-popover button:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.35);
+  outline-offset: -1px;
+}
+
+.inspiration-card__menu-popover .inspiration-card__menu-delete {
+  color: #b91c1c;
+}
+
+.inspiration-card__menu-popover .inspiration-card__menu-delete:hover,
+.inspiration-card__menu-popover .inspiration-card__menu-delete:focus-visible {
+  background: #fff1f2;
+}
+
+.inspiration-card__edit {
+  padding: 24px;
+}
+
+.inspiration-form__fields {
+  display: grid;
+  gap: 16px;
+}
+
+.inspiration-form__fields > label,
+.inspiration-form__image-field > label {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.inspiration-form__fields input[type='text'],
+.inspiration-form__fields textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #1e293b;
+}
+
+.inspiration-form__fields input:disabled,
+.inspiration-form__fields textarea:disabled,
+.inspiration-form__fields button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.inspiration-form__add-source {
+  width: max-content;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.inspiration-form__fields textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.inspiration-form__image-field {
+  display: grid;
+  gap: 8px;
+}
+
+.inspiration-form__existing-image {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inspiration-form__existing-image img {
+  width: 90px;
+  height: 62px;
+  object-fit: contain;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: #f8fafc;
+}
+
+.inspiration-form__existing-image button {
+  padding: 6px 8px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  background: #fff1f2;
+  color: #b91c1c;
+  cursor: pointer;
+}
+
+.inspiration-form__file-name {
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.inspiration-card__edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.inspiration-card__edit-actions button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.inspiration-card__edit-actions .inspiration-button--primary {
+  border-color: #334155;
+  background: #334155;
+  color: #fff;
+}
+
+.inspiration-card__edit-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.inspiration-form__error {
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  background: #fff1f2;
+  color: #9f1239;
+  font-size: 0.82rem;
+}
+
+.inspiration-dialog__backdrop {
+  z-index: 30;
+  display: grid;
+  padding: 20px;
+  place-items: center;
+}
+
+.inspiration-dialog {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.3);
+}
+
+.inspiration-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.inspiration-dialog__header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.inspiration-dialog__header button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.inspiration-dialog form {
+  padding: 18px;
+}
+
+.inspiration-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.inspiration-dialog__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.inspirations-state {
+  display: flex;
+  min-height: 320px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 9px;
+  padding: 30px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+  color: #64748b;
+  text-align: center;
+}
+
+.inspirations-state strong {
+  color: #334155;
+  font-size: 1.05rem;
+}
+
+.inspirations-state--error {
+  border-color: #fecaca;
+  color: #9f1239;
+}
+
+@keyframes inspiration-fade-in {
+  from { opacity: 0; }
+}
+
+@media (max-width: 680px) {
+  .inspirations-toolbar {
+    align-items: stretch;
+    gap: 8px;
+    padding: 9px 12px;
+  }
+
+  .inspirations-toolbar__search {
+    max-width: none;
+    flex-basis: 100%;
+  }
+
+  .inspirations-filters {
+    justify-content: flex-start;
+  }
+
+  .inspirations-filter-dates {
+    width: 100%;
+  }
+
+  .inspirations-filter-dates label {
+    flex: 1;
+  }
+
+  .inspirations-filter-dates input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .inspirations-toolbar__add {
+    white-space: nowrap;
+  }
+
+  .inspirations-page__content {
+    padding: 14px;
+  }
+
+}
+
+@media (hover: none) {
+  .inspiration-card__menu {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inspirations-masonry,
+  .inspirations-masonry__item,
+  .inspiration-card,
+  .inspiration-card__backdrop,
+  .inspiration-dialog__backdrop {
+    animation: none;
+    transition: none;
+  }
+}

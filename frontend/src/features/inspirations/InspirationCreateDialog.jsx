@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-import NoteFormFields from './NoteFormFields';
+import InspirationFormFields from './InspirationFormFields';
 
 const EMPTY_VALUES = { content: '', image: null, source: '', title: '' };
 
-export default function NoteCreateDialog({ onClose, onCreate }) {
+export default function InspirationCreateDialog({ onClose, onCreate }) {
   const [values, setValues] = useState(EMPTY_VALUES);
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -32,7 +32,7 @@ export default function NoteCreateDialog({ onClose, onCreate }) {
       await onCreate(values);
       onClose();
     } catch (saveError) {
-      setError(saveError.message || 'Nie udało się zapisać notatki.');
+      setError(saveError.message || 'Nie udało się zapisać inspiracji.');
     } finally {
       savingRef.current = false;
       setIsSaving(false);
@@ -40,33 +40,33 @@ export default function NoteCreateDialog({ onClose, onCreate }) {
   };
 
   return (
-    <div className="note-dialog__backdrop" onMouseDown={() => !isSaving && onClose()}>
+    <div className="inspiration-dialog__backdrop" onMouseDown={() => !isSaving && onClose()}>
       <section
-        className="note-dialog"
+        className="inspiration-dialog"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="note-create-title"
+        aria-labelledby="inspiration-create-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <header className="note-dialog__header">
-          <h2 id="note-create-title">Dodaj notatkę</h2>
+        <header className="inspiration-dialog__header">
+          <h2 id="inspiration-create-title">Dodaj inspirację</h2>
           <button type="button" onClick={onClose} disabled={isSaving} aria-label="Zamknij formularz">×</button>
         </header>
 
         <form onSubmit={submit}>
-          <NoteFormFields
+          <InspirationFormFields
             disabled={isSaving}
-            idPrefix="new-note"
+            idPrefix="new-inspiration"
             values={values}
             onChange={(field, value) => setValues((current) => ({ ...current, [field]: value }))}
             onImageChange={(image) => setValues((current) => ({ ...current, image }))}
           />
 
-          {error && <p className="note-form__error" role="alert">{error}</p>}
+          {error && <p className="inspiration-form__error" role="alert">{error}</p>}
 
-          <footer className="note-dialog__actions">
+          <footer className="inspiration-dialog__actions">
             <button type="button" onClick={onClose} disabled={isSaving}>Anuluj</button>
-            <button type="submit" className="note-button--primary" disabled={!canSave || isSaving}>
+            <button type="submit" className="inspiration-button--primary" disabled={!canSave || isSaving}>
               {isSaving ? 'Zapisywanie…' : 'Zapisz'}
             </button>
           </footer>

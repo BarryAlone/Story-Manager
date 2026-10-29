@@ -8,11 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('project_notes', function (Blueprint $table) {
+        Schema::create('project_inspirations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
             $table->string('title', 120)->nullable();
             $table->text('content')->nullable();
+            $table->string('source', 500)->nullable();
             $table->string('image_path')->nullable();
             $table->timestamps();
 
@@ -22,6 +23,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('project_notes');
+        Schema::dropIfExists('project_inspirations');
     }
 };

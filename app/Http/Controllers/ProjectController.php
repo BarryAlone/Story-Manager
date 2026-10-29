@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Project;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ProjectController extends Controller
@@ -75,12 +76,22 @@ class ProjectController extends Controller
     {
         $project = Project::findOrFail($id);
         Gate::authorize('delete', $project);
-    
+
+        $imagePaths = $project->projectInspirations()
+            ->whereNotNull('image_path')
+            ->pluck('image_path')
+            ->filter()
+            ->all();
+
         if ($project->project_image) {
-            Storage::disk('public')->delete($project->project_image);
+            $imagePaths[] = $project->project_image;
         }
-        
-        $project->delete();
+
+        DB::transaction(fn () => $project->delete());
+
+        if ($imagePaths !== []) {
+            Storage::disk('public')->delete(array_values(array_unique($imagePaths)));
+        }
 
         return response()->json(['message' => 'Projekt usunięty'], 200);
     }

@@ -15,7 +15,7 @@ function geometryFromRect(rect) {
   };
 }
 
-export default function useNoteCardExpansion({ isExpanded, layoutKey, onClosed }) {
+export default function useInspirationCardExpansion({ isExpanded, layoutKey, onClosed }) {
   const slotRef = useRef(null);
   const overlayRef = useRef(null);
   const originRectRef = useRef(null);
@@ -44,8 +44,8 @@ export default function useNoteCardExpansion({ isExpanded, layoutKey, onClosed }
   }, []);
 
   const imageElements = useCallback((element) => ({
-    image: element.querySelector('.note-card__image-wrap > img'),
-    wrapper: element.querySelector('.note-card__image-wrap'),
+    image: element.querySelector('.inspiration-card__image-wrap > img'),
+    wrapper: element.querySelector('.inspiration-card__image-wrap'),
   }), []);
 
   const clearImageGeometry = useCallback((element) => {
@@ -80,9 +80,9 @@ export default function useNoteCardExpansion({ isExpanded, layoutKey, onClosed }
     clearImageGeometry(element);
 
     const scrollbarGutter = Math.max(0, element.offsetWidth - element.clientWidth);
-    element.style.setProperty('--note-scrollbar-gutter', `${scrollbarGutter}px`);
+    element.style.setProperty('--inspiration-scrollbar-gutter', `${scrollbarGutter}px`);
 
-    const imageWrapper = element.querySelector('.note-card__image-wrap');
+    const imageWrapper = element.querySelector('.inspiration-card__image-wrap');
     const imageHeight = imageWrapper?.getBoundingClientRect().height ?? null;
     const height = Math.min(maxHeight, Math.max(120, element.scrollHeight));
 
@@ -137,7 +137,7 @@ export default function useNoteCardExpansion({ isExpanded, layoutKey, onClosed }
         `height ${TRANSITION_MS}ms ease`,
       ].join(', ');
 
-      const imageWrapper = element.querySelector('.note-card__image-wrap');
+      const imageWrapper = element.querySelector('.inspiration-card__image-wrap');
       if (imageWrapper) imageWrapper.style.transition = `height ${TRANSITION_MS}ms ease`;
 
       applyGeometry(element, to);
@@ -158,7 +158,7 @@ export default function useNoteCardExpansion({ isExpanded, layoutKey, onClosed }
     }
 
     const current = geometryFromRect(element.getBoundingClientRect());
-    const currentImageHeight = element.querySelector('.note-card__image-wrap')?.getBoundingClientRect().height ?? null;
+    const currentImageHeight = element.querySelector('.inspiration-card__image-wrap')?.getBoundingClientRect().height ?? null;
     const target = measureTarget(element);
 
     if (!animate || reducedMotion()) {
@@ -227,7 +227,7 @@ export default function useNoteCardExpansion({ isExpanded, layoutKey, onClosed }
     if (isTransitioningRef.current || !slotRef.current) return;
 
     const origin = slotRef.current.getBoundingClientRect();
-    const originImage = slotRef.current.querySelector('.note-card__image-wrap');
+    const originImage = slotRef.current.querySelector('.inspiration-card__image-wrap');
     originRectRef.current = origin;
     originImageHeightRef.current = originImage?.getBoundingClientRect().height ?? null;
     slotRef.current.style.height = `${origin.height}px`;
@@ -243,9 +243,9 @@ export default function useNoteCardExpansion({ isExpanded, layoutKey, onClosed }
 
     const current = geometryFromRect(element.getBoundingClientRect());
     const destination = geometryFromRect(slot.getBoundingClientRect());
-    const currentImageHeight = element.querySelector('.note-card__image-wrap')?.getBoundingClientRect().height ?? null;
+    const currentImageHeight = element.querySelector('.inspiration-card__image-wrap')?.getBoundingClientRect().height ?? null;
     let destinationImageHeight = originImageHeightRef.current;
-    const image = element.querySelector('.note-card__image-wrap > img');
+    const image = element.querySelector('.inspiration-card__image-wrap > img');
 
     if (image?.naturalWidth && image.naturalHeight) {
       destinationImageHeight = Math.min(300, destination.width * (image.naturalHeight / image.naturalWidth));

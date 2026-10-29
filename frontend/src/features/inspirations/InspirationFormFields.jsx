@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function NoteFormFields({
+export default function InspirationFormFields({
   disabled = false,
   existingImageUrl = null,
   idPrefix,
@@ -13,7 +13,7 @@ export default function NoteFormFields({
   const [isSourceVisible, setIsSourceVisible] = useState(Boolean(values.source));
 
   return (
-    <div className="note-form__fields">
+    <div className="inspiration-form__fields">
       <label htmlFor={`${idPrefix}-title`}>
         Tytuł
         <input
@@ -56,7 +56,7 @@ export default function NoteFormFields({
       ) : (
         <button
           type="button"
-          className="note-form__add-source"
+          className="inspiration-form__add-source"
           onClick={() => setIsSourceVisible(true)}
           disabled={disabled}
         >
@@ -64,11 +64,11 @@ export default function NoteFormFields({
         </button>
       )}
 
-      <div className="note-form__image-field">
+      <div className="inspiration-form__image-field">
         <label htmlFor={`${idPrefix}-image`}>Zdjęcie</label>
         {existingImageUrl && !removeImage && !values.image && (
-          <div className="note-form__existing-image">
-            <img src={existingImageUrl} alt="Obecne zdjęcie notatki" />
+          <div className="inspiration-form__existing-image">
+            <img src={existingImageUrl} alt="Obecny obraz inspiracji" />
             <button type="button" onClick={onRemoveImage} disabled={disabled}>Usuń zdjęcie</button>
           </div>
         )}
@@ -79,8 +79,8 @@ export default function NoteFormFields({
           onChange={(event) => onImageChange(event.target.files?.[0] || null)}
           disabled={disabled}
         />
-        {values.image && <span className="note-form__file-name">Wybrano: {values.image.name}</span>}
-        {removeImage && !values.image && <span className="note-form__file-name">Zdjęcie zostanie usunięte.</span>}
+        {values.image && <span className="inspiration-form__file-name">Wybrano: {values.image.name}</span>}
+        {removeImage && !values.image && <span className="inspiration-form__file-name">Zdjęcie zostanie usunięte.</span>}
       </div>
     </div>
   );

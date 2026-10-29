@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { backendUrl } from '../../api';
-import NoteFormFields from './NoteFormFields';
-import useNoteCardExpansion from './useNoteCardExpansion';
+import InspirationFormFields from './InspirationFormFields';
+import useInspirationCardExpansion from './useInspirationCardExpansion';
 
-function initialValues(note) {
+function initialValues(inspiration) {
   return {
-    content: note.content || '',
+    content: inspiration.content || '',
     image: null,
-    source: note.source || '',
-    title: note.title || '',
+    source: inspiration.source || '',
+    title: inspiration.title || '',
   };
 }
 
@@ -24,9 +25,9 @@ function sourceUrl(source) {
   }
 }
 
-function NoteSource({ expanded, source }) {
+function InspirationSource({ expanded, source }) {
   const url = sourceUrl(source);
-  const className = `note-card__source${expanded ? ' note-card__source--expanded' : ''}`;
+  const className = `inspiration-card__source${expanded ? ' inspiration-card__source--expanded' : ''}`;
 
   if (url) {
     return (
@@ -46,8 +47,8 @@ function NoteSource({ expanded, source }) {
   return <span className={className} title={source}>{source}</span>;
 }
 
-export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate }) {
-  const [values, setValues] = useState(() => initialValues(note));
+export default function InspirationCard({ isVisible, mode, inspiration, onDelete, onModeChange, onUpdate }) {
+  const [values, setValues] = useState(() => initialValues(inspiration));
   const [removeImage, setRemoveImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
@@ -56,29 +57,36 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
   const [returnTarget, setReturnTarget] = useState('preview');
   const savingRef = useRef(false);
   const menuRef = useRef(null);
+  const menuButtonRef = useRef(null);
+  const menuPopoverRef = useRef(null);
   const returnTimerRef = useRef(null);
   const isExpanded = mode !== 'collapsed';
   const isInteractionLocked = isSaving || isFinishing;
-  const imageUrl = note.image_path ? backendUrl(`/storage/${note.image_path}`) : null;
+  const imageUrl = inspiration.image_path ? backendUrl(`/storage/${inspiration.image_path}`) : null;
   const hasImage = Boolean(imageUrl && !removeImage && !values.image);
   const canSave = Boolean(
     values.title.trim()
     || values.content.trim()
     || values.image
-    || (note.image_path && !removeImage)
+    || (inspiration.image_path && !removeImage)
   );
   const isDirty = useMemo(() => (
-    values.title !== (note.title || '')
-    || values.content !== (note.content || '')
-    || values.source !== (note.source || '')
+    values.title !== (inspiration.title || '')
+    || values.content !== (inspiration.content || '')
+    || values.source !== (inspiration.source || '')
     || Boolean(values.image)
     || removeImage
-  ), [note.content, note.source, note.title, removeImage, values]);
+  ), [inspiration.content, inspiration.source, inspiration.title, removeImage, values]);
   const handleClosed = () => {
     savingRef.current = false;
     setIsSaving(false);
     setIsFinishing(false);
     onModeChange('collapsed');
+    window.requestAnimationFrame(() => {
+      const card = isVisible ? slotRef.current?.querySelector('.inspiration-card') : null;
+      const focusTarget = card || document.querySelector('.inspirations-toolbar__search input');
+      focusTarget?.focus({ preventScroll: true });
+    });
   };
   const {
     closeToSlot,
@@ -87,11 +95,33 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
     openFromSlot,
     overlayRef,
     slotRef,
-  } = useNoteCardExpansion({
+  } = useInspirationCardExpansion({
     isExpanded,
     layoutKey: mode,
     onClosed: handleClosed,
   });
+
+  useLayoutEffect(() => {
+    if (!isExpanded || !overlayRef.current) return;
+
+    const focusTarget = mode === 'edit'
+      ? overlayRef.current.querySelector('.inspiration-card__edit input, .inspiration-card__edit textarea, .inspiration-card__edit button')
+      : overlayRef.current;
+    focusTarget?.focus({ preventScroll: true });
+  }, [isExpanded, mode, overlayRef]);
+
+  useEffect(() => {
+    if (!isExpanded) return undefined;
+
+    const appRoot = document.getElementById('root');
+    if (!appRoot) return undefined;
+
+    const wasInert = appRoot.inert;
+    appRoot.inert = true;
+    return () => {
+      appRoot.inert = wasInert;
+    };
+  }, [isExpanded]);
 
   const prepareEdit = (target) => {
     if (returnTimerRef.current) window.clearTimeout(returnTimerRef.current);
@@ -99,7 +129,7 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
     savingRef.current = false;
     setIsSaving(false);
     setIsFinishing(false);
-    setValues(initialValues(note));
+    setValues(initialValues(inspiration));
     setRemoveImage(false);
     setError('');
     setIsMenuOpen(false);
@@ -149,7 +179,7 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
 
   const cancelEdit = () => {
     if (savingRef.current) return;
-    setValues(initialValues(note));
+    setValues(initialValues(inspiration));
     setRemoveImage(false);
     setError('');
     setIsMenuOpen(false);
@@ -171,7 +201,7 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
     setIsSaving(true);
     setError('');
     try {
-      const updated = await onUpdate(note.id, { ...values, removeImage });
+      const updated = await onUpdate(inspiration.id, { ...values, removeImage });
       setValues(initialValues(updated));
       setRemoveImage(false);
       finishEdit();
@@ -184,26 +214,68 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
 
   const remove = async () => {
     setIsMenuOpen(false);
-    if (!window.confirm('Czy na pewno chcesz trwale usunąć tę notatkę?')) return;
+    if (!window.confirm('Czy na pewno chcesz trwale usunąć tę inspirację?')) return;
 
     savingRef.current = true;
     setIsSaving(true);
     setError('');
     try {
-      await onDelete(note.id);
+      await onDelete(inspiration.id);
       onModeChange('collapsed');
+      window.requestAnimationFrame(() => {
+        document.querySelector('.inspirations-toolbar__search input')?.focus({ preventScroll: true });
+      });
     } catch (deleteError) {
-      setError(deleteError.message || 'Nie udało się usunąć notatki.');
+      setError(deleteError.message || 'Nie udało się usunąć inspiracji.');
       savingRef.current = false;
       setIsSaving(false);
     }
   };
 
+  const positionMenu = useCallback(() => {
+    const button = menuButtonRef.current;
+    const popover = menuPopoverRef.current;
+    if (!button || !popover) return;
+
+    const margin = 8;
+    const gap = 5;
+    const buttonRect = button.getBoundingClientRect();
+    const popoverRect = popover.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - buttonRect.bottom;
+    const spaceAbove = buttonRect.top;
+    const openAbove = spaceBelow < popoverRect.height + gap + margin
+      && spaceAbove >= popoverRect.height + gap + margin;
+    const preferredTop = openAbove
+      ? buttonRect.top - popoverRect.height - gap
+      : buttonRect.bottom + gap;
+    const maxTop = Math.max(margin, window.innerHeight - popoverRect.height - margin);
+    const preferredLeft = buttonRect.right - popoverRect.width;
+    const maxLeft = Math.max(margin, window.innerWidth - popoverRect.width - margin);
+
+    popover.style.top = `${Math.max(margin, Math.min(preferredTop, maxTop))}px`;
+    popover.style.left = `${Math.max(margin, Math.min(preferredLeft, maxLeft))}px`;
+    popover.style.visibility = 'visible';
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isMenuOpen) return undefined;
+
+    positionMenu();
+    menuPopoverRef.current?.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+    window.addEventListener('resize', positionMenu);
+    window.addEventListener('scroll', positionMenu, true);
+    return () => {
+      window.removeEventListener('resize', positionMenu);
+      window.removeEventListener('scroll', positionMenu, true);
+    };
+  }, [isMenuOpen, positionMenu]);
+
   useEffect(() => {
     if (!isMenuOpen) return undefined;
 
     const closeMenuOutside = (event) => {
-      if (!menuRef.current?.contains(event.target)) setIsMenuOpen(false);
+      if (menuRef.current?.contains(event.target) || menuPopoverRef.current?.contains(event.target)) return;
+      setIsMenuOpen(false);
     };
 
     document.addEventListener('pointerdown', closeMenuOutside);
@@ -219,6 +291,7 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
       event.preventDefault();
       if (isMenuOpen) {
         setIsMenuOpen(false);
+        menuButtonRef.current?.focus({ preventScroll: true });
       } else if (mode === 'edit') {
         cancelEdit();
       } else if (mode === 'preview') {
@@ -248,10 +321,11 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
   };
 
   const menu = (
-    <div className="note-card__menu" ref={menuRef} onClick={(event) => event.stopPropagation()}>
+    <div className="inspiration-card__menu" ref={menuRef} onClick={(event) => event.stopPropagation()}>
       <button
+        ref={menuButtonRef}
         type="button"
-        aria-label={`Menu notatki${note.title ? `: ${note.title}` : ''}`}
+        aria-label={`Menu inspiracji${inspiration.title ? `: ${inspiration.title}` : ''}`}
         aria-haspopup="menu"
         aria-expanded={isMenuOpen}
         onClick={() => setIsMenuOpen((current) => !current)}
@@ -259,48 +333,54 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
       >
         …
       </button>
-      {isMenuOpen && (
-        <div role="menu">
+      {isMenuOpen && createPortal(
+        <div
+          ref={menuPopoverRef}
+          className="inspiration-card__menu-popover"
+          role="menu"
+          onClick={(event) => event.stopPropagation()}
+        >
           {mode !== 'edit' && <button type="button" role="menuitem" onClick={openEdit}>Edytuj</button>}
-          <button type="button" role="menuitem" className="note-card__menu-delete" onClick={remove}>Usuń</button>
-        </div>
+          <button type="button" role="menuitem" className="inspiration-card__menu-delete" onClick={remove}>Usuń</button>
+        </div>,
+        document.body,
       )}
     </div>
   );
 
   const display = (
-    <div className="note-card__preview">
+    <div className="inspiration-card__preview">
       {imageUrl && (
-        <div className="note-card__image-wrap">
+        <div className="inspiration-card__image-wrap">
           <img
             src={imageUrl}
-            alt={note.title ? `Zdjęcie notatki: ${note.title}` : 'Zdjęcie notatki'}
+            alt={inspiration.title ? `Obraz inspiracji: ${inspiration.title}` : 'Obraz inspiracji'}
             onLoad={() => isExpanded && fitOverlay(true)}
           />
-          {note.source && <NoteSource source={note.source} expanded={isExpanded} />}
+          {inspiration.source && <InspirationSource source={inspiration.source} expanded={isExpanded} />}
         </div>
       )}
-      {(note.title || note.content) && (
-        <div className="note-card__body">
-          {note.title && <h2>{note.title}</h2>}
-          {note.content && <p>{note.content}</p>}
+      {(inspiration.title || inspiration.content) && (
+        <div className="inspiration-card__body">
+          {inspiration.title && <h2>{inspiration.title}</h2>}
+          {inspiration.content && <p>{inspiration.content}</p>}
         </div>
       )}
-      {!imageUrl && note.source && (
-        <div className="note-card__source-row">
-          <NoteSource source={note.source} expanded={isExpanded} />
+      {!imageUrl && inspiration.source && (
+        <div className="inspiration-card__source-row">
+          <InspirationSource source={inspiration.source} expanded={isExpanded} />
         </div>
       )}
-      {error && <p className="note-form__error" role="alert">{error}</p>}
+      {error && <p className="inspiration-form__error" role="alert">{error}</p>}
     </div>
   );
 
   const edit = (
-    <div className="note-card__edit" onClick={(event) => event.stopPropagation()}>
-      <NoteFormFields
+    <div className="inspiration-card__edit" onClick={(event) => event.stopPropagation()}>
+      <InspirationFormFields
         disabled={isInteractionLocked}
         existingImageUrl={imageUrl}
-        idPrefix={`note-${note.id}`}
+        idPrefix={`inspiration-${inspiration.id}`}
         values={values}
         removeImage={removeImage}
         onChange={(field, value) => setValues((current) => ({ ...current, [field]: value }))}
@@ -310,12 +390,12 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
         }}
         onRemoveImage={() => setRemoveImage(true)}
       />
-      {error && <p className="note-form__error" role="alert">{error}</p>}
-      <div className="note-card__edit-actions">
+      {error && <p className="inspiration-form__error" role="alert">{error}</p>}
+      <div className="inspiration-card__edit-actions">
         <button type="button" onClick={cancelEdit} disabled={isInteractionLocked}>Anuluj</button>
         <button
           type="button"
-          className="note-button--primary"
+          className="inspiration-button--primary"
           onClick={saveEdit}
           disabled={!canSave || isInteractionLocked}
         >
@@ -328,10 +408,11 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
   const card = (overlay = false) => (
     <article
       ref={overlay ? overlayRef : undefined}
-      className={`note-card note-card--${mode}${overlay ? ' note-card--overlay' : ''}${hasImage || values.image ? ' note-card--with-image' : ''}`}
+      className={`inspiration-card inspiration-card--${mode}${overlay ? ' inspiration-card--overlay' : ''}${hasImage || values.image ? ' inspiration-card--with-image' : ''}`}
       tabIndex={mode === 'edit' ? -1 : 0}
-      role={mode === 'edit' ? undefined : 'group'}
-      aria-label={mode === 'collapsed' ? 'Otwórz podgląd notatki' : 'Przejdź do edycji notatki'}
+      role={overlay ? 'dialog' : mode === 'edit' ? undefined : 'group'}
+      aria-modal={overlay ? true : undefined}
+      aria-label={mode === 'collapsed' ? 'Otwórz podgląd inspiracji' : 'Przejdź do edycji inspiracji'}
       onClick={activate}
       onKeyDown={keyboardActivate}
     >
@@ -342,13 +423,13 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
 
   return (
     <>
-      <div ref={slotRef} className={`note-card-slot${isExpanded ? ' note-card-slot--placeholder' : ''}`}>
+      <div ref={slotRef} className={`inspiration-card-slot${isExpanded ? ' inspiration-card-slot--placeholder' : ''}`}>
         {!isExpanded && card()}
       </div>
-      {isExpanded && (
+      {isExpanded && createPortal(
         <>
           <div
-            className="note-card__backdrop"
+            className="inspiration-card__backdrop"
             onMouseDown={() => {
               if (mode === 'preview') closeToSlot();
               else if (mode === 'edit') saveEdit();
@@ -356,7 +437,8 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
             aria-hidden="true"
           />
           {card(true)}
-        </>
+        </>,
+        document.body,
       )}
     </>
   );
