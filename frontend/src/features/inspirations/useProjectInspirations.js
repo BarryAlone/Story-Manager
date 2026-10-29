@@ -11,9 +11,9 @@ async function responseError(response, fallback) {
   return new Error(validationMessage || payload?.message || fallback);
 }
 
-async function requestNotes(projectId, signal) {
-  const response = await apiFetch(`/api/projects/${projectId}/notes`, { signal });
-  if (!response.ok) throw await responseError(response, 'Nie udało się pobrać notatek.');
+async function requestInspirations(projectId, signal) {
+  const response = await apiFetch(`/api/projects/${projectId}/inspirations`, { signal });
+  if (!response.ok) throw await responseError(response, 'Nie udało się pobrać inspiracji.');
   return response.json();
 }
 
@@ -21,7 +21,7 @@ function isAbortError(error) {
   return error?.name === 'AbortError';
 }
 
-function noteFormData(values, updating = false) {
+function inspirationFormData(values, updating = false) {
   const formData = new FormData();
   formData.append('title', values.title);
   formData.append('content', values.content);
@@ -36,11 +36,11 @@ function noteFormData(values, updating = false) {
   return formData;
 }
 
-export default function useProjectNotes(projectId) {
+export default function useProjectInspirations(projectId) {
   const [collection, setCollection] = useState(() => ({
     isLoading: true,
     loadError: '',
-    notes: [],
+    inspirations: [],
     projectId,
   }));
   const currentProjectIdRef = useRef(projectId);
@@ -51,7 +51,7 @@ export default function useProjectNotes(projectId) {
     currentProjectIdRef.current = projectId;
   }, [projectId]);
 
-  const loadNotes = useCallback(async () => {
+  const loadInspirations = useCallback(async () => {
     const requestedProjectId = projectId;
     const requestSequence = loadSequenceRef.current + 1;
     const controller = new AbortController();
@@ -62,12 +62,12 @@ export default function useProjectNotes(projectId) {
     setCollection({
       isLoading: true,
       loadError: '',
-      notes: [],
+      inspirations: [],
       projectId: requestedProjectId,
     });
 
     try {
-      const notes = await requestNotes(requestedProjectId, controller.signal);
+      const inspirations = await requestInspirations(requestedProjectId, controller.signal);
       if (
         requestSequence !== loadSequenceRef.current
         || currentProjectIdRef.current !== requestedProjectId
@@ -76,7 +76,7 @@ export default function useProjectNotes(projectId) {
       setCollection({
         isLoading: false,
         loadError: '',
-        notes,
+        inspirations,
         projectId: requestedProjectId,
       });
     } catch (error) {
@@ -88,8 +88,8 @@ export default function useProjectNotes(projectId) {
 
       setCollection({
         isLoading: false,
-        loadError: error.message || 'Nie udało się pobrać notatek.',
-        notes: [],
+        loadError: error.message || 'Nie udało się pobrać inspiracji.',
+        inspirations: [],
         projectId: requestedProjectId,
       });
     }
@@ -99,38 +99,38 @@ export default function useProjectNotes(projectId) {
     let cancelled = false;
 
     Promise.resolve().then(() => {
-      if (!cancelled) loadNotes();
+      if (!cancelled) loadInspirations();
     });
 
     return () => {
       cancelled = true;
       loadControllerRef.current?.abort();
     };
-  }, [loadNotes]);
+  }, [loadInspirations]);
 
-  const createNote = useCallback(async (values) => {
+  const createInspiration = useCallback(async (values) => {
     const requestedProjectId = projectId;
-    const response = await apiFetch(`/api/projects/${requestedProjectId}/notes`, {
+    const response = await apiFetch(`/api/projects/${requestedProjectId}/inspirations`, {
       method: 'POST',
-      body: noteFormData(values),
+      body: inspirationFormData(values),
     });
 
-    if (!response.ok) throw await responseError(response, 'Nie udało się zapisać notatki.');
+    if (!response.ok) throw await responseError(response, 'Nie udało się zapisać inspiracji.');
 
-    const note = await response.json();
+    const inspiration = await response.json();
     if (currentProjectIdRef.current === requestedProjectId) {
       setCollection((current) => current.projectId === requestedProjectId
-        ? { ...current, notes: [note, ...current.notes] }
+        ? { ...current, inspirations: [inspiration, ...current.inspirations] }
         : current);
     }
-    return note;
+    return inspiration;
   }, [projectId]);
 
-  const updateNote = useCallback(async (id, values) => {
+  const updateInspiration = useCallback(async (id, values) => {
     const requestedProjectId = projectId;
-    const response = await apiFetch(`/api/project-notes/${id}`, {
+    const response = await apiFetch(`/api/project-inspirations/${id}`, {
       method: 'POST',
-      body: noteFormData(values, true),
+      body: inspirationFormData(values, true),
     });
 
     if (!response.ok) throw await responseError(response, 'Nie udało się zapisać zmian.');
@@ -140,36 +140,36 @@ export default function useProjectNotes(projectId) {
       setCollection((current) => current.projectId === requestedProjectId
         ? {
             ...current,
-            notes: current.notes.map((note) => (note.id === updated.id ? updated : note)),
+            inspirations: current.inspirations.map((inspiration) => (inspiration.id === updated.id ? updated : inspiration)),
           }
         : current);
     }
     return updated;
   }, [projectId]);
 
-  const deleteNote = useCallback(async (id) => {
+  const deleteInspiration = useCallback(async (id) => {
     const requestedProjectId = projectId;
-    const response = await apiFetch(`/api/project-notes/${id}`, { method: 'DELETE' });
-    if (!response.ok) throw await responseError(response, 'Nie udało się usunąć notatki.');
+    const response = await apiFetch(`/api/project-inspirations/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw await responseError(response, 'Nie udało się usunąć inspiracji.');
 
     if (currentProjectIdRef.current === requestedProjectId) {
       setCollection((current) => current.projectId === requestedProjectId
-        ? { ...current, notes: current.notes.filter((note) => note.id !== id) }
+        ? { ...current, inspirations: current.inspirations.filter((inspiration) => inspiration.id !== id) }
         : current);
     }
   }, [projectId]);
 
   const currentCollection = collection.projectId === projectId
     ? collection
-    : { isLoading: true, loadError: '', notes: [] };
+    : { isLoading: true, loadError: '', inspirations: [] };
 
   return {
-    createNote,
-    deleteNote,
+    createInspiration,
+    deleteInspiration,
     isLoading: currentCollection.isLoading,
     loadError: currentCollection.loadError,
-    loadNotes,
-    notes: currentCollection.notes,
-    updateNote,
+    loadInspirations,
+    inspirations: currentCollection.inspirations,
+    updateInspiration,
   };
 }

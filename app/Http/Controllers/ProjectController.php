@@ -77,7 +77,7 @@ class ProjectController extends Controller
         $project = Project::findOrFail($id);
         Gate::authorize('delete', $project);
 
-        $imagePaths = $project->projectNotes()
+        $imagePaths = $project->projectInspirations()
             ->whereNotNull('image_path')
             ->pluck('image_path')
             ->filter()

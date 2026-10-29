@@ -8,7 +8,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectAttributeController;
 use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\ProjectNoteController;
+use App\Http\Controllers\ProjectInspirationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,12 +21,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/projects/{id}', [ProjectController::class, 'update']);
     Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
 
-    // ProjectNote
-    Route::get('/projects/{project}/notes', [ProjectNoteController::class, 'index']);
-    Route::post('/projects/{project}/notes', [ProjectNoteController::class, 'store']);
-    Route::get('/project-notes/{projectNote}', [ProjectNoteController::class, 'show']);
-    Route::patch('/project-notes/{projectNote}', [ProjectNoteController::class, 'update']);
-    Route::delete('/project-notes/{projectNote}', [ProjectNoteController::class, 'destroy']);
+    // ProjectInspiration
+    Route::get('/projects/{project}/inspirations', [ProjectInspirationController::class, 'index']);
+    Route::post('/projects/{project}/inspirations', [ProjectInspirationController::class, 'store']);
+    Route::get('/project-inspirations/{projectInspiration}', [ProjectInspirationController::class, 'show']);
+    Route::patch('/project-inspirations/{projectInspiration}', [ProjectInspirationController::class, 'update']);
+    Route::delete('/project-inspirations/{projectInspiration}', [ProjectInspirationController::class, 'destroy']);
 
     // Chapter
     Route::get('/chapters', [ChapterController::class, 'index']);

@@ -1,11 +1,11 @@
-export default function NotesFilters({ activeFilterCount, filters, onChange, onClear }) {
+export default function InspirationFilters({ activeFilterCount, filters, onChange, onClear }) {
   return (
-    <div className="notes-filters" aria-label="Filtry notatek">
-      <fieldset className="notes-filter-toggle">
-        <legend>Zawartość notatki</legend>
+    <div className="inspirations-filters" aria-label="Filtry inspiracji">
+      <fieldset className="inspirations-filter-toggle">
+        <legend>Zawartość inspiracji</legend>
         <button
           type="button"
-          className={filters.images ? 'notes-filter-option notes-filter-option--active' : 'notes-filter-option'}
+          className={filters.images ? 'inspirations-filter-option inspirations-filter-option--active' : 'inspirations-filter-option'}
           aria-pressed={filters.images}
           onClick={() => onChange('images', !filters.images)}
         >
@@ -14,7 +14,7 @@ export default function NotesFilters({ activeFilterCount, filters, onChange, onC
         </button>
         <button
           type="button"
-          className={filters.text ? 'notes-filter-option notes-filter-option--active' : 'notes-filter-option'}
+          className={filters.text ? 'inspirations-filter-option inspirations-filter-option--active' : 'inspirations-filter-option'}
           aria-pressed={filters.text}
           onClick={() => onChange('text', !filters.text)}
         >
@@ -23,7 +23,7 @@ export default function NotesFilters({ activeFilterCount, filters, onChange, onC
         </button>
       </fieldset>
 
-      <div className="notes-filter-dates" role="group" aria-label="Data utworzenia">
+      <div className="inspirations-filter-dates" role="group" aria-label="Data utworzenia">
         <CalendarIcon />
         <label>
           <span>Od</span>
@@ -34,7 +34,7 @@ export default function NotesFilters({ activeFilterCount, filters, onChange, onC
             onChange={(event) => onChange('dateFrom', event.target.value)}
           />
         </label>
-        <span className="notes-filter-dates__separator" aria-hidden="true" />
+        <span className="inspirations-filter-dates__separator" aria-hidden="true" />
         <label>
           <span>Do</span>
           <input
@@ -46,11 +46,11 @@ export default function NotesFilters({ activeFilterCount, filters, onChange, onC
         </label>
       </div>
 
-      <fieldset className="notes-filter-toggle">
-        <legend>Kolejność notatek</legend>
+      <fieldset className="inspirations-filter-toggle">
+        <legend>Kolejność inspiracji</legend>
         <FilterOption
           checked={filters.order === 'newest'}
-          name="notes-order-filter"
+          name="inspirations-order-filter"
           value="newest"
           onChange={onChange}
         >
@@ -59,7 +59,7 @@ export default function NotesFilters({ activeFilterCount, filters, onChange, onC
         </FilterOption>
         <FilterOption
           checked={filters.order === 'oldest'}
-          name="notes-order-filter"
+          name="inspirations-order-filter"
           value="oldest"
           onChange={onChange}
         >
@@ -68,20 +68,20 @@ export default function NotesFilters({ activeFilterCount, filters, onChange, onC
         </FilterOption>
       </fieldset>
 
-      <div className="notes-filter-reset">
+      <div className="inspirations-filter-reset">
         <button
           type="button"
           aria-label={activeFilterCount > 0
             ? `Wyczyść wszystkie filtry (${activeFilterCount})`
             : 'Brak aktywnych filtrów'}
-          aria-describedby="notes-filter-reset-tooltip"
+          aria-describedby="inspirations-filter-reset-tooltip"
           disabled={activeFilterCount === 0}
           onClick={onClear}
         >
           <ResetIcon />
           {activeFilterCount > 0 && <span aria-hidden="true">{activeFilterCount}</span>}
         </button>
-        <span id="notes-filter-reset-tooltip" role="tooltip">Wyczyść filtry</span>
+        <span id="inspirations-filter-reset-tooltip" role="tooltip">Wyczyść filtry</span>
       </div>
     </div>
   );
@@ -89,7 +89,7 @@ export default function NotesFilters({ activeFilterCount, filters, onChange, onC
 
 function FilterOption({ checked, children, name, onChange, value }) {
   return (
-    <label className={checked ? 'notes-filter-option notes-filter-option--active' : 'notes-filter-option'}>
+    <label className={checked ? 'inspirations-filter-option inspirations-filter-option--active' : 'inspirations-filter-option'}>
       <input
         type="radio"
         name={name}
@@ -122,7 +122,7 @@ function TextIcon() {
 
 function CalendarIcon() {
   return (
-    <svg className="notes-filter-dates__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <svg className="inspirations-filter-dates__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <rect x="3.5" y="5.5" width="17" height="15" rx="2" />
       <path d="M8 3.5v4M16 3.5v4M3.5 10h17" />
     </svg>

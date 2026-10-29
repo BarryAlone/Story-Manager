@@ -12,7 +12,7 @@ import { apiFetch } from './api';
 function ProjectLayout() {
   const { projectId } = useParams();
   const location = useLocation();
-  const isNotesView = location.pathname === `/project/${projectId}/notes`;
+  const isInspirationsView = location.pathname === `/project/${projectId}/inspirations`;
   const [projectName, setProjectName] = useState('Ładowanie...');
 
   useEffect(() => {
@@ -104,8 +104,8 @@ function ProjectLayout() {
         )}
         </NavLink>
 
-        <NavLink to={`/project/${projectId}/notes`} title="Notatki" className="sidebar-icon">
-          {({ isActive }) => <NotesIcon isActive={isActive} />}
+        <NavLink to={`/project/${projectId}/inspirations`} title="Inspiracje" className="sidebar-icon">
+          {({ isActive }) => <InspirationsIcon isActive={isActive} />}
         </NavLink>
         
       </nav>
@@ -131,7 +131,7 @@ function ProjectLayout() {
         </header>
 
         {/* GŁÓWNY OBSZAR ROBOCZY */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: isNotesView ? 0 : '30px' }}>
+        <main style={{ flex: 1, overflowY: 'auto', padding: isInspirationsView ? 0 : '30px' }}>
           <Outlet />
         </main>
 
@@ -142,11 +142,11 @@ function ProjectLayout() {
 
 export default ProjectLayout;
 
-function NotesIcon({ isActive }) {
+function InspirationsIcon({ isActive }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      aria-label="Notatki"
+      aria-label="Inspiracje"
       style={{
         width: '32px',
         height: '32px',

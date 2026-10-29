@@ -1,4 +1,4 @@
-.notes-page {
+.inspirations-page {
   min-height: 100%;
   margin: 0;
   color: #1f2937;
@@ -6,21 +6,21 @@
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.notes-page button,
-.notes-page input,
-.notes-page textarea {
+.inspirations-page button,
+.inspirations-page input,
+.inspirations-page textarea {
   font: inherit;
 }
 
-.notes-page button:focus-visible,
-.notes-page input:focus-visible,
-.notes-page textarea:focus-visible,
-.note-card:focus-visible {
+.inspirations-page button:focus-visible,
+.inspirations-page input:focus-visible,
+.inspirations-page textarea:focus-visible,
+.inspiration-card:focus-visible {
   outline: 3px solid rgba(37, 99, 235, 0.32);
   outline-offset: 2px;
 }
 
-.notes-toolbar {
+.inspirations-toolbar {
   position: sticky;
   z-index: 4;
   top: 0;
@@ -35,13 +35,13 @@
   background: #fff;
 }
 
-.notes-toolbar__search {
+.inspirations-toolbar__search {
   position: relative;
   flex: 1 1 220px;
   max-width: 380px;
 }
 
-.notes-toolbar__search svg {
+.inspirations-toolbar__search svg {
   position: absolute;
   top: 50%;
   left: 11px;
@@ -54,7 +54,7 @@
   stroke-width: 1.8;
 }
 
-.notes-toolbar__search input {
+.inspirations-toolbar__search input {
   width: 100%;
   min-height: 38px;
   box-sizing: border-box;
@@ -65,7 +65,7 @@
   color: #64748b;
 }
 
-.notes-filters {
+.inspirations-filters {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -75,7 +75,7 @@
   gap: 8px;
 }
 
-.notes-filter-toggle {
+.inspirations-filter-toggle {
   display: inline-flex;
   margin: 0;
   padding: 0;
@@ -85,7 +85,7 @@
   background: #fff;
 }
 
-.notes-filter-toggle legend {
+.inspirations-filter-toggle legend {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -94,7 +94,7 @@
   white-space: nowrap;
 }
 
-.notes-filter-option {
+.inspirations-filter-option {
   position: relative;
   display: inline-flex;
   min-height: 34px;
@@ -109,7 +109,7 @@
   white-space: nowrap;
 }
 
-.notes-filter-option svg {
+.inspirations-filter-option svg {
   width: 15px;
   height: 15px;
   margin-right: 5px;
@@ -120,20 +120,20 @@
   stroke-width: 1.7;
 }
 
-.notes-filter-option + .notes-filter-option {
+.inspirations-filter-option + .inspirations-filter-option {
   border-left: 1px solid #cbd5e1;
 }
 
-.notes-filter-option:hover {
+.inspirations-filter-option:hover {
   background: #f8fafc;
 }
 
-.notes-filter-option--active {
+.inspirations-filter-option--active {
   background: #eff6ff;
   color: #1d4ed8;
 }
 
-.notes-filter-option input {
+.inspirations-filter-option input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -142,18 +142,18 @@
   white-space: nowrap;
 }
 
-.notes-filter-option:has(input:focus-visible) {
+.inspirations-filter-option:has(input:focus-visible) {
   z-index: 1;
   outline: 3px solid rgba(37, 99, 235, 0.32);
   outline-offset: -2px;
 }
 
-button.notes-filter-option:focus-visible {
+button.inspirations-filter-option:focus-visible {
   z-index: 1;
   outline-offset: -2px;
 }
 
-.notes-filter-dates {
+.inspirations-filter-dates {
   display: flex;
   min-height: 34px;
   box-sizing: border-box;
@@ -165,7 +165,7 @@ button.notes-filter-option:focus-visible {
   background: #fff;
 }
 
-.notes-filter-dates label {
+.inspirations-filter-dates label {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -174,7 +174,7 @@ button.notes-filter-option:focus-visible {
   font-weight: 650;
 }
 
-.notes-filter-dates input {
+.inspirations-filter-dates input {
   width: 112px;
   min-height: 30px;
   box-sizing: border-box;
@@ -185,7 +185,7 @@ button.notes-filter-option:focus-visible {
   font-size: 0.74rem;
 }
 
-.notes-filter-dates__icon {
+.inspirations-filter-dates__icon {
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
@@ -196,18 +196,18 @@ button.notes-filter-option:focus-visible {
   stroke-width: 1.7;
 }
 
-.notes-filter-dates__separator {
+.inspirations-filter-dates__separator {
   width: 1px;
   height: 20px;
   flex: 0 0 auto;
   background: #e2e8f0;
 }
 
-.notes-filter-reset {
+.inspirations-filter-reset {
   position: relative;
 }
 
-.notes-filter-reset > button {
+.inspirations-filter-reset > button {
   position: relative;
   display: grid;
   width: 36px;
@@ -221,18 +221,18 @@ button.notes-filter-option:focus-visible {
   cursor: pointer;
 }
 
-.notes-filter-reset > button:hover:not(:disabled) {
+.inspirations-filter-reset > button:hover:not(:disabled) {
   border-color: #60a5fa;
   background: #dbeafe;
   color: #1d4ed8;
 }
 
-.notes-filter-reset > button:disabled {
+.inspirations-filter-reset > button:disabled {
   cursor: not-allowed;
   opacity: 0.42;
 }
 
-.notes-filter-reset svg {
+.inspirations-filter-reset svg {
   width: 17px;
   height: 17px;
   fill: none;
@@ -242,7 +242,7 @@ button.notes-filter-option:focus-visible {
   stroke-width: 1.8;
 }
 
-.notes-filter-reset > button > span {
+.inspirations-filter-reset > button > span {
   position: absolute;
   top: -6px;
   right: -6px;
@@ -258,7 +258,7 @@ button.notes-filter-option:focus-visible {
   line-height: 1;
 }
 
-.notes-filter-reset > [role='tooltip'] {
+.inspirations-filter-reset > [role='tooltip'] {
   position: absolute;
   z-index: 20;
   top: calc(100% + 7px);
@@ -275,15 +275,15 @@ button.notes-filter-option:focus-visible {
   transition: opacity 120ms ease, transform 120ms ease;
 }
 
-.notes-filter-reset:hover > [role='tooltip'],
-.notes-filter-reset:focus-within > [role='tooltip'] {
+.inspirations-filter-reset:hover > [role='tooltip'],
+.inspirations-filter-reset:focus-within > [role='tooltip'] {
   opacity: 1;
   transform: translateY(0);
 }
 
-.notes-toolbar__add,
-.notes-state button,
-.note-dialog__actions button {
+.inspirations-toolbar__add,
+.inspirations-state button,
+.inspiration-dialog__actions button {
   min-height: 36px;
   padding: 7px 12px;
   border: 1px solid #cbd5e1;
@@ -294,38 +294,38 @@ button.notes-filter-option:focus-visible {
   font-weight: 650;
 }
 
-.notes-toolbar__add {
+.inspirations-toolbar__add {
   margin-left: auto;
 }
 
-.notes-toolbar__add,
-.note-dialog__actions .note-button--primary {
+.inspirations-toolbar__add,
+.inspiration-dialog__actions .inspiration-button--primary {
   border-color: #334155;
   background: #334155;
   color: #fff;
 }
 
-.notes-toolbar__add:hover,
-.note-dialog__actions .note-button--primary:hover:not(:disabled) {
+.inspirations-toolbar__add:hover,
+.inspiration-dialog__actions .inspiration-button--primary:hover:not(:disabled) {
   background: #1e293b;
 }
 
-.notes-toolbar__add span {
+.inspirations-toolbar__add span {
   margin-right: 4px;
   font-size: 1.05rem;
 }
 
-.notes-page__content {
+.inspirations-page__content {
   padding: 24px;
 }
 
-.notes-masonry {
+.inspirations-masonry {
   position: relative;
   width: 100%;
   transition: height 180ms ease;
 }
 
-.notes-masonry__item {
+.inspirations-masonry__item {
   position: absolute;
   top: 0;
   left: 0;
@@ -333,22 +333,22 @@ button.notes-filter-option:focus-visible {
   transition: top 180ms ease, left 180ms ease;
 }
 
-.notes-masonry:not([data-masonry-ready='true']) .notes-masonry__item,
-.notes-masonry__item:not([data-masonry-positioned='true']) {
+.inspirations-masonry:not([data-masonry-ready='true']) .inspirations-masonry__item,
+.inspirations-masonry__item:not([data-masonry-positioned='true']) {
   visibility: hidden;
 }
 
-.note-card-slot {
+.inspiration-card-slot {
   width: 100%;
   min-width: 0;
 }
 
-.note-card-slot--placeholder {
+.inspiration-card-slot--placeholder {
   border: 1px solid transparent;
   border-radius: 12px;
 }
 
-.note-card {
+.inspiration-card {
   position: relative;
   min-width: 0;
   overflow: hidden;
@@ -361,13 +361,13 @@ button.notes-filter-option:focus-visible {
   transition: box-shadow 160ms ease, transform 160ms ease;
 }
 
-.note-card--collapsed:hover,
-.note-card--collapsed:focus-visible {
+.inspiration-card--collapsed:hover,
+.inspiration-card--collapsed:focus-visible {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.13);
 }
 
-.note-card--overlay {
+.inspiration-card--overlay {
   position: fixed;
   z-index: 21;
   top: 0;
@@ -384,16 +384,16 @@ button.notes-filter-option:focus-visible {
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.32);
 }
 
-.note-card--overlay::-webkit-scrollbar {
+.inspiration-card--overlay::-webkit-scrollbar {
   width: 10px;
 }
 
-.note-card--overlay::-webkit-scrollbar-track {
+.inspiration-card--overlay::-webkit-scrollbar-track {
   margin-block: 9px;
   background: transparent;
 }
 
-.note-card--overlay::-webkit-scrollbar-thumb {
+.inspiration-card--overlay::-webkit-scrollbar-thumb {
   min-height: 36px;
   border: 2px solid rgba(255, 255, 255, 0.86);
   border-radius: 999px;
@@ -404,67 +404,67 @@ button.notes-filter-option:focus-visible {
     0 1px 4px rgba(15, 23, 42, 0.32);
 }
 
-.note-card--overlay::-webkit-scrollbar-thumb:hover {
+.inspiration-card--overlay::-webkit-scrollbar-thumb:hover {
   background: rgba(30, 41, 59, 0.8);
   background-clip: padding-box;
 }
 
-.note-card--overlay::-webkit-scrollbar-button {
+.inspiration-card--overlay::-webkit-scrollbar-button {
   display: none;
 }
 
-.note-card--overlay::-webkit-scrollbar-corner {
+.inspiration-card--overlay::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-.note-card--overlay > .note-card__preview,
-.note-card--overlay > .note-card__edit {
-  width: calc(100% + var(--note-scrollbar-gutter, 0px));
+.inspiration-card--overlay > .inspiration-card__preview,
+.inspiration-card--overlay > .inspiration-card__edit {
+  width: calc(100% + var(--inspiration-scrollbar-gutter, 0px));
   box-sizing: border-box;
 }
 
-.note-card--preview {
+.inspiration-card--preview {
   cursor: pointer;
 }
 
-.note-card__backdrop,
-.note-dialog__backdrop {
+.inspiration-card__backdrop,
+.inspiration-dialog__backdrop {
   position: fixed;
   z-index: 20;
   inset: 0;
   background: rgba(15, 23, 42, 0.42);
-  animation: note-fade-in 0ms ease-out;
+  animation: inspiration-fade-in 0ms ease-out;
 }
 
-.note-card__image-wrap {
+.inspiration-card__image-wrap {
   position: relative;
   overflow: hidden;
   background: #f1f5f9;
 }
 
-.note-card__image-wrap > img {
+.inspiration-card__image-wrap > img {
   display: block;
   width: 100%;
   height: auto;
   object-fit: contain;
 }
 
-.note-card--preview .note-card__image-wrap > img {
+.inspiration-card--preview .inspiration-card__image-wrap > img {
   max-height: 58vh;
 }
 
-.note-card__body {
+.inspiration-card__body {
   padding: 17px 18px 19px;
 }
 
-.note-card__body h2 {
+.inspiration-card__body h2 {
   margin: 0;
   color: #1e293b;
   font-size: 1.05rem;
   line-height: 1.35;
 }
 
-.note-card__body p {
+.inspiration-card__body p {
   display: -webkit-box;
   margin: 8px 0 0;
   overflow: hidden;
@@ -477,17 +477,17 @@ button.notes-filter-option:focus-visible {
   -webkit-line-clamp: 5;
 }
 
-.note-card--preview .note-card__body p {
+.inspiration-card--preview .inspiration-card__body p {
   display: block;
   overflow: visible;
   -webkit-line-clamp: unset;
 }
 
-.note-card__source-row {
+.inspiration-card__source-row {
   padding: 0 18px 16px;
 }
 
-.note-card__source {
+.inspiration-card__source {
   display: block;
   max-width: 100%;
   overflow: hidden;
@@ -498,13 +498,13 @@ button.notes-filter-option:focus-visible {
   white-space: nowrap;
 }
 
-a.note-card__source {
+a.inspiration-card__source {
   text-decoration: underline;
   text-decoration-color: rgba(100, 116, 139, 0.45);
   text-underline-offset: 2px;
 }
 
-.note-card__image-wrap .note-card__source {
+.inspiration-card__image-wrap .inspiration-card__source {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -514,14 +514,14 @@ a.note-card__source {
   color: #f8fafc;
 }
 
-.note-card__source--expanded {
+.inspiration-card__source--expanded {
   overflow: visible;
   text-overflow: clip;
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
-.note-card__menu {
+.inspiration-card__menu {
   position: absolute;
   z-index: 3;
   top: 10px;
@@ -531,14 +531,14 @@ a.note-card__source {
   transition: opacity 120ms ease;
 }
 
-.note-card:hover .note-card__menu,
-.note-card:focus-within .note-card__menu,
-.note-card__menu:has(> button[aria-expanded='true']) {
+.inspiration-card:hover .inspiration-card__menu,
+.inspiration-card:focus-within .inspiration-card__menu,
+.inspiration-card__menu:has(> button[aria-expanded='true']) {
   opacity: 1;
   pointer-events: auto;
 }
 
-.note-card__menu > button {
+.inspiration-card__menu > button {
   display: grid;
   width: 34px;
   height: 34px;
@@ -552,7 +552,7 @@ a.note-card__source {
   font-size: 1.1rem;
 }
 
-.note-card__menu-popover {
+.inspiration-card__menu-popover {
   position: fixed;
   z-index: 70;
   width: max-content;
@@ -567,7 +567,7 @@ a.note-card__source {
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
 }
 
-.note-card__menu-popover button {
+.inspiration-card__menu-popover button {
   display: block;
   width: 100%;
   padding: 7px 10px;
@@ -580,36 +580,36 @@ a.note-card__source {
   text-align: left;
 }
 
-.note-card__menu-popover button:hover,
-.note-card__menu-popover button:focus-visible {
+.inspiration-card__menu-popover button:hover,
+.inspiration-card__menu-popover button:focus-visible {
   background: #f1f5f9;
 }
 
-.note-card__menu-popover button:focus-visible {
+.inspiration-card__menu-popover button:focus-visible {
   outline: 2px solid rgba(37, 99, 235, 0.35);
   outline-offset: -1px;
 }
 
-.note-card__menu-popover .note-card__menu-delete {
+.inspiration-card__menu-popover .inspiration-card__menu-delete {
   color: #b91c1c;
 }
 
-.note-card__menu-popover .note-card__menu-delete:hover,
-.note-card__menu-popover .note-card__menu-delete:focus-visible {
+.inspiration-card__menu-popover .inspiration-card__menu-delete:hover,
+.inspiration-card__menu-popover .inspiration-card__menu-delete:focus-visible {
   background: #fff1f2;
 }
 
-.note-card__edit {
+.inspiration-card__edit {
   padding: 24px;
 }
 
-.note-form__fields {
+.inspiration-form__fields {
   display: grid;
   gap: 16px;
 }
 
-.note-form__fields > label,
-.note-form__image-field > label {
+.inspiration-form__fields > label,
+.inspiration-form__image-field > label {
   display: grid;
   gap: 6px;
   color: #334155;
@@ -617,8 +617,8 @@ a.note-card__source {
   font-weight: 700;
 }
 
-.note-form__fields input[type='text'],
-.note-form__fields textarea {
+.inspiration-form__fields input[type='text'],
+.inspiration-form__fields textarea {
   width: 100%;
   box-sizing: border-box;
   padding: 9px 10px;
@@ -628,14 +628,14 @@ a.note-card__source {
   color: #1e293b;
 }
 
-.note-form__fields input:disabled,
-.note-form__fields textarea:disabled,
-.note-form__fields button:disabled {
+.inspiration-form__fields input:disabled,
+.inspiration-form__fields textarea:disabled,
+.inspiration-form__fields button:disabled {
   cursor: not-allowed;
   opacity: 0.62;
 }
 
-.note-form__add-source {
+.inspiration-form__add-source {
   width: max-content;
   padding: 4px 0;
   border: 0;
@@ -646,23 +646,23 @@ a.note-card__source {
   font-weight: 650;
 }
 
-.note-form__fields textarea {
+.inspiration-form__fields textarea {
   resize: vertical;
   line-height: 1.5;
 }
 
-.note-form__image-field {
+.inspiration-form__image-field {
   display: grid;
   gap: 8px;
 }
 
-.note-form__existing-image {
+.inspiration-form__existing-image {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.note-form__existing-image img {
+.inspiration-form__existing-image img {
   width: 90px;
   height: 62px;
   object-fit: contain;
@@ -671,7 +671,7 @@ a.note-card__source {
   background: #f8fafc;
 }
 
-.note-form__existing-image button {
+.inspiration-form__existing-image button {
   padding: 6px 8px;
   border: 1px solid #fecaca;
   border-radius: 7px;
@@ -680,19 +680,19 @@ a.note-card__source {
   cursor: pointer;
 }
 
-.note-form__file-name {
+.inspiration-form__file-name {
   color: #64748b;
   font-size: 0.76rem;
 }
 
-.note-card__edit-actions {
+.inspiration-card__edit-actions {
   display: flex;
   justify-content: flex-end;
   gap: 9px;
   margin-top: 18px;
 }
 
-.note-card__edit-actions button {
+.inspiration-card__edit-actions button {
   min-height: 36px;
   padding: 7px 12px;
   border: 1px solid #cbd5e1;
@@ -703,18 +703,18 @@ a.note-card__source {
   font-weight: 650;
 }
 
-.note-card__edit-actions .note-button--primary {
+.inspiration-card__edit-actions .inspiration-button--primary {
   border-color: #334155;
   background: #334155;
   color: #fff;
 }
 
-.note-card__edit-actions button:disabled {
+.inspiration-card__edit-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.note-form__error {
+.inspiration-form__error {
   margin: 12px 0 0;
   padding: 8px 10px;
   border: 1px solid #fecaca;
@@ -724,14 +724,14 @@ a.note-card__source {
   font-size: 0.82rem;
 }
 
-.note-dialog__backdrop {
+.inspiration-dialog__backdrop {
   z-index: 30;
   display: grid;
   padding: 20px;
   place-items: center;
 }
 
-.note-dialog {
+.inspiration-dialog {
   width: min(560px, 100%);
   max-height: calc(100vh - 40px);
   overflow-y: auto;
@@ -741,7 +741,7 @@ a.note-card__source {
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.3);
 }
 
-.note-dialog__header {
+.inspiration-dialog__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -749,12 +749,12 @@ a.note-card__source {
   border-bottom: 1px solid #e2e8f0;
 }
 
-.note-dialog__header h2 {
+.inspiration-dialog__header h2 {
   margin: 0;
   font-size: 1rem;
 }
 
-.note-dialog__header button {
+.inspiration-dialog__header button {
   width: 30px;
   height: 30px;
   padding: 0;
@@ -766,23 +766,23 @@ a.note-card__source {
   font-size: 1.2rem;
 }
 
-.note-dialog form {
+.inspiration-dialog form {
   padding: 18px;
 }
 
-.note-dialog__actions {
+.inspiration-dialog__actions {
   display: flex;
   justify-content: flex-end;
   gap: 9px;
   margin-top: 18px;
 }
 
-.note-dialog__actions button:disabled {
+.inspiration-dialog__actions button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.notes-state {
+.inspirations-state {
   display: flex;
   min-height: 320px;
   align-items: center;
@@ -797,72 +797,72 @@ a.note-card__source {
   text-align: center;
 }
 
-.notes-state strong {
+.inspirations-state strong {
   color: #334155;
   font-size: 1.05rem;
 }
 
-.notes-state--error {
+.inspirations-state--error {
   border-color: #fecaca;
   color: #9f1239;
 }
 
-@keyframes note-fade-in {
+@keyframes inspiration-fade-in {
   from { opacity: 0; }
 }
 
 @media (max-width: 680px) {
-  .notes-toolbar {
+  .inspirations-toolbar {
     align-items: stretch;
     gap: 8px;
     padding: 9px 12px;
   }
 
-  .notes-toolbar__search {
+  .inspirations-toolbar__search {
     max-width: none;
     flex-basis: 100%;
   }
 
-  .notes-filters {
+  .inspirations-filters {
     justify-content: flex-start;
   }
 
-  .notes-filter-dates {
+  .inspirations-filter-dates {
     width: 100%;
   }
 
-  .notes-filter-dates label {
+  .inspirations-filter-dates label {
     flex: 1;
   }
 
-  .notes-filter-dates input {
+  .inspirations-filter-dates input {
     min-width: 0;
     width: 100%;
   }
 
-  .notes-toolbar__add {
+  .inspirations-toolbar__add {
     white-space: nowrap;
   }
 
-  .notes-page__content {
+  .inspirations-page__content {
     padding: 14px;
   }
 
 }
 
 @media (hover: none) {
-  .note-card__menu {
+  .inspiration-card__menu {
     opacity: 1;
     pointer-events: auto;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .notes-masonry,
-  .notes-masonry__item,
-  .note-card,
-  .note-card__backdrop,
-  .note-dialog__backdrop {
+  .inspirations-masonry,
+  .inspirations-masonry__item,
+  .inspiration-card,
+  .inspiration-card__backdrop,
+  .inspiration-dialog__backdrop {
     animation: none;
     transition: none;
   }

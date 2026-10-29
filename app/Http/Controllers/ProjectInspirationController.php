@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
-use App\Models\ProjectNote;
+use App\Models\ProjectInspiration;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,14 +13,14 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
-class ProjectNoteController extends Controller
+class ProjectInspirationController extends Controller
 {
     public function index(Request $request, Project $project): JsonResponse
     {
         $this->ownedProject($request, $project);
 
         return response()->json(
-            $project->projectNotes()->latest()->get()
+            $project->projectInspirations()->latest()->get()
         );
     }
 
@@ -40,14 +40,14 @@ class ProjectNoteController extends Controller
 
         try {
             if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('project-notes', 'public');
+                $imagePath = $request->file('image')->store('project-inspirations', 'public');
                 $validated['image_path'] = $imagePath;
             }
 
             unset($validated['image'], $validated['remove_image']);
 
-            $note = DB::transaction(
-                fn () => $project->projectNotes()->create($validated)
+            $inspiration = DB::transaction(
+                fn () => $project->projectInspirations()->create($validated)
             );
         } catch (Throwable $error) {
             if ($imagePath) {
@@ -57,36 +57,36 @@ class ProjectNoteController extends Controller
             throw $error;
         }
 
-        return response()->json($note->fresh(), 201);
+        return response()->json($inspiration->fresh(), 201);
     }
 
-    public function show(ProjectNote $projectNote): JsonResponse
+    public function show(ProjectInspiration $projectInspiration): JsonResponse
     {
-        Gate::authorize('view', $projectNote);
+        Gate::authorize('view', $projectInspiration);
 
-        return response()->json($projectNote);
+        return response()->json($projectInspiration);
     }
 
-    public function update(Request $request, ProjectNote $projectNote): JsonResponse
+    public function update(Request $request, ProjectInspiration $projectInspiration): JsonResponse
     {
-        Gate::authorize('update', $projectNote);
+        Gate::authorize('update', $projectInspiration);
         $this->normalizeText($request);
 
         $validated = $this->validatePayload($request, true);
         $removeImage = $request->boolean('remove_image');
         $hasNewImage = $request->hasFile('image');
-        $nextTitle = array_key_exists('title', $validated) ? $validated['title'] : $projectNote->title;
-        $nextContent = array_key_exists('content', $validated) ? $validated['content'] : $projectNote->content;
-        $willHaveImage = $hasNewImage || ($projectNote->image_path && ! $removeImage);
+        $nextTitle = array_key_exists('title', $validated) ? $validated['title'] : $projectInspiration->title;
+        $nextContent = array_key_exists('content', $validated) ? $validated['content'] : $projectInspiration->content;
+        $willHaveImage = $hasNewImage || ($projectInspiration->image_path && ! $removeImage);
 
         $this->ensureNotEmpty($nextTitle, $nextContent, (bool) $willHaveImage);
 
-        $oldImagePath = $projectNote->image_path;
+        $oldImagePath = $projectInspiration->image_path;
         $newImagePath = null;
 
         try {
             if ($hasNewImage) {
-                $newImagePath = $request->file('image')->store('project-notes', 'public');
+                $newImagePath = $request->file('image')->store('project-inspirations', 'public');
                 $validated['image_path'] = $newImagePath;
             } elseif ($removeImage) {
                 $validated['image_path'] = null;
@@ -94,8 +94,8 @@ class ProjectNoteController extends Controller
 
             unset($validated['image'], $validated['remove_image']);
 
-            DB::transaction(function () use ($projectNote, $validated) {
-                $projectNote->update($validated);
+            DB::transaction(function () use ($projectInspiration, $validated) {
+                $projectInspiration->update($validated);
             });
         } catch (Throwable $error) {
             if ($newImagePath) {
@@ -109,15 +109,15 @@ class ProjectNoteController extends Controller
             Storage::disk('public')->delete($oldImagePath);
         }
 
-        return response()->json($projectNote->fresh());
+        return response()->json($projectInspiration->fresh());
     }
 
-    public function destroy(ProjectNote $projectNote): Response
+    public function destroy(ProjectInspiration $projectInspiration): Response
     {
-        Gate::authorize('delete', $projectNote);
+        Gate::authorize('delete', $projectInspiration);
 
-        $imagePath = $projectNote->image_path;
-        $projectNote->delete();
+        $imagePath = $projectInspiration->image_path;
+        $projectInspiration->delete();
 
         if ($imagePath) {
             Storage::disk('public')->delete($imagePath);
@@ -170,7 +170,7 @@ class ProjectNoteController extends Controller
         }
 
         throw ValidationException::withMessages([
-            'note' => ['Uzupełnij tytuł, treść albo dodaj zdjęcie.'],
+            'inspiration' => ['Uzupełnij tytuł, treść albo dodaj zdjęcie.'],
         ]);
     }
 }
