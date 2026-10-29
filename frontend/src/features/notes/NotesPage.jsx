@@ -5,7 +5,7 @@ import NoteCard from './NoteCard';
 import NoteCreateDialog from './NoteCreateDialog';
 import NotesFilters from './NotesFilters';
 import useMasonryLayout from './useMasonryLayout';
-import useNoteFilters, { filterNotes } from './useNoteFilters';
+import useNoteFilters from './useNoteFilters';
 import useProjectNotes from './useProjectNotes';
 import './notes.css';
 
@@ -25,6 +25,13 @@ export default function NotesPage() {
     setSearchQuery,
     visibleNotes,
   } = useNoteFilters(notes);
+  const activeNote = activeNoteId === null
+    ? null
+    : notes.find((note) => note.id === activeNoteId) || null;
+  const visibleNoteIds = new Set(visibleNotes.map((note) => note.id));
+  const renderedNotes = activeNote && !visibleNoteIds.has(activeNote.id)
+    ? [...visibleNotes, activeNote]
+    : visibleNotes;
 
   const changeCardMode = (noteId, mode) => {
     if (mode === 'collapsed') {
@@ -37,18 +44,7 @@ export default function NotesPage() {
     setActiveMode(mode);
   };
 
-  const closeActiveCardIfHidden = (nextSearchQuery, nextFilters) => {
-    if (activeNoteId === null) return;
-
-    const activeNote = notes.find((note) => note.id === activeNoteId);
-    if (activeNote && filterNotes([activeNote], nextSearchQuery, nextFilters).length > 0) return;
-
-    setActiveNoteId(null);
-    setActiveMode('collapsed');
-  };
-
   const changeSearchQuery = (nextSearchQuery) => {
-    closeActiveCardIfHidden(nextSearchQuery, filters);
     setSearchQuery(nextSearchQuery);
   };
 
@@ -56,7 +52,6 @@ export default function NotesPage() {
     const nextFilters = { ...filters, [field]: value };
     if (nextFilters.dateFrom && nextFilters.dateTo && nextFilters.dateTo < nextFilters.dateFrom) return;
 
-    closeActiveCardIfHidden(searchQuery, nextFilters);
     applyFilters(nextFilters);
   };
 
@@ -103,7 +98,7 @@ export default function NotesPage() {
           </div>
         )}
 
-        {!isLoading && !loadError && notes.length > 0 && visibleNotes.length === 0 && (
+        {!isLoading && !loadError && notes.length > 0 && visibleNotes.length === 0 && activeNote === null && (
           <div className="notes-state">
             <strong>Brak pasujących notatek.</strong>
             <span>Zmień wyszukiwanie lub wyczyść zastosowane filtry.</span>
@@ -111,12 +106,13 @@ export default function NotesPage() {
           </div>
         )}
 
-        {!isLoading && !loadError && visibleNotes.length > 0 && (
+        {!isLoading && !loadError && renderedNotes.length > 0 && (
           <div ref={masonryRef} className="notes-masonry" aria-label="Notatki projektu">
-            {visibleNotes.map((note) => (
-              <div key={note.id} className="notes-masonry__item" data-masonry-item>
+            {renderedNotes.map((note) => (
+              <div key={note.id} className="notes-masonry__item" data-masonry-item data-note-id={note.id}>
                 <NoteCard
                   note={note}
+                  isVisible={visibleNoteIds.has(note.id)}
                   mode={activeNoteId === note.id ? activeMode : 'collapsed'}
                   onDelete={deleteNote}
                   onUpdate={updateNote}

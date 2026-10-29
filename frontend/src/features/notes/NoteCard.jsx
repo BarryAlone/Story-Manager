@@ -47,7 +47,7 @@ function NoteSource({ expanded, source }) {
   return <span className={className} title={source}>{source}</span>;
 }
 
-export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate }) {
+export default function NoteCard({ isVisible, mode, note, onDelete, onModeChange, onUpdate }) {
   const [values, setValues] = useState(() => initialValues(note));
   const [removeImage, setRemoveImage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -82,6 +82,11 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
     setIsSaving(false);
     setIsFinishing(false);
     onModeChange('collapsed');
+    window.requestAnimationFrame(() => {
+      const card = isVisible ? slotRef.current?.querySelector('.note-card') : null;
+      const focusTarget = card || document.querySelector('.notes-toolbar__search input');
+      focusTarget?.focus({ preventScroll: true });
+    });
   };
   const {
     closeToSlot,
@@ -95,6 +100,28 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
     layoutKey: mode,
     onClosed: handleClosed,
   });
+
+  useLayoutEffect(() => {
+    if (!isExpanded || !overlayRef.current) return;
+
+    const focusTarget = mode === 'edit'
+      ? overlayRef.current.querySelector('.note-card__edit input, .note-card__edit textarea, .note-card__edit button')
+      : overlayRef.current;
+    focusTarget?.focus({ preventScroll: true });
+  }, [isExpanded, mode, overlayRef]);
+
+  useEffect(() => {
+    if (!isExpanded) return undefined;
+
+    const appRoot = document.getElementById('root');
+    if (!appRoot) return undefined;
+
+    const wasInert = appRoot.inert;
+    appRoot.inert = true;
+    return () => {
+      appRoot.inert = wasInert;
+    };
+  }, [isExpanded]);
 
   const prepareEdit = (target) => {
     if (returnTimerRef.current) window.clearTimeout(returnTimerRef.current);
@@ -195,6 +222,9 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
     try {
       await onDelete(note.id);
       onModeChange('collapsed');
+      window.requestAnimationFrame(() => {
+        document.querySelector('.notes-toolbar__search input')?.focus({ preventScroll: true });
+      });
     } catch (deleteError) {
       setError(deleteError.message || 'Nie udało się usunąć notatki.');
       savingRef.current = false;
@@ -380,7 +410,8 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
       ref={overlay ? overlayRef : undefined}
       className={`note-card note-card--${mode}${overlay ? ' note-card--overlay' : ''}${hasImage || values.image ? ' note-card--with-image' : ''}`}
       tabIndex={mode === 'edit' ? -1 : 0}
-      role={mode === 'edit' ? undefined : 'group'}
+      role={overlay ? 'dialog' : mode === 'edit' ? undefined : 'group'}
+      aria-modal={overlay ? true : undefined}
       aria-label={mode === 'collapsed' ? 'Otwórz podgląd notatki' : 'Przejdź do edycji notatki'}
       onClick={activate}
       onKeyDown={keyboardActivate}
@@ -395,7 +426,7 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
       <div ref={slotRef} className={`note-card-slot${isExpanded ? ' note-card-slot--placeholder' : ''}`}>
         {!isExpanded && card()}
       </div>
-      {isExpanded && (
+      {isExpanded && createPortal(
         <>
           <div
             className="note-card__backdrop"
@@ -406,7 +437,8 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
             aria-hidden="true"
           />
           {card(true)}
-        </>
+        </>,
+        document.body,
       )}
     </>
   );

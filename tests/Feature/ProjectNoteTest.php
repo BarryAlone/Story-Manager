@@ -242,6 +242,54 @@ class ProjectNoteTest extends TestCase
         Storage::disk('public')->assertMissing($path);
     }
 
+    public function test_deleting_project_deletes_its_notes_and_images_but_not_other_project_images(): void
+    {
+        Storage::fake('public');
+        [$user, $project] = $this->projectForUser();
+        $otherProject = Project::create([
+            'user_id' => $user->id,
+            'name' => 'Inny projekt '.fake()->uuid(),
+        ]);
+        $firstPath = $this->fakeImage('first.png')->store('project-notes', 'public');
+        $secondPath = $this->fakeImage('second.png')->store('project-notes', 'public');
+        $otherPath = $this->fakeImage('other.png')->store('project-notes', 'public');
+
+        ProjectNote::create([
+            'project_id' => $project->id,
+            'title' => 'Pierwsza',
+            'image_path' => $firstPath,
+        ]);
+        ProjectNote::create([
+            'project_id' => $project->id,
+            'content' => 'Notatka bez obrazu.',
+        ]);
+        ProjectNote::create([
+            'project_id' => $project->id,
+            'title' => 'Druga',
+            'image_path' => $secondPath,
+        ]);
+        $otherNote = ProjectNote::create([
+            'project_id' => $otherProject->id,
+            'title' => 'Notatka innego projektu',
+            'image_path' => $otherPath,
+        ]);
+
+        $this->actingAs($user)
+            ->deleteJson("/api/projects/{$project->id}")
+            ->assertOk();
+
+        $this->assertDatabaseMissing('projects', ['id' => $project->id]);
+        $this->assertDatabaseMissing('project_notes', ['project_id' => $project->id]);
+        $this->assertDatabaseHas('project_notes', [
+            'id' => $otherNote->id,
+            'project_id' => $otherProject->id,
+            'image_path' => $otherPath,
+        ]);
+        Storage::disk('public')->assertMissing($firstPath);
+        Storage::disk('public')->assertMissing($secondPath);
+        Storage::disk('public')->assertExists($otherPath);
+    }
+
     public function test_guest_cannot_use_note_endpoints(): void
     {
         [, $project] = $this->projectForUser();
