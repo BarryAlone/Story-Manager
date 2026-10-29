@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { backendUrl } from '../../api';
 import NoteFormFields from './NoteFormFields';
@@ -56,6 +57,8 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
   const [returnTarget, setReturnTarget] = useState('preview');
   const savingRef = useRef(false);
   const menuRef = useRef(null);
+  const menuButtonRef = useRef(null);
+  const menuPopoverRef = useRef(null);
   const returnTimerRef = useRef(null);
   const isExpanded = mode !== 'collapsed';
   const isInteractionLocked = isSaving || isFinishing;
@@ -199,11 +202,50 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
     }
   };
 
+  const positionMenu = useCallback(() => {
+    const button = menuButtonRef.current;
+    const popover = menuPopoverRef.current;
+    if (!button || !popover) return;
+
+    const margin = 8;
+    const gap = 5;
+    const buttonRect = button.getBoundingClientRect();
+    const popoverRect = popover.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - buttonRect.bottom;
+    const spaceAbove = buttonRect.top;
+    const openAbove = spaceBelow < popoverRect.height + gap + margin
+      && spaceAbove >= popoverRect.height + gap + margin;
+    const preferredTop = openAbove
+      ? buttonRect.top - popoverRect.height - gap
+      : buttonRect.bottom + gap;
+    const maxTop = Math.max(margin, window.innerHeight - popoverRect.height - margin);
+    const preferredLeft = buttonRect.right - popoverRect.width;
+    const maxLeft = Math.max(margin, window.innerWidth - popoverRect.width - margin);
+
+    popover.style.top = `${Math.max(margin, Math.min(preferredTop, maxTop))}px`;
+    popover.style.left = `${Math.max(margin, Math.min(preferredLeft, maxLeft))}px`;
+    popover.style.visibility = 'visible';
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!isMenuOpen) return undefined;
+
+    positionMenu();
+    menuPopoverRef.current?.querySelector('[role="menuitem"]')?.focus({ preventScroll: true });
+    window.addEventListener('resize', positionMenu);
+    window.addEventListener('scroll', positionMenu, true);
+    return () => {
+      window.removeEventListener('resize', positionMenu);
+      window.removeEventListener('scroll', positionMenu, true);
+    };
+  }, [isMenuOpen, positionMenu]);
+
   useEffect(() => {
     if (!isMenuOpen) return undefined;
 
     const closeMenuOutside = (event) => {
-      if (!menuRef.current?.contains(event.target)) setIsMenuOpen(false);
+      if (menuRef.current?.contains(event.target) || menuPopoverRef.current?.contains(event.target)) return;
+      setIsMenuOpen(false);
     };
 
     document.addEventListener('pointerdown', closeMenuOutside);
@@ -219,6 +261,7 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
       event.preventDefault();
       if (isMenuOpen) {
         setIsMenuOpen(false);
+        menuButtonRef.current?.focus({ preventScroll: true });
       } else if (mode === 'edit') {
         cancelEdit();
       } else if (mode === 'preview') {
@@ -250,6 +293,7 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
   const menu = (
     <div className="note-card__menu" ref={menuRef} onClick={(event) => event.stopPropagation()}>
       <button
+        ref={menuButtonRef}
         type="button"
         aria-label={`Menu notatki${note.title ? `: ${note.title}` : ''}`}
         aria-haspopup="menu"
@@ -259,11 +303,17 @@ export default function NoteCard({ mode, note, onDelete, onModeChange, onUpdate 
       >
         …
       </button>
-      {isMenuOpen && (
-        <div role="menu">
+      {isMenuOpen && createPortal(
+        <div
+          ref={menuPopoverRef}
+          className="note-card__menu-popover"
+          role="menu"
+          onClick={(event) => event.stopPropagation()}
+        >
           {mode !== 'edit' && <button type="button" role="menuitem" onClick={openEdit}>Edytuj</button>}
           <button type="button" role="menuitem" className="note-card__menu-delete" onClick={remove}>Usuń</button>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

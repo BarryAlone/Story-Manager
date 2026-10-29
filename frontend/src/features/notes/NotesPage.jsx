@@ -3,7 +3,9 @@ import { useParams } from 'react-router-dom';
 
 import NoteCard from './NoteCard';
 import NoteCreateDialog from './NoteCreateDialog';
+import NotesFilters from './NotesFilters';
 import useMasonryLayout from './useMasonryLayout';
+import useNoteFilters, { filterNotes } from './useNoteFilters';
 import useProjectNotes from './useProjectNotes';
 import './notes.css';
 
@@ -14,6 +16,15 @@ export default function NotesPage() {
   const [activeNoteId, setActiveNoteId] = useState(null);
   const [activeMode, setActiveMode] = useState('collapsed');
   const masonryRef = useMasonryLayout();
+  const {
+    activeFilterCount,
+    applyFilters,
+    clearAll,
+    filters,
+    searchQuery,
+    setSearchQuery,
+    visibleNotes,
+  } = useNoteFilters(notes);
 
   const changeCardMode = (noteId, mode) => {
     if (mode === 'collapsed') {
@@ -26,14 +37,48 @@ export default function NotesPage() {
     setActiveMode(mode);
   };
 
+  const closeActiveCardIfHidden = (nextSearchQuery, nextFilters) => {
+    if (activeNoteId === null) return;
+
+    const activeNote = notes.find((note) => note.id === activeNoteId);
+    if (activeNote && filterNotes([activeNote], nextSearchQuery, nextFilters).length > 0) return;
+
+    setActiveNoteId(null);
+    setActiveMode('collapsed');
+  };
+
+  const changeSearchQuery = (nextSearchQuery) => {
+    closeActiveCardIfHidden(nextSearchQuery, filters);
+    setSearchQuery(nextSearchQuery);
+  };
+
+  const changeFilters = (field, value) => {
+    const nextFilters = { ...filters, [field]: value };
+    if (nextFilters.dateFrom && nextFilters.dateTo && nextFilters.dateTo < nextFilters.dateFrom) return;
+
+    closeActiveCardIfHidden(searchQuery, nextFilters);
+    applyFilters(nextFilters);
+  };
+
   return (
     <section className="notes-page">
       <header className="notes-toolbar">
         <div className="notes-toolbar__search">
           <SearchIcon />
-          <input type="search" placeholder="Szukaj notatek..." aria-label="Szukaj notatek — dostępne w kolejnym etapie" disabled />
+          <input
+            type="search"
+            value={searchQuery}
+            placeholder="Szukaj notatek..."
+            aria-label="Szukaj notatek"
+            onChange={(event) => changeSearchQuery(event.target.value)}
+          />
         </div>
-        <span className="notes-toolbar__future">Filtry — później</span>
+        <NotesFilters
+          activeFilterCount={activeFilterCount}
+          filters={filters}
+          onChange={changeFilters}
+          onClear={clearAll}
+        />
         <button type="button" className="notes-toolbar__add" onClick={() => setIsCreating(true)}>
           <span aria-hidden="true">+</span> Dodaj notatkę
         </button>
@@ -58,9 +103,17 @@ export default function NotesPage() {
           </div>
         )}
 
-        {!isLoading && !loadError && notes.length > 0 && (
+        {!isLoading && !loadError && notes.length > 0 && visibleNotes.length === 0 && (
+          <div className="notes-state">
+            <strong>Brak pasujących notatek.</strong>
+            <span>Zmień wyszukiwanie lub wyczyść zastosowane filtry.</span>
+            <button type="button" onClick={clearAll}>Wyczyść wyszukiwanie i filtry</button>
+          </div>
+        )}
+
+        {!isLoading && !loadError && visibleNotes.length > 0 && (
           <div ref={masonryRef} className="notes-masonry" aria-label="Notatki projektu">
-            {notes.map((note) => (
+            {visibleNotes.map((note) => (
               <div key={note.id} className="notes-masonry__item" data-masonry-item>
                 <NoteCard
                   note={note}
