@@ -1,0 +1,182 @@
+.inspiration-card__edit {
+  padding: 24px;
+}
+
+.inspiration-form__fields {
+  display: grid;
+  gap: 16px;
+}
+
+.inspiration-form__fields > label,
+.inspiration-form__image-field > label {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.inspiration-form__fields input[type='text'],
+.inspiration-form__fields textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #1e293b;
+}
+
+.inspiration-form__fields input:disabled,
+.inspiration-form__fields textarea:disabled,
+.inspiration-form__fields button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.inspiration-form__add-source {
+  width: max-content;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.inspiration-form__fields textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.inspiration-form__image-field {
+  display: grid;
+  gap: 8px;
+}
+
+.inspiration-form__existing-image {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inspiration-form__existing-image img {
+  width: 90px;
+  height: 62px;
+  object-fit: contain;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: #f8fafc;
+}
+
+.inspiration-form__existing-image button {
+  padding: 6px 8px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  background: #fff1f2;
+  color: #b91c1c;
+  cursor: pointer;
+}
+
+.inspiration-form__file-name {
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.inspiration-card__edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.inspiration-card__edit-actions button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.inspiration-card__edit-actions .inspiration-button--primary {
+  border-color: #334155;
+  background: #334155;
+  color: #fff;
+}
+
+.inspiration-card__edit-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.inspiration-form__error {
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  background: #fff1f2;
+  color: #9f1239;
+  font-size: 0.82rem;
+}
+
+.inspiration-dialog__backdrop {
+  z-index: 30;
+  display: grid;
+  padding: 20px;
+  place-items: center;
+}
+
+.inspiration-dialog {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.3);
+}
+
+.inspiration-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.inspiration-dialog__header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.inspiration-dialog__header button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.inspiration-dialog form {
+  padding: 18px;
+}
+
+.inspiration-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.inspiration-dialog__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
