@@ -159,7 +159,7 @@ function CharacterDetail() {
               </button>
             </div>
             {editingFields.image && (
-              <input type="file" accept="image/*" onChange={handleImageChange} style={{ marginTop: '12px', width: '100%' }} />
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageChange} style={{ marginTop: '12px', width: '100%' }} />
             )}
           </div>
         </div>

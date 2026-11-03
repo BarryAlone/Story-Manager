@@ -7,12 +7,18 @@ use App\Models\Character;
 use App\Models\Chapter;
 use App\Models\Project;
 use App\Models\ProjectAttribute;
+use App\Services\PublicImageStorage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
+use Throwable;
 
 class CharacterController extends Controller
 {
+    public function __construct(private readonly PublicImageStorage $imageStorage)
+    {
+    }
+
     public function index(Request $request, ?int $project = null)
     {
         if ($project) {
@@ -63,7 +69,7 @@ class CharacterController extends Controller
             'group_name' => 'nullable|string|max:128',
             'description' => 'nullable|string',
             'description_long' => 'nullable|string',
-            'character_image' => 'nullable|image|max:2048', 
+            'character_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'attributes' => 'nullable' 
         ]);
 
@@ -77,12 +83,20 @@ class CharacterController extends Controller
             abort_unless($chapter->project_id === (int) $validated['project_id'], 404);
         }
 
-        if ($request->hasFile('character_image')) {
-            $path = $request->file('character_image')->store('characters', 'public');
-            $validated['character_image'] = $path; // Do bazy zapisujemy tylko ścieżkę
-        }
+        $newImagePath = null;
 
-        $character = Character::create($validated);
+        try {
+            if ($request->hasFile('character_image')) {
+                $newImagePath = $this->imageStorage->store($request->file('character_image'), 'characters');
+                $validated['character_image'] = $newImagePath;
+            }
+
+            $character = DB::transaction(fn () => Character::create($validated));
+        } catch (Throwable $error) {
+            $this->imageStorage->delete($newImagePath);
+
+            throw $error;
+        }
 
         return response()->json($character, 201);
     }
@@ -113,19 +127,29 @@ class CharacterController extends Controller
             'group_name' => 'nullable|string|max:128',
             'description' => 'nullable|string',
             'description_long' => 'nullable|string',
-            'character_image' => 'nullable|image|max:2048',
+            'character_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'attributes' => 'nullable'
         ]);
 
-        if ($request->hasFile('character_image')) {
-            if ($character->character_image) {
-                Storage::disk('public')->delete($character->character_image);
+        $oldImagePath = $character->character_image;
+        $newImagePath = null;
+
+        try {
+            if ($request->hasFile('character_image')) {
+                $newImagePath = $this->imageStorage->store($request->file('character_image'), 'characters');
+                $validated['character_image'] = $newImagePath;
             }
-            $path = $request->file('character_image')->store('characters', 'public');
-            $validated['character_image'] = $path;
+
+            DB::transaction(fn () => $character->update($validated));
+        } catch (Throwable $error) {
+            $this->imageStorage->delete($newImagePath);
+
+            throw $error;
         }
 
-        $character->update($validated);
+        if ($newImagePath) {
+            $this->imageStorage->delete($oldImagePath);
+        }
 
         return response()->json($character, 200);
     }
@@ -135,11 +159,9 @@ class CharacterController extends Controller
         $character = Character::findOrFail($id);
         Gate::authorize('delete', $character);
     
-        if ($character->character_image) {
-            Storage::disk('public')->delete($character->character_image);
-        }
-        
-        $character->delete();
+        $imagePath = $character->character_image;
+        DB::transaction(fn () => $character->delete());
+        $this->imageStorage->delete($imagePath);
 
         return response()->json(['message' => 'Postać usunięta'], 200);
     }

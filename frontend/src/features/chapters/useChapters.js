@@ -104,7 +104,7 @@ export default function useChapters(projectId) {
     if (fields.timelinePointEnd) formData.append('timeline_point_end', fields.timelinePointEnd);
     if (fields.displayLabel) formData.append('display_label', fields.displayLabel);
     if (image) formData.append('chapter_image', image);
-    else if (removeImage) formData.append('chapter_image', '');
+    else if (removeImage) formData.append('remove_image', '1');
 
     const path = chapter ? `/api/chapters/${chapter.id}` : '/api/chapters';
     if (chapter) formData.append('_method', 'PUT');

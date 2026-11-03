@@ -359,7 +359,7 @@ function ProjectList() {
             <input
               id="project-image"
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               onChange={(event) => setNewProjectImage(event.target.files[0])}
             />
 
