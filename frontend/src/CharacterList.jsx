@@ -205,7 +205,7 @@ function CharacterList() {
             <h2 style={{ marginTop: 0 }}>{editingCharacterId ? 'Edytuj postać' : 'Nowa postać'}</h2>
             <input type="text" placeholder="Imię postaci" value={newName} onChange={(e) => setNewName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
             <input type="text" placeholder="Frakcja / Grupa (opcjonalnie)" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
-            <input type="file" accept="image/*" onChange={(e) => setNewCharacterImage(e.target.files[0])} style={{ width: '100%', padding: '10px', marginBottom: '15px', boxSizing: 'border-box' }} />
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setNewCharacterImage(e.target.files[0])} style={{ width: '100%', padding: '10px', marginBottom: '15px', boxSizing: 'border-box' }} />
 
             {/* SEKCJA ATRYBUTÓW */}
             <hr style={{ margin: '15px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />

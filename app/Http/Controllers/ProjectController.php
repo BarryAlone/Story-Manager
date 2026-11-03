@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Project;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Gate;
+use App\Services\PublicImageStorage;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class ProjectController extends Controller
 {
+    public function __construct(private readonly PublicImageStorage $imageStorage)
+    {
+    }
+
     public function index(Request $request)
     {
         $projects = $request->user()->projects()->get();
@@ -28,17 +33,24 @@ class ProjectController extends Controller
         ],
         'description' => 'nullable|string',
         'description_long' => 'nullable|string',
-        'project_image' => 'nullable|image|max:255'
+        'project_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
         ]);
 
-        if ($request->hasFile('project_image')) {
-            $path = $request->file('project_image')->store('projects', 'public');
-            $validated['project_image'] = $path; // Do bazy zapisujemy tylko ścieżkę
-        }
-
         $validated['user_id'] = $request->user()->id;
+        $newImagePath = null;
 
-        $project = Project::create($validated);
+        try {
+            if ($request->hasFile('project_image')) {
+                $newImagePath = $this->imageStorage->store($request->file('project_image'), 'projects');
+                $validated['project_image'] = $newImagePath;
+            }
+
+            $project = DB::transaction(fn () => Project::create($validated));
+        } catch (Throwable $error) {
+            $this->imageStorage->delete($newImagePath);
+
+            throw $error;
+        }
 
         return response()->json($project, 201); // 201 - CREATED
     }
@@ -56,18 +68,28 @@ class ProjectController extends Controller
         ],
         'description' => 'nullable|string',
         'description_long' => 'nullable|string',
-        'project_image' => 'nullable|image|max:2048'
+        'project_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
         ]);
 
-        if ($request->hasFile('project_image')) {
-            if ($project->project_image) {
-                Storage::disk('public')->delete($project->project_image);
+        $oldImagePath = $project->project_image;
+        $newImagePath = null;
+
+        try {
+            if ($request->hasFile('project_image')) {
+                $newImagePath = $this->imageStorage->store($request->file('project_image'), 'projects');
+                $validated['project_image'] = $newImagePath;
             }
-            $path = $request->file('project_image')->store('projects', 'public');
-            $validated['project_image'] = $path;
+
+            DB::transaction(fn () => $project->update($validated));
+        } catch (Throwable $error) {
+            $this->imageStorage->delete($newImagePath);
+
+            throw $error;
         }
 
-        $project->update($validated);
+        if ($newImagePath) {
+            $this->imageStorage->delete($oldImagePath);
+        }
 
         return response()->json($project, 200);
     }
@@ -77,21 +99,16 @@ class ProjectController extends Controller
         $project = Project::findOrFail($id);
         Gate::authorize('delete', $project);
 
-        $imagePaths = $project->projectInspirations()
-            ->whereNotNull('image_path')
-            ->pluck('image_path')
-            ->filter()
-            ->all();
-
-        if ($project->project_image) {
-            $imagePaths[] = $project->project_image;
-        }
+        $imagePaths = [
+            $project->project_image,
+            ...$project->characters()->whereNotNull('character_image')->pluck('character_image')->all(),
+            ...$project->chapters()->whereNotNull('chapter_image')->pluck('chapter_image')->all(),
+            ...$project->projectInspirations()->whereNotNull('image_path')->pluck('image_path')->all(),
+            ...$project->events()->whereNotNull('event_image')->pluck('event_image')->all(),
+        ];
 
         DB::transaction(fn () => $project->delete());
-
-        if ($imagePaths !== []) {
-            Storage::disk('public')->delete(array_values(array_unique($imagePaths)));
-        }
+        $this->imageStorage->deleteMany($imagePaths);
 
         return response()->json(['message' => 'Projekt usunięty'], 200);
     }

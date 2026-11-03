@@ -5,22 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Chapter;
 use App\Models\Project;
 use App\Services\ChapterContentSanitizer;
+use App\Services\PublicImageStorage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class ChapterController extends Controller
 {
     private const MAX_NOTES_LENGTH = 100_000;
 
-    public function __construct(private readonly ChapterContentSanitizer $contentSanitizer)
-    {
-    }
+    public function __construct(
+        private readonly ChapterContentSanitizer $contentSanitizer,
+        private readonly PublicImageStorage $imageStorage,
+    ) {}
 
     public function index(Request $request, ?int $project = null): JsonResponse
     {
@@ -56,11 +58,21 @@ class ChapterController extends Controller
         $project = $this->ownedProject($request, $validated['project_id']);
         $this->prepareStructureData($request, $validated, $project);
 
-        if ($request->hasFile('chapter_image')) {
-            $validated['chapter_image'] = $request->file('chapter_image')->store('chapters', 'public');
-        }
+        unset($validated['remove_image']);
+        $newImagePath = null;
 
-        $chapter = Chapter::create($validated);
+        try {
+            if ($request->hasFile('chapter_image')) {
+                $newImagePath = $this->imageStorage->store($request->file('chapter_image'), 'chapters');
+                $validated['chapter_image'] = $newImagePath;
+            }
+
+            $chapter = DB::transaction(fn () => Chapter::create($validated));
+        } catch (Throwable $error) {
+            $this->imageStorage->delete($newImagePath);
+
+            throw $error;
+        }
 
         return response()->json($chapter->refresh(), 201);
     }
@@ -74,15 +86,29 @@ class ChapterController extends Controller
         $project = $this->ownedProject($request, $validated['project_id']);
         $this->prepareStructureData($request, $validated, $project, $chapter);
 
-        if ($request->hasFile('chapter_image')) {
-            if ($chapter->chapter_image) {
-                Storage::disk('public')->delete($chapter->chapter_image);
+        $removeImage = $request->boolean('remove_image');
+        unset($validated['remove_image']);
+        $oldImagePath = $chapter->chapter_image;
+        $newImagePath = null;
+
+        try {
+            if ($request->hasFile('chapter_image')) {
+                $newImagePath = $this->imageStorage->store($request->file('chapter_image'), 'chapters');
+                $validated['chapter_image'] = $newImagePath;
+            } elseif ($removeImage) {
+                $validated['chapter_image'] = null;
             }
 
-            $validated['chapter_image'] = $request->file('chapter_image')->store('chapters', 'public');
+            DB::transaction(fn () => $chapter->update($validated));
+        } catch (Throwable $error) {
+            $this->imageStorage->delete($newImagePath);
+
+            throw $error;
         }
 
-        $chapter->update($validated);
+        if ($oldImagePath && ($newImagePath || $removeImage)) {
+            $this->imageStorage->delete($oldImagePath);
+        }
 
         return response()->json($chapter);
     }
@@ -98,11 +124,9 @@ class ChapterController extends Controller
             ], 409);
         }
 
-        if ($chapter->chapter_image) {
-            Storage::disk('public')->delete($chapter->chapter_image);
-        }
-
-        $chapter->delete();
+        $imagePath = $chapter->chapter_image;
+        DB::transaction(fn () => $chapter->delete());
+        $this->imageStorage->delete($imagePath);
 
         return response()->json(['message' => 'Rozdział usunięty']);
     }
@@ -216,7 +240,8 @@ class ChapterController extends Controller
             'parent_id' => ['nullable', 'integer'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
             'is_in_manuscript' => ['sometimes', 'boolean'],
-            'chapter_image' => ['nullable', 'image', 'max:2048'],
+            'chapter_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'remove_image' => ['sometimes', 'boolean'],
             'timeline_point_start' => ['nullable', 'integer'],
             'timeline_point_end' => ['nullable', 'integer'],
             'display_label' => ['nullable', 'string'],

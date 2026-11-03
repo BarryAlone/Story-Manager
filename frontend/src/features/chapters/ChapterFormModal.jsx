@@ -169,7 +169,7 @@ export default function ChapterFormModal({ chapter, onClose, onDelete, onSubmit,
             ref={imageInputRef}
             className="chapter-modal__file-input"
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             onChange={handleImageChange}
             aria-label="Wybierz obraz rozdziału"
           />

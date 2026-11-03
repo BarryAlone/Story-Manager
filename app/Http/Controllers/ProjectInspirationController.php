@@ -4,17 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\ProjectInspiration;
+use App\Services\PublicImageStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class ProjectInspirationController extends Controller
 {
+    public function __construct(private readonly PublicImageStorage $imageStorage)
+    {
+    }
+
     public function index(Request $request, Project $project): JsonResponse
     {
         $this->ownedProject($request, $project);
@@ -40,7 +44,7 @@ class ProjectInspirationController extends Controller
 
         try {
             if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('project-inspirations', 'public');
+                $imagePath = $this->imageStorage->store($request->file('image'), 'project-inspirations');
                 $validated['image_path'] = $imagePath;
             }
 
@@ -51,7 +55,7 @@ class ProjectInspirationController extends Controller
             );
         } catch (Throwable $error) {
             if ($imagePath) {
-                Storage::disk('public')->delete($imagePath);
+                $this->imageStorage->delete($imagePath);
             }
 
             throw $error;
@@ -86,7 +90,7 @@ class ProjectInspirationController extends Controller
 
         try {
             if ($hasNewImage) {
-                $newImagePath = $request->file('image')->store('project-inspirations', 'public');
+                $newImagePath = $this->imageStorage->store($request->file('image'), 'project-inspirations');
                 $validated['image_path'] = $newImagePath;
             } elseif ($removeImage) {
                 $validated['image_path'] = null;
@@ -99,14 +103,14 @@ class ProjectInspirationController extends Controller
             });
         } catch (Throwable $error) {
             if ($newImagePath) {
-                Storage::disk('public')->delete($newImagePath);
+                $this->imageStorage->delete($newImagePath);
             }
 
             throw $error;
         }
 
         if ($oldImagePath && ($newImagePath || $removeImage)) {
-            Storage::disk('public')->delete($oldImagePath);
+            $this->imageStorage->delete($oldImagePath);
         }
 
         return response()->json($projectInspiration->fresh());
@@ -120,7 +124,7 @@ class ProjectInspirationController extends Controller
         $projectInspiration->delete();
 
         if ($imagePath) {
-            Storage::disk('public')->delete($imagePath);
+            $this->imageStorage->delete($imagePath);
         }
 
         return response()->noContent();
