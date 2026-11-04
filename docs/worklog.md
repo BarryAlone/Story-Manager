@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-04 — API kategorii elementów świata
+
+- Zakres: chronione endpointy listowania, tworzenia, zmiany nazwy i usuwania kategorii wraz z route model binding, licznikiem elementów oraz walidacją znormalizowanej unikalności.
+- Wynik: właściciel otrzymuje alfabetycznie uporządkowane kategorie, cudzy projekt i zasób zwracają `404`, a usunięcie kategorii zawierającej elementy jest blokowane stabilną odpowiedzią `409`. API elementów, obrazów i frontend pozostają poza tym etapem.
+- Testy: API kategorii, fundament i autoryzacja — 33 testy i 248 asercji; pełny PHPUnit — 114 testów i 836 asercji; `composer validate --strict` oraz `git diff --check` zakończone powodzeniem.
+
 ## 2026-11-04 — Fundament elementów świata
 
 - Zakres: migracje, modele, relacje i polityki dla kategorii `WorldElementCategory` oraz obiektów `WorldElement` należących pośrednio do projektu.

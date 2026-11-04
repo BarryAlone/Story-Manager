@@ -57,3 +57,4 @@
 - Obecny system atrybutów postaci pozostaje oddzielony od pierwszego etapu elementów świata. Wspólne definicje i wartości atrybutów wymagają osobnego kontraktu i migracji zachowującej istniejące dane.
 - `image_path` jest na tym etapie wyłącznie polem schematu. Upload, usuwanie plików i ewentualne galerie zostaną podłączone razem z API.
 - Kategorie „Lokalizacje”, „Przedmioty” i „Magia” nie powstają automatycznie. Przyszły interfejs pokaże je jako propozycje wymagające świadomej akcji użytkownika.
+- API nie usuwa kategorii zawierającej elementy i zwraca wtedy `409 Conflict`; kaskada bazy pozostaje potrzebna wyłącznie do usuwania całego projektu oraz operacji infrastrukturalnych.

@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectAttributeController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectInspirationController;
+use App\Http\Controllers\WorldElementCategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/projects/{project}/characters', [CharacterController::class, 'index']);
     Route::put('/projects/{id}', [ProjectController::class, 'update']);
     Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
+
+    // WorldElementCategory
+    Route::get('/projects/{project}/world-element-categories', [WorldElementCategoryController::class, 'index']);
+    Route::post('/projects/{project}/world-element-categories', [WorldElementCategoryController::class, 'store']);
+    Route::patch('/world-element-categories/{category}', [WorldElementCategoryController::class, 'update']);
+    Route::delete('/world-element-categories/{category}', [WorldElementCategoryController::class, 'destroy']);
 
     // ProjectInspiration
     Route::get('/projects/{project}/inspirations', [ProjectInspirationController::class, 'index']);

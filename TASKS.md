@@ -6,7 +6,7 @@
 
 ## Następne
 
-- [ ] Dodać API i frontend kategorii oraz elementów świata na istniejącym fundamencie danych.
+- [ ] Dodać API elementów świata oraz frontend kategorii i elementów na istniejącym fundamencie danych.
 - [ ] Dodać kierunkowość relacji jako osobny kontrakt danych i interfejs.
 
 ## Później
@@ -38,5 +38,6 @@
 - [x] E2: Dodano tworzenie, zwijanie, edycję i usuwanie jednego poziomu podrozdziałów z lokalną numeracją użytkownika.
 - [x] E2: Dodano transakcyjne porządkowanie rękopisu, podrozdziałów i szkiców metodą drag-and-drop.
 - [x] Dodano backendowy fundament kategorii i elementów świata bez API, frontendu oraz dynamicznych atrybutów.
+- [x] Dodano chronione API listowania, tworzenia, zmiany nazwy i bezpiecznego usuwania kategorii elementów świata.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.
