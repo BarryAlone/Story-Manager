@@ -1,20 +1,63 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { apiFetch } from '../../api';
 import { isAbortError, worldApiError } from './worldApi';
 
-export default function useWorldElements(categoryId, searchQuery) {
-  const [debouncedSearch, setDebouncedSearch] = useState(() => ({ categoryId, value: '' }));
-  const [collection, setCollection] = useState(() => ({
+function elementFormData(values, updating = false) {
+  const formData = new FormData();
+  formData.append('name', values.name);
+  formData.append('description', values.description);
+
+  if (values.image) formData.append('image', values.image);
+  if (updating) {
+    formData.append('_method', 'PATCH');
+    if (values.removeImage && !values.image) formData.append('remove_image', '1');
+  }
+
+  return formData;
+}
+
+function sortElements(elements) {
+  return [...elements].sort((first, second) => (
+    first.name.localeCompare(second.name, 'pl', { sensitivity: 'base' })
+  ));
+}
+
+function searchableText(element) {
+  return [element.name, element.description]
+    .filter(Boolean)
+    .join(' ')
+    .toLocaleLowerCase('pl-PL');
+}
+
+function filterElements(elements, searchQuery) {
+  const query = searchQuery.trim().toLocaleLowerCase('pl-PL');
+  if (!query) return elements;
+
+  return elements.filter((element) => searchableText(element).includes(query));
+}
+
+function emptyCollection(categoryId) {
+  return {
     categoryId,
     elements: [],
     error: '',
     isLoading: Boolean(categoryId),
-    search: '',
-  }));
+  };
+}
+
+export default function useWorldElements(categoryId, searchQuery) {
+  const [collection, setCollection] = useState(() => emptyCollection(categoryId));
+  const [isMutating, setIsMutating] = useState(false);
+  const collectionRef = useRef(collection);
   const controllerRef = useRef(null);
   const isMountedRef = useRef(false);
+  const mutationRef = useRef(false);
   const sequenceRef = useRef(0);
+
+  useLayoutEffect(() => {
+    collectionRef.current = collection;
+  }, [collection]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -25,48 +68,25 @@ export default function useWorldElements(categoryId, searchQuery) {
     };
   }, []);
 
-  useEffect(() => {
-    controllerRef.current?.abort();
-    sequenceRef.current += 1;
-
-    const timeoutId = window.setTimeout(() => {
-      setDebouncedSearch({ categoryId, value: searchQuery.trim() });
-    }, 275);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [categoryId, searchQuery]);
-
-  const effectiveSearch = debouncedSearch.categoryId === categoryId
-    ? debouncedSearch.value
-    : '';
-
   const loadElements = useCallback(async () => {
     if (!categoryId) {
       controllerRef.current?.abort();
-      setCollection({ categoryId: null, elements: [], error: '', isLoading: false, search: '' });
+      setCollection(emptyCollection(null));
       return;
     }
 
     const requestedCategoryId = categoryId;
-    const requestedSearch = effectiveSearch;
     const sequence = sequenceRef.current + 1;
     const controller = new AbortController();
-    const search = requestedSearch ? `?search=${encodeURIComponent(requestedSearch)}` : '';
 
     sequenceRef.current = sequence;
     controllerRef.current?.abort();
     controllerRef.current = controller;
-    setCollection({
-      categoryId: requestedCategoryId,
-      elements: [],
-      error: '',
-      isLoading: true,
-      search: requestedSearch,
-    });
+    setCollection(emptyCollection(requestedCategoryId));
 
     try {
       const response = await apiFetch(
-        `/api/world-element-categories/${requestedCategoryId}/world-elements${search}`,
+        `/api/world-element-categories/${requestedCategoryId}/world-elements`,
         { signal: controller.signal },
       );
       if (!response.ok) {
@@ -78,10 +98,9 @@ export default function useWorldElements(categoryId, searchQuery) {
 
       setCollection({
         categoryId: requestedCategoryId,
-        elements,
+        elements: sortElements(elements),
         error: '',
         isLoading: false,
-        search: requestedSearch,
       });
     } catch (error) {
       if (isAbortError(error) || !isMountedRef.current || sequence !== sequenceRef.current) return;
@@ -91,10 +110,9 @@ export default function useWorldElements(categoryId, searchQuery) {
         elements: [],
         error: error.message || 'Nie udało się pobrać elementów.',
         isLoading: false,
-        search: requestedSearch,
       });
     }
-  }, [categoryId, effectiveSearch]);
+  }, [categoryId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,15 +127,103 @@ export default function useWorldElements(categoryId, searchQuery) {
     };
   }, [loadElements]);
 
+  const runMutation = useCallback(async (request, updateCollection) => {
+    if (mutationRef.current) {
+      throw new Error('Poczekaj na zakończenie bieżącej operacji.');
+    }
+
+    mutationRef.current = true;
+    if (isMountedRef.current) setIsMutating(true);
+
+    try {
+      const result = await request();
+      const shouldReload = collectionRef.current.categoryId === categoryId
+        && collectionRef.current.isLoading;
+
+      controllerRef.current?.abort();
+      sequenceRef.current += 1;
+
+      if (isMountedRef.current) {
+        setCollection((current) => {
+          if (current.categoryId !== categoryId) return current;
+
+          return {
+            ...current,
+            elements: sortElements(updateCollection(current.elements, result)),
+            error: '',
+            isLoading: false,
+          };
+        });
+
+        if (shouldReload) Promise.resolve().then(loadElements);
+      }
+
+      return result;
+    } finally {
+      mutationRef.current = false;
+      if (isMountedRef.current) setIsMutating(false);
+    }
+  }, [categoryId, loadElements]);
+
+  const createElement = useCallback((values) => runMutation(
+    async () => {
+      const response = await apiFetch(
+        `/api/world-element-categories/${categoryId}/world-elements`,
+        { method: 'POST', body: elementFormData(values) },
+      );
+      if (!response.ok) {
+        throw await worldApiError(response, 'Nie udało się utworzyć elementu.');
+      }
+      return response.json();
+    },
+    (elements, created) => [...elements, created],
+  ), [categoryId, runMutation]);
+
+  const updateElement = useCallback((elementId, values) => runMutation(
+    async () => {
+      const response = await apiFetch(`/api/world-elements/${elementId}`, {
+        method: 'POST',
+        body: elementFormData(values, true),
+      });
+      if (!response.ok) {
+        throw await worldApiError(response, 'Nie udało się zapisać elementu.');
+      }
+      return response.json();
+    },
+    (elements, updated) => elements.map((element) => (
+      Number(element.id) === Number(updated.id) ? updated : element
+    )),
+  ), [runMutation]);
+
+  const deleteElement = useCallback((elementId) => runMutation(
+    async () => {
+      const response = await apiFetch(`/api/world-elements/${elementId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw await worldApiError(response, 'Nie udało się usunąć elementu.');
+      }
+      return elementId;
+    },
+    (elements, deletedId) => elements.filter((element) => (
+      Number(element.id) !== Number(deletedId)
+    )),
+  ), [runMutation]);
+
   const currentCollection = collection.categoryId === categoryId
-    && collection.search === effectiveSearch
     ? collection
-    : { elements: [], error: '', isLoading: Boolean(categoryId) };
+    : emptyCollection(categoryId);
+  const visibleElements = useMemo(
+    () => filterElements(currentCollection.elements, searchQuery),
+    [currentCollection.elements, searchQuery],
+  );
 
   return {
-    elements: currentCollection.elements,
+    createElement,
+    deleteElement,
+    elements: visibleElements,
     error: currentCollection.error,
     isLoading: currentCollection.isLoading,
+    isMutating,
     loadElements,
+    updateElement,
   };
 }

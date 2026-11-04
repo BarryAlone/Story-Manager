@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import WorldCategoryDialog from './WorldCategoryDialog';
 import WorldCategorySidebar from './WorldCategorySidebar';
 import WorldElementList from './WorldElementList';
+import WorldElementPanel from './WorldElementPanel';
 import WorldElementsToolbar from './WorldElementsToolbar';
 import useWorldElementCategories from './useWorldElementCategories';
+import useWorldElementDetails from './useWorldElementDetails';
 import useWorldElements from './useWorldElements';
 import './worldElements.css';
+import './worldElementPanel.css';
 
 const DEFAULT_CATEGORY_NAMES = ['Lokalizacje', 'Przedmioty', 'Magia'];
 
@@ -22,13 +25,29 @@ export default function WorldElementsPage() {
   const [dialog, setDialog] = useState(null);
   const [actionMessage, setActionMessage] = useState(null);
   const [isAddingDefaults, setIsAddingDefaults] = useState(false);
+  const [panelState, setPanelState] = useState(null);
+  const [isPanelDirty, setIsPanelDirty] = useState(false);
+  const [isPanelBusy, setIsPanelBusy] = useState(false);
+  const [isDeletingElement, setIsDeletingElement] = useState(false);
+  const addButtonRef = useRef(null);
+  const returnFocusRef = useRef(null);
   const currentView = viewState.projectId === projectId
     ? viewState
     : { activeCategoryId: null, projectId, searchQuery: '' };
+  const currentPanel = panelState?.projectId === projectId ? panelState : null;
   const activeCategory = categoryStore.categories.find((category) => (
     Number(category.id) === Number(currentView.activeCategoryId)
   )) || categoryStore.categories[0] || null;
   const elementStore = useWorldElements(activeCategory?.id || null, currentView.searchQuery);
+  const detailsStore = useWorldElementDetails(
+    currentPanel?.mode !== 'create' ? currentPanel?.elementId || null : null,
+  );
+  const hasFormChanges = Boolean(
+    currentPanel
+    && ['create', 'edit'].includes(currentPanel.mode)
+    && isPanelDirty
+  );
+  const isElementOperationActive = isPanelBusy || isDeletingElement || elementStore.isMutating;
 
   useEffect(() => {
     if (categoryStore.isLoading || categoryStore.categories.length === 0) return undefined;
@@ -49,7 +68,43 @@ export default function WorldElementsPage() {
     };
   }, [categoryStore.categories, categoryStore.isLoading, currentView.activeCategoryId, projectId]);
 
+  const confirmDiscardPanel = useCallback(() => (
+    !hasFormChanges
+    || window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')
+  ), [hasFormChanges]);
+
+  const restoreFocus = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      if (returnFocusRef.current?.isConnected) returnFocusRef.current.focus();
+      else addButtonRef.current?.focus();
+    });
+  }, []);
+
+  const clearPanel = useCallback((shouldRestoreFocus = true) => {
+    setPanelState(null);
+    setIsPanelDirty(false);
+    setIsPanelBusy(false);
+    setIsDeletingElement(false);
+    if (shouldRestoreFocus) restoreFocus();
+  }, [restoreFocus]);
+
+  const requestClosePanel = useCallback(() => {
+    if (isElementOperationActive || !confirmDiscardPanel()) return;
+    clearPanel();
+  }, [clearPanel, confirmDiscardPanel, isElementOperationActive]);
+
+  const cancelEdit = useCallback(() => {
+    if (isElementOperationActive || !confirmDiscardPanel()) return;
+    setIsPanelDirty(false);
+    setIsPanelBusy(false);
+    setPanelState((current) => current ? { ...current, mode: 'details' } : current);
+  }, [confirmDiscardPanel, isElementOperationActive]);
+
   const selectCategory = (categoryId) => {
+    if (Number(categoryId) === Number(activeCategory?.id)) return;
+    if (isElementOperationActive || !confirmDiscardPanel()) return;
+
+    clearPanel(false);
     setActionMessage(null);
     setViewState({ activeCategoryId: categoryId, projectId, searchQuery: '' });
   };
@@ -64,23 +119,47 @@ export default function WorldElementsPage() {
     }));
   };
 
+  const openCreatePanel = (trigger = addButtonRef.current) => {
+    if (isElementOperationActive || !confirmDiscardPanel()) return;
+    returnFocusRef.current = trigger;
+    setIsPanelDirty(false);
+    setIsPanelBusy(false);
+    setPanelState({ mode: 'create', elementId: null, projectId });
+  };
+
+  const openDetails = (element, event) => {
+    if (isElementOperationActive || !confirmDiscardPanel()) return;
+    returnFocusRef.current = event.currentTarget;
+    setIsPanelDirty(false);
+    setIsPanelBusy(false);
+    setPanelState({ mode: 'details', elementId: element.id, projectId });
+  };
+
+  const openCategoryDialog = (nextDialog) => {
+    if (isElementOperationActive || !confirmDiscardPanel()) return;
+    clearPanel(false);
+    setDialog(nextDialog);
+  };
+
   const submitCategory = async (name) => {
     if (dialog?.mode === 'rename') {
       await categoryStore.updateCategory(dialog.category.id, name);
     } else {
       const created = await categoryStore.createCategory(name);
-      selectCategory(created.id);
+      setViewState({ activeCategoryId: created.id, projectId, searchQuery: '' });
     }
     setDialog(null);
   };
 
   const deleteCategory = async (category) => {
+    if (isElementOperationActive || !confirmDiscardPanel()) return;
     if (!window.confirm(`Czy na pewno chcesz usunąć kategorię „${category.name}”?`)) return;
 
     setActionMessage(null);
     try {
       await categoryStore.deleteCategory(category.id);
       if (Number(activeCategory?.id) === Number(category.id)) {
+        clearPanel(false);
         const nextCategory = categoryStore.categories.find((item) => (
           Number(item.id) !== Number(category.id)
         ));
@@ -99,7 +178,7 @@ export default function WorldElementsPage() {
     setActionMessage(null);
     try {
       const created = await categoryStore.createCategory(name);
-      selectCategory(created.id);
+      setViewState({ activeCategoryId: created.id, projectId, searchQuery: '' });
     } catch (error) {
       setActionMessage({ type: 'error', text: error.message || 'Nie udało się dodać kategorii.' });
     }
@@ -129,7 +208,9 @@ export default function WorldElementsPage() {
     }
 
     setIsAddingDefaults(false);
-    if (created[0]) selectCategory(created[0].id);
+    if (created[0]) {
+      setViewState({ activeCategoryId: created[0].id, projectId, searchQuery: '' });
+    }
 
     if (failed.length > 0) {
       setActionMessage({
@@ -141,17 +222,51 @@ export default function WorldElementsPage() {
     }
   };
 
+  const createElement = async (values) => {
+    const created = await elementStore.createElement(values);
+    categoryStore.adjustItemsCount(activeCategory.id, 1);
+    setViewState((current) => ({ ...current, projectId, searchQuery: '' }));
+    detailsStore.primeDetails(created);
+    setIsPanelDirty(false);
+    setIsPanelBusy(false);
+    setPanelState({ mode: 'details', elementId: created.id, projectId });
+  };
+
+  const updateElement = async (values) => {
+    const updated = await elementStore.updateElement(currentPanel.elementId, values);
+    detailsStore.replaceDetails(updated);
+    setIsPanelDirty(false);
+    setIsPanelBusy(false);
+    setPanelState((current) => current ? { ...current, mode: 'details' } : current);
+  };
+
+  const deleteElement = async () => {
+    if (isDeletingElement || !detailsStore.element) return;
+    if (!window.confirm(`Czy na pewno chcesz trwale usunąć „${detailsStore.element.name}”?`)) return;
+
+    setIsDeletingElement(true);
+    setActionMessage(null);
+    try {
+      await elementStore.deleteElement(detailsStore.element.id);
+      categoryStore.adjustItemsCount(activeCategory.id, -1);
+      clearPanel();
+    } catch (error) {
+      setIsDeletingElement(false);
+      setActionMessage({ type: 'error', text: error.message || 'Nie udało się usunąć elementu.' });
+    }
+  };
+
   return (
     <section className="world-elements-page" aria-label="Przestrzeń robocza elementów świata">
       <WorldCategorySidebar
         activeCategoryId={activeCategory?.id || null}
         categories={categoryStore.categories}
-        disabled={categoryStore.isMutating || isAddingDefaults}
+        disabled={categoryStore.isMutating || isAddingDefaults || isElementOperationActive}
         error={categoryStore.error}
         isLoading={categoryStore.isLoading}
-        onCreate={() => setDialog({ mode: 'create' })}
+        onCreate={() => openCategoryDialog({ mode: 'create' })}
         onDelete={deleteCategory}
-        onRename={(category) => setDialog({ category, mode: 'rename' })}
+        onRename={(category) => openCategoryDialog({ category, mode: 'rename' })}
         onSelect={selectCategory}
       />
 
@@ -163,9 +278,7 @@ export default function WorldElementsPage() {
           </div>
         )}
 
-        {categoryStore.isLoading && (
-          <WorldState title="Ładowanie kategorii…" />
-        )}
+        {categoryStore.isLoading && <WorldState title="Ładowanie kategorii…" />}
 
         {!categoryStore.isLoading && categoryStore.error && (
           <WorldState
@@ -190,7 +303,10 @@ export default function WorldElementsPage() {
         {!categoryStore.isLoading && !categoryStore.error && activeCategory && (
           <>
             <WorldElementsToolbar
+              addButtonRef={addButtonRef}
               category={activeCategory}
+              disabled={isElementOperationActive}
+              onCreate={() => openCreatePanel()}
               onSearchChange={changeSearch}
               searchQuery={currentView.searchQuery}
             />
@@ -216,9 +332,35 @@ export default function WorldElementsPage() {
                 />
               )}
               {!elementStore.isLoading && !elementStore.error && elementStore.elements.length > 0 && (
-                <WorldElementList elements={elementStore.elements} />
+                <WorldElementList
+                  elements={elementStore.elements}
+                  onSelect={openDetails}
+                  selectedElementId={currentPanel?.elementId || null}
+                />
               )}
             </div>
+
+            {currentPanel && (
+              <WorldElementPanel
+                category={activeCategory}
+                details={detailsStore.element}
+                error={detailsStore.error}
+                isBusy={isElementOperationActive}
+                isLoading={detailsStore.isLoading}
+                mode={currentPanel.mode}
+                onBusyChange={setIsPanelBusy}
+                onCancelEdit={cancelEdit}
+                onClose={requestClosePanel}
+                onDelete={deleteElement}
+                onDirtyChange={setIsPanelDirty}
+                onEdit={() => {
+                  setIsPanelDirty(false);
+                  setPanelState((current) => current ? { ...current, mode: 'edit' } : current);
+                }}
+                onRetry={detailsStore.loadDetails}
+                onSubmit={currentPanel.mode === 'create' ? createElement : updateElement}
+              />
+            )}
           </>
         )}
 
