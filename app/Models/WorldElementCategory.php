@@ -28,15 +28,25 @@ class WorldElementCategory extends Model
         return $this->hasMany(WorldElement::class);
     }
 
+    public static function trimName(string $name): string
+    {
+        return trim($name);
+    }
+
+    public static function normalizeName(string $name): string
+    {
+        return mb_strtolower(self::trimName($name), 'UTF-8');
+    }
+
     protected function name(): Attribute
     {
         return Attribute::make(
             set: function (mixed $value): array {
-                $name = trim((string) $value);
+                $name = self::trimName((string) $value);
 
                 return [
                     'name' => $name,
-                    'normalized_name' => mb_strtolower($name, 'UTF-8'),
+                    'normalized_name' => self::normalizeName($name),
                 ];
             },
         );
