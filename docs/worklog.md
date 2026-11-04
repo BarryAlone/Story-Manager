@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-04 — API elementów świata
+
+- Zakres: chronione endpointy listowania, wyszukiwania, tworzenia, szczegółów, częściowej aktualizacji i usuwania elementów świata wraz z obsługą jednego obrazu.
+- Wynik: dane pozostają ograniczone do kategorii i właściciela projektu, nazwy mogą się powtarzać, a obrazy są bezpiecznie sprzątane po zastąpieniu, usunięciu elementu oraz usunięciu projektu. Frontend i dynamiczne atrybuty pozostają poza tym etapem.
+- Testy: testy API elementów — 14 testów i 117 asercji; testy kategorii, fundamentu, cyklu życia obrazów i autoryzacji — 42 testy i 322 asercje; pełny PHPUnit — 128 testów i 953 asercje. `composer validate --strict` zakończone powodzeniem.
+
 ## 2026-11-04 — API kategorii elementów świata
 
 - Zakres: chronione endpointy listowania, tworzenia, zmiany nazwy i usuwania kategorii wraz z route model binding, licznikiem elementów oraz walidacją znormalizowanej unikalności.

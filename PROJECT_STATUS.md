@@ -16,7 +16,7 @@ Story Manager to aplikacja webowa wspierająca tworzenie książek i komiksów. 
 
 ### Backend
 
-Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Fundament danych elementów świata obejmuje kategorie `WorldElementCategory` oraz należące do nich obiekty `WorldElement`. API kategorii obsługuje listowanie z liczbą elementów, tworzenie, zmianę nazwy i usuwanie pustej kategorii; API samych elementów i interfejs użytkownika nie są jeszcze dostępne. Rozdziały przechowują synopsis, właściwą treść i zwykłe notatki, rozróżniają rękopis od szkiców oraz obsługują dwupoziomową hierarchię i techniczną kolejność. HTML właściwej treści jest przed zapisem oczyszczany po stronie serwera według jawnej listy elementów i wartości stylów zgodnej z funkcjami edytora. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
+Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Fundament danych elementów świata obejmuje kategorie `WorldElementCategory` oraz należące do nich obiekty `WorldElement`. API kategorii i elementów obsługuje ich listowanie, wyszukiwanie oraz podstawowe operacje zapisu, a element może mieć jeden opcjonalny obraz obsługiwany przez wspólny bezpieczny cykl życia plików. Interfejs użytkownika dla elementów świata nie jest jeszcze dostępny. Rozdziały przechowują synopsis, właściwą treść i zwykłe notatki, rozróżniają rękopis od szkiców oraz obsługują dwupoziomową hierarchię i techniczną kolejność. HTML właściwej treści jest przed zapisem oczyszczany po stronie serwera według jawnej listy elementów i wartości stylów zgodnej z funkcjami edytora. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
 
 ### Frontend
 
@@ -57,7 +57,7 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 ## Znane ograniczenia
 
 - wydarzenia i osobne rekordy obrazów nie mają obecnie tras API;
-- elementy świata mają schemat, modele, relacje, polityki i API kategorii; API elementów, frontend, obsługa obrazów i dynamiczne atrybuty pozostają na kolejne etapy;
+- elementy świata mają schemat, modele, relacje, polityki oraz API kategorii i elementów z obsługą pojedynczego obrazu; frontend i dynamiczne atrybuty pozostają na kolejne etapy;
 - pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
 - weryfikacja e-mail pozostaje poza MVP i nie ma interfejsu w SPA.
