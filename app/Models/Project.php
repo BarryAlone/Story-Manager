@@ -41,6 +41,11 @@ class Project extends Model
         return $this->hasMany(ProjectInspiration::class);
     }
 
+    public function worldElementCategories(): HasMany
+    {
+        return $this->hasMany(WorldElementCategory::class);
+    }
+
     // Relacja polimorficzna pozwalająca przypisać wiele obrazów.
     public function images()
     {

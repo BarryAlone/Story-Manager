@@ -16,7 +16,7 @@ Story Manager to aplikacja webowa wspierająca tworzenie książek i komiksów. 
 
 ### Backend
 
-Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Rozdziały przechowują synopsis, właściwą treść i zwykłe notatki, rozróżniają rękopis od szkiców oraz obsługują dwupoziomową hierarchię i techniczną kolejność. HTML właściwej treści jest przed zapisem oczyszczany po stronie serwera według jawnej listy elementów i wartości stylów zgodnej z funkcjami edytora. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
+Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Dodano fundament danych elementów świata: projekt posiada kategorie `WorldElementCategory`, a każda kategoria elementy `WorldElement`; ten etap nie udostępnia jeszcze API ani interfejsu użytkownika. Rozdziały przechowują synopsis, właściwą treść i zwykłe notatki, rozróżniają rękopis od szkiców oraz obsługują dwupoziomową hierarchię i techniczną kolejność. HTML właściwej treści jest przed zapisem oczyszczany po stronie serwera według jawnej listy elementów i wartości stylów zgodnej z funkcjami edytora. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
 
 ### Frontend
 
@@ -57,6 +57,7 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 ## Znane ograniczenia
 
 - wydarzenia i osobne rekordy obrazów nie mają obecnie tras API;
+- elementy świata mają obecnie wyłącznie schemat, modele, relacje i polityki; API, frontend, obsługa obrazów i dynamiczne atrybuty pozostają na kolejne etapy;
 - pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
 - weryfikacja e-mail pozostaje poza MVP i nie ma interfejsu w SPA.
@@ -64,4 +65,4 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 
 ## Ostatnia aktualizacja
 
-2026-10-20
+2026-11-04
