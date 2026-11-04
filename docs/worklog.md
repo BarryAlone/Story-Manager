@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-04 — Zarządzanie elementami świata
+
+- Zakres: wysuwany panel tworzenia, szczegółów i edycji, usuwanie z potwierdzeniem, lokalny podgląd obrazu oraz lokalne aktualizacje gridu i liczników kategorii.
+- Wynik: użytkownik zarządza nazwą, opisem i jednym opcjonalnym obrazem elementu bez przeładowywania workspace. Szczegóły i wyszukiwanie anulują nieaktualne żądania, edycja chroni niezapisane zmiany, a wynik mutacji nie może zostać nadpisany przez spóźnione wyszukiwanie. Dynamiczne atrybuty, relacje oraz finalny polish pozostają poza etapem.
+- Testy: lint i build React SPA oraz pełny PHPUnit — 128 testów i 953 asercje — zakończone powodzeniem. Build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-11-04 — Przestrzeń robocza elementów świata
 
 - Zakres: routing i nawigacja modułu, kompaktowa lista kategorii z tworzeniem, zmianą nazwy i bezpiecznym usuwaniem, propozycje kategorii początkowych oraz odczytowy grid elementów z wyszukiwaniem po API.

@@ -180,11 +180,30 @@ export default function useWorldElementCategories(projectId) {
     )),
   ), [runMutation]);
 
+  const adjustItemsCount = useCallback((categoryId, delta) => {
+    setCollection((current) => {
+      if (current.projectId !== currentProjectIdRef.current) return current;
+
+      return {
+        ...current,
+        categories: current.categories.map((category) => (
+          Number(category.id) === Number(categoryId)
+            ? {
+                ...category,
+                items_count: Math.max(0, Number(category.items_count || 0) + delta),
+              }
+            : category
+        )),
+      };
+    });
+  }, []);
+
   const currentCollection = collection.projectId === projectId
     ? collection
     : { categories: [], error: '', isLoading: true };
 
   return {
+    adjustItemsCount,
     categories: currentCollection.categories,
     createCategory,
     deleteCategory,
