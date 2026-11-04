@@ -12,7 +12,7 @@ class Project extends Model
         'name',
         'description',
         'description_long',
-        'project_image'
+        'project_image',
     ];
 
     public function characters(): HasMany
@@ -22,13 +22,25 @@ class Project extends Model
 
     public function chapters(): HasMany
     {
-        return $this->hasMany(Chapter::class)  ;  
+        return $this->hasMany(Chapter::class);
     }
 
     public function projectAttributes(): HasMany
     {
         return $this->hasMany(ProjectAttribute::class);
+    }
 
+    public function attributeDefinitions(): HasMany
+    {
+        return $this->hasMany(AttributeDefinition::class);
+    }
+
+    public function characterAttributeDefinitions(): HasMany
+    {
+        return $this->hasMany(AttributeDefinition::class)
+            ->where('target_type', AttributeDefinition::TARGET_CHARACTER)
+            ->whereNull('world_element_category_id')
+            ->ordered();
     }
 
     public function events(): HasMany

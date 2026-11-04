@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-04 — Fundament wspólnego systemu atrybutów
+
+- Zakres: nowe relacyjne tabele, modele, relacje i polityka wspólnych definicji oraz wartości atrybutów postaci i elementów świata.
+- Wynik: zakres definicji, znormalizowane nazwy, typy `text` i `number`, precyzyjne wartości liczbowe, jednoznaczny właściciel wartości, unikalność oraz kaskady są chronione przez modele i bazę testową. Starszy system pozostaje tymczasowo aktywny bez migracji danych; API i frontend nie korzystają jeszcze z nowych tabel.
+- Testy: testy zakresowe — 37 testów i 232 asercje — oraz pełny PHPUnit — 143 testy i 1008 asercji — zakończone powodzeniem; walidacja Composera, składnia PHP i kontrola różnic również przeszły.
+
 ## 2026-11-04 — Zarządzanie elementami świata
 
 - Zakres: wysuwany panel tworzenia, szczegółów i edycji, usuwanie z potwierdzeniem, lokalny podgląd obrazu oraz lokalne aktualizacje gridu i liczników kategorii.

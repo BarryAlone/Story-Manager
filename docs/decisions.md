@@ -58,3 +58,11 @@
 - Element świata przechowuje jeden opcjonalny `image_path`. API zapisuje pliki w `world-elements/` przez `PublicImageStorage`, usuwa zastępowane pliki dopiero po udanym zapisie bazy i sprząta obrazy elementów podczas usuwania projektu. Galerie pozostają poza tym etapem.
 - Kategorie „Lokalizacje”, „Przedmioty” i „Magia” nie powstają automatycznie. Przyszły interfejs pokaże je jako propozycje wymagające świadomej akcji użytkownika.
 - API nie usuwa kategorii zawierającej elementy i zwraca wtedy `409 Conflict`; kaskada bazy pozostaje potrzebna wyłącznie do usuwania całego projektu oraz operacji infrastrukturalnych.
+
+## Wspólny system atrybutów
+
+- Definicje atrybutów postaci i kategorii elementów świata korzystają ze wspólnej tabeli `attribute_definitions`; ich zakres rozróżniają `target_type`, kategoria i techniczny `scope_key`.
+- Nazwa definicji jest unikalna po normalizacji w obrębie zakresu: całego projektu dla postaci albo pojedynczej kategorii dla elementów świata.
+- Wartości postaci i elementów świata korzystają ze wspólnej tabeli `attribute_values`. Dokładnie jedna encja i dokładnie jedna kolumna wartości muszą być ustawione.
+- MVP obsługuje typy `text` i `number`; liczby są przechowywane jako `DECIMAL(20,6)`, bez użycia typu zmiennoprzecinkowego.
+- Starsze `project_attributes` i JSON `characters.attributes` pozostają tymczasowo bez zmian. Dane testowe nie są migrowane, a stary mechanizm zostanie usunięty dopiero po przełączeniu API i formularzy.
