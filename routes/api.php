@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\AttributeDefinitionController;
+use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ChapterStructureController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterRelationshipController;
-use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectAttributeController;
 use App\Http\Controllers\ProjectController;
@@ -35,6 +36,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/world-elements/{element}', [WorldElementController::class, 'show']);
     Route::patch('/world-elements/{element}', [WorldElementController::class, 'update']);
     Route::delete('/world-elements/{element}', [WorldElementController::class, 'destroy']);
+
+    // Shared attribute definitions
+    Route::get('/projects/{project}/character-attribute-definitions', [AttributeDefinitionController::class, 'indexCharacters']);
+    Route::post('/projects/{project}/character-attribute-definitions', [AttributeDefinitionController::class, 'storeCharacter']);
+    Route::get('/world-element-categories/{category}/attribute-definitions', [AttributeDefinitionController::class, 'indexWorldElements']);
+    Route::post('/world-element-categories/{category}/attribute-definitions', [AttributeDefinitionController::class, 'storeWorldElement']);
+    Route::patch('/attribute-definitions/{definition}', [AttributeDefinitionController::class, 'update']);
+    Route::delete('/attribute-definitions/{definition}', [AttributeDefinitionController::class, 'destroy']);
 
     // ProjectInspiration
     Route::get('/projects/{project}/inspirations', [ProjectInspirationController::class, 'index']);

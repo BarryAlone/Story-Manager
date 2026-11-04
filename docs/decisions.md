@@ -66,3 +66,6 @@
 - Wartości postaci i elementów świata korzystają ze wspólnej tabeli `attribute_values`. Dokładnie jedna encja i dokładnie jedna kolumna wartości muszą być ustawione.
 - MVP obsługuje typy `text` i `number`; liczby są przechowywane jako `DECIMAL(20,6)`, bez użycia typu zmiennoprzecinkowego.
 - Starsze `project_attributes` i JSON `characters.attributes` pozostają tymczasowo bez zmian. Dane testowe nie są migrowane, a stary mechanizm zostanie usunięty dopiero po przełączeniu API i formularzy.
+- Definicje są zarządzane przez jedno API z dwoma kontekstami: projekt określa zakres postaci, a kategoria określa zakres elementów świata. Klient nie może ustawiać pól zakresu ani kolejności.
+- Typ używanej definicji nie jest automatycznie konwertowany. Zmiana typu i zwykłe usunięcie są blokowane odpowiedzią `409`, jeśli istnieją wartości; wymuszone usunięcie wymaga jawnego `force=true` i usuwa wartości kaskadowo.
+- Nowe definicje otrzymują kolejny `sort_order` w swoim zakresie. Ręczne porządkowanie definicji pozostaje poza bieżącym etapem.

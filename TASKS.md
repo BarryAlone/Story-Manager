@@ -6,7 +6,7 @@
 
 ## Następne
 
-- [ ] Dodać API wspólnych definicji i wartości atrybutów oraz przełączyć na nie postacie i elementy świata.
+- [ ] Dodać API wartości atrybutów oraz przełączyć na wspólny mechanizm postacie i elementy świata.
 - [ ] Po przełączeniu formularzy usunąć starsze `project_attributes`, `characters.attributes` i osobny ekran atrybutów.
 - [ ] Wykonać finalny polish przestrzeni elementów świata i uporządkować jej arkusze CSS.
 - [ ] Dodać kierunkowość relacji jako osobny kontrakt danych i interfejs.
@@ -45,5 +45,6 @@
 - [x] Dodano przestrzeń roboczą elementów świata z zarządzaniem kategoriami, propozycjami początkowymi, wyszukiwaniem i odczytową listą elementów.
 - [x] Dodano tworzenie, szczegóły, edycję i usuwanie elementów świata wraz z obsługą jednego opcjonalnego obrazu.
 - [x] Dodano relacyjny fundament wspólnych definicji i wartości atrybutów dla postaci oraz elementów świata.
+- [x] Dodano wspólne API definicji atrybutów dla postaci i kategorii elementów świata.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.
