@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-04 — Fundament elementów świata
+
+- Zakres: migracje, modele, relacje i polityki dla kategorii `WorldElementCategory` oraz obiektów `WorldElement` należących pośrednio do projektu.
+- Wynik: nazwy kategorii są normalizowane i unikalne w obrębie projektu, elementy mogą powtarzać nazwy, a własność jest wyprowadzana przez kategorię i projekt. Obrazy pozostają polem schematu, a API, frontend i dynamiczne atrybuty nie należą do tego etapu.
+- Testy: fundament i autoryzacja — 22 testy i 177 asercji; pełny PHPUnit — 103 testy i 765 asercji; `composer validate --strict` oraz `git diff --check` zakończone powodzeniem.
+
 ## 2026-10-20 — Drag-and-drop struktury rozdziałów
 
 - Zakres: uchwyty przeciągania dla rękopisu, podrozdziałów i szkiców, dostępne strefy upuszczania, mały formularz numeru oraz jedna autoryzowana operacja API aktualizująca strukturę w transakcji.

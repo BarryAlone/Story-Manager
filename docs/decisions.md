@@ -48,3 +48,12 @@
 - TinyMCE działa jako komponent niekontrolowany: React przechowuje stan zmiany, a HTML jest pobierany z instancji dopiero podczas jawnego zapisu.
 - Backend oczyszcza nową i aktualizowaną treść przez `symfony/html-sanitizer` według jawnej listy obejmującej akapity, nagłówki, podstawowe formatowanie, listy, cytaty, łamania wiersza i bezpieczne odnośniki.
 - Style czcionki, rozmiaru, interlinii, wyrównania, wcięcia i kolorów są zachowywane wyłącznie dla wartości udostępnionych przez edytor. Pozostałe właściwości CSS, skrypty, ramki, atrybuty zdarzeń i niebezpieczne schematy adresów nie są zapisywane. Istniejące rekordy nie są przepisywane migracją.
+
+## Elementy świata
+
+- Kategorie elementów świata są przechowywane w `world_element_categories`, a należące do nich obiekty w `world_elements`.
+- Własność elementu wynika z kategorii i projektu; element nie otrzymuje osobnego `project_id` ani `user_id`.
+- Nazwa kategorii jest unikalna w projekcie bez uwzględniania wielkości liter i otaczających spacji. Nazwy elementów mogą się powtarzać.
+- Obecny system atrybutów postaci pozostaje oddzielony od pierwszego etapu elementów świata. Wspólne definicje i wartości atrybutów wymagają osobnego kontraktu i migracji zachowującej istniejące dane.
+- `image_path` jest na tym etapie wyłącznie polem schematu. Upload, usuwanie plików i ewentualne galerie zostaną podłączone razem z API.
+- Kategorie „Lokalizacje”, „Przedmioty” i „Magia” nie powstają automatycznie. Przyszły interfejs pokaże je jako propozycje wymagające świadomej akcji użytkownika.
