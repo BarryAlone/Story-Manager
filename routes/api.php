@@ -10,6 +10,7 @@ use App\Http\Controllers\ProjectAttributeController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectInspirationController;
 use App\Http\Controllers\WorldElementCategoryController;
+use App\Http\Controllers\WorldElementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/projects/{project}/world-element-categories', [WorldElementCategoryController::class, 'store']);
     Route::patch('/world-element-categories/{category}', [WorldElementCategoryController::class, 'update']);
     Route::delete('/world-element-categories/{category}', [WorldElementCategoryController::class, 'destroy']);
+
+    // WorldElement
+    Route::get('/world-element-categories/{category}/world-elements', [WorldElementController::class, 'index']);
+    Route::post('/world-element-categories/{category}/world-elements', [WorldElementController::class, 'store']);
+    Route::get('/world-elements/{element}', [WorldElementController::class, 'show']);
+    Route::patch('/world-elements/{element}', [WorldElementController::class, 'update']);
+    Route::delete('/world-elements/{element}', [WorldElementController::class, 'destroy']);
 
     // ProjectInspiration
     Route::get('/projects/{project}/inspirations', [ProjectInspirationController::class, 'index']);

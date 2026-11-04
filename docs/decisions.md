@@ -55,6 +55,6 @@
 - Własność elementu wynika z kategorii i projektu; element nie otrzymuje osobnego `project_id` ani `user_id`.
 - Nazwa kategorii jest unikalna w projekcie bez uwzględniania wielkości liter i otaczających spacji. Nazwy elementów mogą się powtarzać.
 - Obecny system atrybutów postaci pozostaje oddzielony od pierwszego etapu elementów świata. Wspólne definicje i wartości atrybutów wymagają osobnego kontraktu i migracji zachowującej istniejące dane.
-- `image_path` jest na tym etapie wyłącznie polem schematu. Upload, usuwanie plików i ewentualne galerie zostaną podłączone razem z API.
+- Element świata przechowuje jeden opcjonalny `image_path`. API zapisuje pliki w `world-elements/` przez `PublicImageStorage`, usuwa zastępowane pliki dopiero po udanym zapisie bazy i sprząta obrazy elementów podczas usuwania projektu. Galerie pozostają poza tym etapem.
 - Kategorie „Lokalizacje”, „Przedmioty” i „Magia” nie powstają automatycznie. Przyszły interfejs pokaże je jako propozycje wymagające świadomej akcji użytkownika.
 - API nie usuwa kategorii zawierającej elementy i zwraca wtedy `409 Conflict`; kaskada bazy pozostaje potrzebna wyłącznie do usuwania całego projektu oraz operacji infrastrukturalnych.

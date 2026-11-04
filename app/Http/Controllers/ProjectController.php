@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\WorldElement;
 use App\Services\PublicImageStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -105,6 +106,11 @@ class ProjectController extends Controller
             ...$project->chapters()->whereNotNull('chapter_image')->pluck('chapter_image')->all(),
             ...$project->projectInspirations()->whereNotNull('image_path')->pluck('image_path')->all(),
             ...$project->events()->whereNotNull('event_image')->pluck('event_image')->all(),
+            ...WorldElement::query()
+                ->whereHas('worldElementCategory', fn ($query) => $query->where('project_id', $project->id))
+                ->whereNotNull('image_path')
+                ->pluck('image_path')
+                ->all(),
         ];
 
         DB::transaction(fn () => $project->delete());
