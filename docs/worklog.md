@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-04 — Wspólne API definicji atrybutów
+
+- Zakres: chronione endpointy listowania i tworzenia definicji postaci oraz kategorii świata, wspólna aktualizacja i bezpieczne usuwanie definicji.
+- Wynik: nazwy są normalizowane i unikalne w zakresie, nowe rekordy otrzymują kolejny `sort_order`, a używane definicje blokują zmianę typu i zwykłe usunięcie odpowiedzią `409`. Jawne `force=true` usuwa definicję wraz z jej wartościami. API wartości, formularze i starszy system pozostają bez zmian.
+- Testy: kontrakt API definicji — 17 testów i 131 asercji, testy zakresowe — 45 testów i 323 asercje — oraz pełny PHPUnit — 160 testów i 1139 asercji — zakończone powodzeniem. Walidacja Composera, kontrola tras, składnia PHP, Pint i kontrola różnic również przeszły.
+
 ## 2026-11-04 — Fundament wspólnego systemu atrybutów
 
 - Zakres: nowe relacyjne tabele, modele, relacje i polityka wspólnych definicji oraz wartości atrybutów postaci i elementów świata.
