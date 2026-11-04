@@ -6,7 +6,7 @@
 
 ## Następne
 
-- [ ] Dodać frontend kategorii i elementów świata na istniejącym API.
+- [ ] Dodać tworzenie, edycję, usuwanie i szczegóły elementów świata w istniejącej przestrzeni roboczej.
 - [ ] Dodać kierunkowość relacji jako osobny kontrakt danych i interfejs.
 
 ## Później
@@ -40,5 +40,6 @@
 - [x] Dodano backendowy fundament kategorii i elementów świata bez API, frontendu oraz dynamicznych atrybutów.
 - [x] Dodano chronione API listowania, tworzenia, zmiany nazwy i bezpiecznego usuwania kategorii elementów świata.
 - [x] Dodano chronione API elementów świata z wyszukiwaniem, pojedynczym obrazem i bezpiecznym cyklem życia plików.
+- [x] Dodano przestrzeń roboczą elementów świata z zarządzaniem kategoriami, propozycjami początkowymi, wyszukiwaniem i odczytową listą elementów.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.

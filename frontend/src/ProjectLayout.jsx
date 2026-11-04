@@ -12,7 +12,10 @@ import { apiFetch } from './api';
 function ProjectLayout() {
   const { projectId } = useParams();
   const location = useLocation();
-  const isInspirationsView = location.pathname === `/project/${projectId}/inspirations`;
+  const isFullscreenView = [
+    `/project/${projectId}/inspirations`,
+    `/project/${projectId}/world-elements`,
+  ].includes(location.pathname);
   const [projectName, setProjectName] = useState('Ładowanie...');
 
   useEffect(() => {
@@ -107,6 +110,10 @@ function ProjectLayout() {
         <NavLink to={`/project/${projectId}/inspirations`} title="Inspiracje" className="sidebar-icon">
           {({ isActive }) => <InspirationsIcon isActive={isActive} />}
         </NavLink>
+
+        <NavLink to={`/project/${projectId}/world-elements`} title="Elementy świata" className="sidebar-icon">
+          {({ isActive }) => <WorldElementsIcon isActive={isActive} />}
+        </NavLink>
         
       </nav>
 
@@ -131,7 +138,7 @@ function ProjectLayout() {
         </header>
 
         {/* GŁÓWNY OBSZAR ROBOCZY */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: isInspirationsView ? 0 : '30px' }}>
+        <main style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: isFullscreenView ? 0 : '30px' }}>
           <Outlet />
         </main>
 
@@ -160,6 +167,28 @@ function InspirationsIcon({ isActive }) {
     >
       <path d="M6 3h9l4 4v14H6z" />
       <path d="M15 3v5h4M9 12h7M9 16h7" />
+    </svg>
+  );
+}
+
+function WorldElementsIcon({ isActive }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-label="Elementy świata"
+      style={{
+        width: '32px',
+        height: '32px',
+        opacity: isActive ? 1 : 0.4,
+        fill: 'none',
+        stroke: 'currentColor',
+        strokeWidth: 1.7,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+      }}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.3 2.5 3.5 5.5 3.5 9S14.3 18.5 12 21M12 3C9.7 5.5 8.5 8.5 8.5 12S9.7 18.5 12 21" />
     </svg>
   );
 }

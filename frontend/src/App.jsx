@@ -17,6 +17,7 @@ import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
 import Profile from './Profile';
 import InspirationsPage from './features/inspirations/InspirationsPage';
+import WorldElementsPage from './features/world/WorldElementsPage';
 import useAuth from './useAuth';
 
 function ProtectedRoutes() {
@@ -61,6 +62,7 @@ function App() {
               <Route path="attributes" element={<AttributeList />} />
               <Route path="relationships" element={<RelationshipList />} />
               <Route path="inspirations" element={<InspirationsPage />} />
+              <Route path="world-elements" element={<WorldElementsPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-04 — Przestrzeń robocza elementów świata
+
+- Zakres: routing i nawigacja modułu, kompaktowa lista kategorii z tworzeniem, zmianą nazwy i bezpiecznym usuwaniem, propozycje kategorii początkowych oraz odczytowy grid elementów z wyszukiwaniem po API.
+- Wynik: przełączanie kategorii i wyszukiwanie anulują nieaktualne żądania, mutacje kategorii aktualizują stan lokalnie, a widok rozróżnia ładowanie, błędy, puste kategorie i brak wyników. Tworzenie, edycja, usuwanie i szczegóły elementów oraz atrybuty pozostają poza tym etapem.
+- Testy: lint i build React SPA oraz pełny PHPUnit — 128 testów i 953 asercje — zakończone powodzeniem. Build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-11-04 — API elementów świata
 
 - Zakres: chronione endpointy listowania, wyszukiwania, tworzenia, szczegółów, częściowej aktualizacji i usuwania elementów świata wraz z obsługą jednego obrazu.
