@@ -6,7 +6,8 @@
 
 ## Następne
 
-- [ ] Zaprojektować dynamiczne atrybuty elementów świata i przyszłą integrację z atrybutami postaci.
+- [ ] Dodać API wspólnych definicji i wartości atrybutów oraz przełączyć na nie postacie i elementy świata.
+- [ ] Po przełączeniu formularzy usunąć starsze `project_attributes`, `characters.attributes` i osobny ekran atrybutów.
 - [ ] Wykonać finalny polish przestrzeni elementów świata i uporządkować jej arkusze CSS.
 - [ ] Dodać kierunkowość relacji jako osobny kontrakt danych i interfejs.
 
@@ -43,5 +44,6 @@
 - [x] Dodano chronione API elementów świata z wyszukiwaniem, pojedynczym obrazem i bezpiecznym cyklem życia plików.
 - [x] Dodano przestrzeń roboczą elementów świata z zarządzaniem kategoriami, propozycjami początkowymi, wyszukiwaniem i odczytową listą elementów.
 - [x] Dodano tworzenie, szczegóły, edycję i usuwanie elementów świata wraz z obsługą jednego opcjonalnego obrazu.
+- [x] Dodano relacyjny fundament wspólnych definicji i wartości atrybutów dla postaci oraz elementów świata.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.

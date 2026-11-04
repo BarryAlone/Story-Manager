@@ -28,6 +28,13 @@ class WorldElementCategory extends Model
         return $this->hasMany(WorldElement::class);
     }
 
+    public function attributeDefinitions(): HasMany
+    {
+        return $this->hasMany(AttributeDefinition::class)
+            ->where('target_type', AttributeDefinition::TARGET_WORLD_ELEMENT)
+            ->ordered();
+    }
+
     public static function trimName(string $name): string
     {
         return trim($name);

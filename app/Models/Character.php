@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Character extends Model
 {
@@ -15,11 +16,11 @@ class Character extends Model
         'description',
         'description_long',
         'character_image',
-        'attributes'
+        'attributes',
     ];
 
     protected $casts = [
-        'attributes' => 'array'
+        'attributes' => 'array',
     ];
 
     public function project(): BelongsTo
@@ -27,11 +28,16 @@ class Character extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function attributeValues(): HasMany
+    {
+        return $this->hasMany(AttributeValue::class);
+    }
+
     public function chapter(): BelongsToMany
     {
         return $this->belongsToMany(Chapter::class);
     }
-    
+
     // Relacja polimorficzna pozwalająca przypisać wiele obrazów.
     public function images()
     {
