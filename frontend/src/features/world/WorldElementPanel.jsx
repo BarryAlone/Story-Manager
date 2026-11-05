@@ -5,6 +5,9 @@ import WorldElementForm from './WorldElementForm';
 
 export default function WorldElementPanel({
   category,
+  definitions,
+  definitionsError,
+  definitionsReady,
   details,
   error,
   isBusy,
@@ -16,7 +19,9 @@ export default function WorldElementPanel({
   onDelete,
   onDirtyChange,
   onEdit,
+  onManageAttributes,
   onRetry,
+  onRetryDefinitions,
   onSubmit,
 }) {
   const panelRef = useRef(null);
@@ -59,6 +64,11 @@ export default function WorldElementPanel({
         {mode === 'create' && (
           <WorldElementForm
             category={category}
+            definitions={definitions}
+            definitionsError={definitionsError}
+            definitionsReady={definitionsReady}
+            onManageAttributes={onManageAttributes}
+            onRetryDefinitions={onRetryDefinitions}
             onBusyChange={onBusyChange}
             onCancel={onClose}
             onDirtyChange={onDirtyChange}
@@ -77,6 +87,7 @@ export default function WorldElementPanel({
         {mode === 'details' && !isLoading && !error && details && (
           <WorldElementDetails
             category={category}
+            definitions={definitions}
             disabled={isBusy}
             element={details}
             onDelete={onDelete}
@@ -88,7 +99,12 @@ export default function WorldElementPanel({
           <WorldElementForm
             key={details.id}
             category={category}
+            definitions={definitions}
+            definitionsError={definitionsError}
+            definitionsReady={definitionsReady}
             element={details}
+            onManageAttributes={onManageAttributes}
+            onRetryDefinitions={onRetryDefinitions}
             onBusyChange={onBusyChange}
             onCancel={onCancelEdit}
             onDirtyChange={onDirtyChange}

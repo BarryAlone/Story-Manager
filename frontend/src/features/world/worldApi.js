@@ -7,7 +7,13 @@ export async function worldApiError(response, fallback) {
     : null;
   const domainMessage = [409, 422].includes(response.status) ? payload?.message : null;
 
-  return new Error(validationMessage || domainMessage || fallback);
+  const error = new Error(validationMessage || domainMessage || fallback);
+
+  error.errors = payload?.errors || {};
+  error.status = response.status;
+  error.valuesCount = Number(payload?.values_count || 0);
+
+  return error;
 }
 
 export function isAbortError(error) {

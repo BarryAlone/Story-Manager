@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
+import AttributeDefinitionManager from '../attributes/AttributeDefinitionManager';
+import useAttributeDefinitions from '../attributes/useAttributeDefinitions';
+import '../attributes/attributes.css';
 import WorldCategoryDialog from './WorldCategoryDialog';
 import WorldCategorySidebar from './WorldCategorySidebar';
 import WorldElementList from './WorldElementList';
@@ -29,7 +32,10 @@ export default function WorldElementsPage() {
   const [isPanelDirty, setIsPanelDirty] = useState(false);
   const [isPanelBusy, setIsPanelBusy] = useState(false);
   const [isDeletingElement, setIsDeletingElement] = useState(false);
+  const [attributesPanelProjectId, setAttributesPanelProjectId] = useState(null);
+  const [isAttributesPanelDirty, setIsAttributesPanelDirty] = useState(false);
   const addButtonRef = useRef(null);
+  const attributesButtonRef = useRef(null);
   const returnFocusRef = useRef(null);
   const currentView = viewState.projectId === projectId
     ? viewState
@@ -38,16 +44,26 @@ export default function WorldElementsPage() {
   const activeCategory = categoryStore.categories.find((category) => (
     Number(category.id) === Number(currentView.activeCategoryId)
   )) || categoryStore.categories[0] || null;
+  const definitionStore = useAttributeDefinitions({
+    collectionEndpoint: activeCategory
+      ? `/api/world-element-categories/${activeCategory.id}/attribute-definitions`
+      : null,
+    scopeKey: activeCategory ? `world-category:${activeCategory.id}` : null,
+  });
   const elementStore = useWorldElements(activeCategory?.id || null, currentView.searchQuery);
   const detailsStore = useWorldElementDetails(
     currentPanel?.mode !== 'create' ? currentPanel?.elementId || null : null,
   );
   const hasFormChanges = Boolean(
-    currentPanel
-    && ['create', 'edit'].includes(currentPanel.mode)
-    && isPanelDirty
+    (currentPanel && ['create', 'edit'].includes(currentPanel.mode) && isPanelDirty)
+    || (attributesPanelProjectId === projectId && isAttributesPanelDirty)
   );
-  const isElementOperationActive = isPanelBusy || isDeletingElement || elementStore.isMutating;
+  const isAttributesPanelOpen = attributesPanelProjectId === projectId;
+  const definitionsReady = !definitionStore.isLoading && !definitionStore.error;
+  const isElementOperationActive = isPanelBusy
+    || isDeletingElement
+    || elementStore.isMutating
+    || definitionStore.isMutating;
 
   useEffect(() => {
     if (categoryStore.isLoading || categoryStore.categories.length === 0) return undefined;
@@ -88,10 +104,21 @@ export default function WorldElementsPage() {
     if (shouldRestoreFocus) restoreFocus();
   }, [restoreFocus]);
 
+  const clearAttributesPanel = useCallback((shouldRestoreFocus = true) => {
+    setAttributesPanelProjectId(null);
+    setIsAttributesPanelDirty(false);
+    if (shouldRestoreFocus) restoreFocus();
+  }, [restoreFocus]);
+
   const requestClosePanel = useCallback(() => {
     if (isElementOperationActive || !confirmDiscardPanel()) return;
     clearPanel();
   }, [clearPanel, confirmDiscardPanel, isElementOperationActive]);
+
+  const requestCloseAttributesPanel = useCallback(() => {
+    if (isElementOperationActive || !confirmDiscardPanel()) return;
+    clearAttributesPanel();
+  }, [clearAttributesPanel, confirmDiscardPanel, isElementOperationActive]);
 
   const cancelEdit = useCallback(() => {
     if (isElementOperationActive || !confirmDiscardPanel()) return;
@@ -105,6 +132,7 @@ export default function WorldElementsPage() {
     if (isElementOperationActive || !confirmDiscardPanel()) return;
 
     clearPanel(false);
+    clearAttributesPanel(false);
     setActionMessage(null);
     setViewState({ activeCategoryId: categoryId, projectId, searchQuery: '' });
   };
@@ -122,6 +150,7 @@ export default function WorldElementsPage() {
   const openCreatePanel = (trigger = addButtonRef.current) => {
     if (isElementOperationActive || !confirmDiscardPanel()) return;
     returnFocusRef.current = trigger;
+    clearAttributesPanel(false);
     setIsPanelDirty(false);
     setIsPanelBusy(false);
     setPanelState({ mode: 'create', elementId: null, projectId });
@@ -130,6 +159,7 @@ export default function WorldElementsPage() {
   const openDetails = (element, event) => {
     if (isElementOperationActive || !confirmDiscardPanel()) return;
     returnFocusRef.current = event.currentTarget;
+    clearAttributesPanel(false);
     setIsPanelDirty(false);
     setIsPanelBusy(false);
     setPanelState({ mode: 'details', elementId: element.id, projectId });
@@ -138,7 +168,16 @@ export default function WorldElementsPage() {
   const openCategoryDialog = (nextDialog) => {
     if (isElementOperationActive || !confirmDiscardPanel()) return;
     clearPanel(false);
+    clearAttributesPanel(false);
     setDialog(nextDialog);
+  };
+
+  const openAttributesPanel = (trigger = attributesButtonRef.current) => {
+    if (isElementOperationActive || !confirmDiscardPanel()) return;
+    returnFocusRef.current = trigger;
+    clearPanel(false);
+    setIsAttributesPanelDirty(false);
+    setAttributesPanelProjectId(projectId);
   };
 
   const submitCategory = async (name) => {
@@ -160,6 +199,7 @@ export default function WorldElementsPage() {
       await categoryStore.deleteCategory(category.id);
       if (Number(activeCategory?.id) === Number(category.id)) {
         clearPanel(false);
+        clearAttributesPanel(false);
         const nextCategory = categoryStore.categories.find((item) => (
           Number(item.id) !== Number(category.id)
         ));
@@ -224,6 +264,7 @@ export default function WorldElementsPage() {
 
   const createElement = async (values) => {
     const created = await elementStore.createElement(values);
+    await definitionStore.refreshDefinitions();
     categoryStore.adjustItemsCount(activeCategory.id, 1);
     setViewState((current) => ({ ...current, projectId, searchQuery: '' }));
     detailsStore.primeDetails(created);
@@ -234,6 +275,7 @@ export default function WorldElementsPage() {
 
   const updateElement = async (values) => {
     const updated = await elementStore.updateElement(currentPanel.elementId, values);
+    await definitionStore.refreshDefinitions();
     detailsStore.replaceDetails(updated);
     setIsPanelDirty(false);
     setIsPanelBusy(false);
@@ -248,6 +290,7 @@ export default function WorldElementsPage() {
     setActionMessage(null);
     try {
       await elementStore.deleteElement(detailsStore.element.id);
+      await definitionStore.refreshDefinitions();
       categoryStore.adjustItemsCount(activeCategory.id, -1);
       clearPanel();
     } catch (error) {
@@ -304,9 +347,11 @@ export default function WorldElementsPage() {
           <>
             <WorldElementsToolbar
               addButtonRef={addButtonRef}
+              attributesButtonRef={attributesButtonRef}
               category={activeCategory}
               disabled={isElementOperationActive}
               onCreate={() => openCreatePanel()}
+              onManageAttributes={() => openAttributesPanel()}
               onSearchChange={changeSearch}
               searchQuery={currentView.searchQuery}
             />
@@ -343,6 +388,9 @@ export default function WorldElementsPage() {
             {currentPanel && (
               <WorldElementPanel
                 category={activeCategory}
+                definitions={definitionStore.definitions}
+                definitionsError={definitionStore.error}
+                definitionsReady={definitionsReady}
                 details={detailsStore.element}
                 error={detailsStore.error}
                 isBusy={isElementOperationActive}
@@ -357,8 +405,20 @@ export default function WorldElementsPage() {
                   setIsPanelDirty(false);
                   setPanelState((current) => current ? { ...current, mode: 'edit' } : current);
                 }}
+                onManageAttributes={() => openAttributesPanel()}
                 onRetry={detailsStore.loadDetails}
+                onRetryDefinitions={definitionStore.loadDefinitions}
                 onSubmit={currentPanel.mode === 'create' ? createElement : updateElement}
+              />
+            )}
+
+            {isAttributesPanelOpen && (
+              <AttributeDefinitionManager
+                contextLabel={activeCategory.name}
+                disabled={isElementOperationActive}
+                onClose={requestCloseAttributesPanel}
+                onDirtyChange={setIsAttributesPanelDirty}
+                store={definitionStore}
               />
             )}
           </>

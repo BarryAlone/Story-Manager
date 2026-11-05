@@ -1,0 +1,277 @@
+.attribute-definition-panel .world-element-panel__header > div {
+  min-width: 0;
+}
+
+.attribute-definition-panel .world-element-panel__header span {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attribute-definition-manager {
+  padding: 16px;
+}
+
+.attribute-definition-manager__toolbar,
+.attribute-definition-list li,
+.attribute-definition-list__actions,
+.attribute-definition-form footer,
+.attribute-force-delete > div {
+  display: flex;
+  align-items: center;
+}
+
+.attribute-definition-manager__toolbar {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.attribute-definition-manager__toolbar p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.attribute-definition-manager__toolbar button,
+.attribute-manager-state button {
+  padding: 7px 10px;
+  border: 1px solid #bfdbfe;
+  border-radius: 7px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.attribute-definition-list {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attribute-definition-list li {
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.attribute-definition-list li > div:first-child {
+  min-width: 0;
+}
+
+.attribute-definition-list strong,
+.attribute-definition-list span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.attribute-definition-list strong {
+  color: #1e293b;
+  font-size: 0.84rem;
+}
+
+.attribute-definition-list span {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.attribute-definition-list__actions {
+  flex: 0 0 auto;
+  gap: 5px;
+}
+
+.attribute-definition-list__actions button {
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+  font-size: 0.72rem;
+}
+
+.attribute-definition-list__actions button:last-child {
+  color: #b91c1c;
+}
+
+.attribute-definition-form label,
+.attribute-value-fields label {
+  display: block;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.attribute-definition-form label + label,
+.attribute-value-fields label + label {
+  margin-top: 12px;
+}
+
+.attribute-definition-form input,
+.attribute-definition-form select,
+.attribute-value-fields input {
+  width: 100%;
+  height: 38px;
+  margin-top: 6px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2937;
+}
+
+.attribute-definition-form footer {
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.attribute-field-error,
+.attribute-definition-form__error,
+.attribute-definition-manager__error {
+  color: #b91c1c;
+  font-size: 0.76rem;
+}
+
+.attribute-field-error {
+  display: block;
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+.attribute-definition-form__error,
+.attribute-definition-manager__error {
+  margin: 10px 0 0;
+}
+
+.attribute-force-delete {
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: #9f1239;
+  font-size: 0.78rem;
+}
+
+.attribute-force-delete p {
+  margin: 5px 0 10px;
+  line-height: 1.45;
+}
+
+.attribute-force-delete > div {
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.attribute-force-delete button {
+  padding: 6px 8px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fff;
+  color: #9f1239;
+  cursor: pointer;
+}
+
+.attribute-force-delete .attribute-force-delete__confirm {
+  background: #b91c1c;
+  color: #fff;
+}
+
+.attribute-manager-state {
+  display: grid;
+  min-height: 180px;
+  align-content: center;
+  justify-items: center;
+  gap: 9px;
+  color: #64748b;
+  text-align: center;
+}
+
+.attribute-manager-state p {
+  margin: 0;
+}
+
+.attribute-manager-state--error {
+  color: #9f1239;
+}
+
+.world-element-form__attributes,
+.world-element-details__attributes {
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.world-element-form__attributes {
+  margin-top: 16px;
+}
+
+.world-element-form__attributes h3,
+.world-element-details__attributes h4 {
+  margin: 0 0 9px;
+  color: #334155;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.world-element-form__attributes-empty {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.world-element-form__attributes-empty button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.world-element-details__attributes {
+  margin: 0 16px;
+  padding-bottom: 16px;
+}
+
+.world-element-details__attributes dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.world-element-details__attributes div {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+}
+
+.world-element-details__attributes dt,
+.world-element-details__attributes dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.world-element-details__attributes dt {
+  color: #64748b;
+}
+
+.world-element-details__attributes dd {
+  color: #1e293b;
+}

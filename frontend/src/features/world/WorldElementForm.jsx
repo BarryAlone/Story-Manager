@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { backendUrl } from '../../api';
+import AttributeValueFields from '../attributes/AttributeValueFields';
+import { attributeValueMapsEqual, buildAttributeValueMap } from '../attributes/attributeValues';
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -15,32 +17,51 @@ function initialValues(element) {
 
 export default function WorldElementForm({
   category,
+  definitions,
+  definitionsError,
+  definitionsReady,
   element = null,
+  onManageAttributes,
+  onRetryDefinitions,
   onBusyChange,
   onCancel,
   onDirtyChange,
   onSubmit,
 }) {
   const [values, setValues] = useState(() => initialValues(element));
+  const [attributeValueDraft, setAttributeValueDraft] = useState({});
   const [removeImage, setRemoveImage] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef(null);
   const objectUrlRef = useRef(null);
   const savingRef = useRef(false);
   const isEditing = Boolean(element);
+  const initialAttributeValues = useMemo(
+    () => buildAttributeValueMap(definitions, element?.attribute_values),
+    [definitions, element?.attribute_values],
+  );
+  const currentAttributeValues = useMemo(
+    () => buildAttributeValueMap(definitions, {
+      ...(element?.attribute_values || {}),
+      ...attributeValueDraft,
+    }),
+    [attributeValueDraft, definitions, element?.attribute_values],
+  );
   const existingImageUrl = element?.image_path
     ? backendUrl(`/storage/${element.image_path.replace(/^\/+/, '')}`)
     : null;
   const isDirty = useMemo(() => (
     values.name !== (element?.name || '')
     || values.description !== (element?.description || '')
+    || !attributeValueMapsEqual(currentAttributeValues, initialAttributeValues)
     || Boolean(values.image)
     || removeImage
-  ), [element?.description, element?.name, removeImage, values]);
-  const canSave = Boolean(values.name.trim()) && !isSaving;
+  ), [currentAttributeValues, element?.description, element?.name, initialAttributeValues, removeImage, values]);
+  const canSave = Boolean(values.name.trim()) && definitionsReady && !isSaving;
 
   useEffect(() => {
     onDirtyChange(isDirty);
@@ -66,6 +87,7 @@ export default function WorldElementForm({
   const selectImage = (event) => {
     const image = event.target.files?.[0] || null;
     setError('');
+    setFieldErrors({});
 
     if (image && !ACCEPTED_IMAGE_TYPES.includes(image.type)) {
       setError('Wybierz obraz JPEG, PNG albo WebP.');
@@ -93,16 +115,23 @@ export default function WorldElementForm({
     savingRef.current = true;
     setIsSaving(true);
     setError('');
+    setFieldErrors({});
 
     try {
       await onSubmit({
+        attributeValues: definitionsReady ? currentAttributeValues : undefined,
         description: values.description,
         image: values.image,
         name: values.name.trim(),
         removeImage: removeImage && !values.image,
       });
     } catch (submitError) {
-      setError(submitError.message || 'Nie udało się zapisać elementu.');
+      const nextFieldErrors = submitError.errors || {};
+      const hasAttributeErrors = Object.keys(nextFieldErrors).some((field) => (
+        field.startsWith('attribute_values.')
+      ));
+      setFieldErrors(nextFieldErrors);
+      setError(hasAttributeErrors ? '' : submitError.message || 'Nie udało się zapisać elementu.');
       savingRef.current = false;
       setIsSaving(false);
     }
@@ -141,6 +170,40 @@ export default function WorldElementForm({
           onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))}
         />
       </label>
+
+      <section className="world-element-form__attributes" aria-labelledby="world-element-attributes-title">
+        <h3 id="world-element-attributes-title">Atrybuty</h3>
+        {!definitionsReady && !definitionsError && (
+          <p className="world-element-form__attributes-empty">Ładowanie atrybutów…</p>
+        )}
+        {definitionsError && (
+          <p className="world-element-form__attributes-empty" role="alert">
+            Nie udało się pobrać atrybutów.{' '}
+            <button type="button" onClick={onRetryDefinitions} disabled={isSaving}>Spróbuj ponownie</button>
+          </p>
+        )}
+        {definitionsReady && definitions.length === 0 && (
+          <p className="world-element-form__attributes-empty">
+            Brak atrybutów w tej kategorii.{' '}
+            <button type="button" onClick={onManageAttributes} disabled={isSaving}>Zarządzaj atrybutami</button>
+          </p>
+        )}
+        {definitionsReady && definitions.length > 0 && (
+          <AttributeValueFields
+            definitions={definitions}
+            disabled={isSaving}
+            errors={fieldErrors}
+            values={currentAttributeValues}
+            onChange={(definitionId, value) => {
+              setFieldErrors((current) => ({
+                ...current,
+                [`attribute_values.${definitionId}`]: undefined,
+              }));
+              setAttributeValueDraft((current) => ({ ...current, [definitionId]: value }));
+            }}
+          />
+        )}
+      </section>
 
       <div className="world-element-form__image-field">
         <span className="world-element-form__label">Obraz <span>(opcjonalny)</span></span>

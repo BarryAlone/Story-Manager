@@ -6,7 +6,7 @@
 
 ## Następne
 
-- [ ] Przełączyć formularze postaci i elementów świata na wspólne definicje i wartości atrybutów.
+- [ ] Przełączyć formularze postaci na wspólne definicje i wartości atrybutów.
 - [ ] Po przełączeniu formularzy usunąć starsze `project_attributes`, `characters.attributes` i osobny ekran atrybutów.
 - [ ] Wykonać finalny polish przestrzeni elementów świata i uporządkować jej arkusze CSS.
 - [ ] Dodać kierunkowość relacji jako osobny kontrakt danych i interfejs.
@@ -48,5 +48,6 @@
 - [x] Dodano wspólne API definicji atrybutów dla postaci i kategorii elementów świata.
 - [x] Dodano wspólny, transakcyjny synchronizator wartości atrybutów postaci i elementów świata.
 - [x] Zintegrowano wspólne wartości atrybutów z atomowym tworzeniem, szczegółami i aktualizacją postaci oraz elementów świata.
+- [x] Dodano zarządzanie definicjami kategorii oraz dynamiczne wartości atrybutów do formularzy i szczegółów elementów świata.
 - [x] Potwierdzono podstawowy przepływ auth zestawem 15 testów i 80 asercji.
 - [x] Utworzono bazową dokumentację statusu, decyzji, zadań i rejestru zmian.
