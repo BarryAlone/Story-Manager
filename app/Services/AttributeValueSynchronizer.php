@@ -9,6 +9,7 @@ use App\Models\WorldElement;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use stdClass;
 
 class AttributeValueSynchronizer
 {
@@ -50,15 +51,33 @@ class AttributeValueSynchronizer
                 );
             }
 
-            return $entity->attributeValues()
-                ->with('definition')
-                ->get()
-                ->sortBy([
-                    ['definition.sort_order', 'asc'],
-                    ['definition.id', 'asc'],
-                ])
-                ->values();
+            return $this->valuesFor($entity);
         });
+    }
+
+    /** @return Collection<int, AttributeValue> */
+    public function valuesFor(Character|WorldElement $entity): Collection
+    {
+        return $entity->attributeValues()
+            ->with('definition')
+            ->get()
+            ->sortBy([
+                ['definition.sort_order', 'asc'],
+                ['definition.id', 'asc'],
+            ])
+            ->values();
+    }
+
+    public function mapFor(Character|WorldElement $entity): stdClass
+    {
+        $map = [];
+
+        foreach ($this->valuesFor($entity) as $value) {
+            $map[(string) $value->attribute_definition_id] = $value->value_text
+                ?? $value->value_number;
+        }
+
+        return (object) $map;
     }
 
     /**

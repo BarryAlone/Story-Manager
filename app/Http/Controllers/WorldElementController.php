@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\WorldElement;
 use App\Models\WorldElementCategory;
+use App\Services\AttributeValuesInputParser;
+use App\Services\AttributeValueSynchronizer;
 use App\Services\PublicImageStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +18,11 @@ use Throwable;
 
 class WorldElementController extends Controller
 {
-    public function __construct(private readonly PublicImageStorage $imageStorage) {}
+    public function __construct(
+        private readonly PublicImageStorage $imageStorage,
+        private readonly AttributeValuesInputParser $attributeValuesInput,
+        private readonly AttributeValueSynchronizer $attributeValues,
+    ) {}
 
     public function index(Request $request, WorldElementCategory $category): JsonResponse
     {
@@ -49,6 +55,7 @@ class WorldElementController extends Controller
     {
         Gate::authorize('view', $category);
 
+        $attributeValuesInput = $this->attributeValuesInput->parse($request);
         $validated = $this->validatePayload($request);
         $imagePath = null;
 
@@ -60,29 +67,40 @@ class WorldElementController extends Controller
             $attributes = $this->attributesFrom($validated);
             $attributes['image_path'] = $imagePath;
 
-            $element = DB::transaction(
-                fn () => $category->worldElements()->create($attributes)
-            );
+            $element = DB::transaction(function () use (
+                $category,
+                $attributes,
+                $attributeValuesInput,
+            ): WorldElement {
+                $element = $category->worldElements()->create($attributes);
+
+                if ($attributeValuesInput['present']) {
+                    $this->attributeValues->sync($element, $attributeValuesInput['values']);
+                }
+
+                return $element;
+            });
         } catch (Throwable $error) {
             $this->imageStorage->delete($imagePath);
 
             throw $error;
         }
 
-        return response()->json($element, 201);
+        return response()->json($this->elementResponse($element), 201);
     }
 
     public function show(WorldElement $element): JsonResponse
     {
         Gate::authorize('view', $element);
 
-        return response()->json($element);
+        return response()->json($this->elementResponse($element));
     }
 
     public function update(Request $request, WorldElement $element): JsonResponse
     {
         Gate::authorize('update', $element);
 
+        $attributeValuesInput = $this->attributeValuesInput->parse($request);
         $validated = $this->validatePayload($request, updating: true);
 
         if ($request->hasFile('image') && ($validated['remove_image'] ?? false)) {
@@ -108,7 +126,17 @@ class WorldElementController extends Controller
                 $attributes['image_path'] = null;
             }
 
-            DB::transaction(fn () => $element->update($attributes));
+            DB::transaction(function () use (
+                $element,
+                $attributes,
+                $attributeValuesInput,
+            ): void {
+                $element->update($attributes);
+
+                if ($attributeValuesInput['present']) {
+                    $this->attributeValues->sync($element, $attributeValuesInput['values']);
+                }
+            });
         } catch (Throwable $error) {
             $this->imageStorage->delete($newImagePath);
 
@@ -119,7 +147,7 @@ class WorldElementController extends Controller
             $this->imageStorage->delete($oldImagePath);
         }
 
-        return response()->json($element->refresh());
+        return response()->json($this->elementResponse($element->refresh()));
     }
 
     public function destroy(WorldElement $element): Response
@@ -169,5 +197,14 @@ class WorldElementController extends Controller
     private function attributesFrom(array $validated): array
     {
         return array_intersect_key($validated, array_flip(['name', 'description']));
+    }
+
+    /** @return array<string, mixed> */
+    private function elementResponse(WorldElement $element): array
+    {
+        return [
+            ...$element->toArray(),
+            'attribute_values' => $this->attributeValues->mapFor($element),
+        ];
     }
 }
