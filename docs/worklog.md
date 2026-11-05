@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-05 — Synchronizacja wspólnych wartości atrybutów
+
+- Zakres: jeden serwis pełnej synchronizacji wartości `text` i `number` dla postaci oraz elementów świata, z walidacją zakresu definicji, precyzji i pustych wartości.
+- Wynik: cały zestaw jest sprawdzany przed transakcyjnym zapisem, istniejące rekordy są aktualizowane bez duplikatów, a wartości puste i pominięte są usuwane. Synchronizator zwraca aktualny zestaw z definicjami; kontrolery i formularze nie zostały jeszcze podłączone.
+- Testy: test synchronizatora — 14 testów i 40 asercji, testy zakresowe wspólnych atrybutów — 46 testów i 226 asercji — oraz pełny PHPUnit — 174 testy i 1179 asercji — zakończone powodzeniem. Pint dla zmienionych plików, walidacja Composera i kontrola różnic również przeszły.
+
 ## 2026-11-04 — Wspólne API definicji atrybutów
 
 - Zakres: chronione endpointy listowania i tworzenia definicji postaci oraz kategorii świata, wspólna aktualizacja i bezpieczne usuwanie definicji.

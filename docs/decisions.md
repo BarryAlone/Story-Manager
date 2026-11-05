@@ -69,3 +69,6 @@
 - Definicje są zarządzane przez jedno API z dwoma kontekstami: projekt określa zakres postaci, a kategoria określa zakres elementów świata. Klient nie może ustawiać pól zakresu ani kolejności.
 - Typ używanej definicji nie jest automatycznie konwertowany. Zmiana typu i zwykłe usunięcie są blokowane odpowiedzią `409`, jeśli istnieją wartości; wymuszone usunięcie wymaga jawnego `force=true` i usuwa wartości kaskadowo.
 - Nowe definicje otrzymują kolejny `sort_order` w swoim zakresie. Ręczne porządkowanie definicji pozostaje poza bieżącym etapem.
+- Synchronizacja wartości przyjmuje pełną mapę `definition_id => value` dla jednej encji. Wartość `null`, pusty tekst, tekst złożony z białych znaków oraz pominięcie definicji usuwają jej dotychczasową wartość. Brak całego pola `attribute_values` oznacza, że kontroler nie wywołuje synchronizacji i pozostawia wartości bez zmian.
+- Cały payload jest walidowany przed zapisem, a zapis odbywa się w jednej transakcji. Postać może używać wyłącznie definicji `character` swojego projektu, a element świata wyłącznie definicji `world_element` swojego projektu i bieżącej kategorii.
+- Tekst ma limit 10 000 znaków. Liczby są przyjmowane jako liczby całkowite albo zwykłe ciągi dziesiętne, mają najwyżej 14 cyfr części całkowitej i 6 miejsc po przecinku oraz są normalizowane bez użycia `float`, zgodnie z `DECIMAL(20,6)`.

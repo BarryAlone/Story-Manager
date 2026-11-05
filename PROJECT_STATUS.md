@@ -16,7 +16,7 @@ Story Manager to aplikacja webowa wspierająca tworzenie książek i komiksów. 
 
 ### Backend
 
-Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Fundament danych elementów świata obejmuje kategorie `WorldElementCategory` oraz należące do nich obiekty `WorldElement`. API kategorii i elementów obsługuje ich listowanie, wyszukiwanie oraz podstawowe operacje zapisu, a element może mieć jeden opcjonalny obraz obsługiwany przez wspólny bezpieczny cykl życia plików. Relacyjny fundament wspólnych definicji i wartości atrybutów obsługuje zakresy postaci i kategorii elementów świata, typy `text` i `number` oraz izolację właściciela. Chronione API definicji pozwala je listować, tworzyć, zmieniać nazwę i bezpiecznie zmieniać typ lub usuwać z kontrolą istniejących wartości. API wartości i integracja formularzy nie są jeszcze dostępne. Rozdziały przechowują synopsis, właściwą treść i zwykłe notatki, rozróżniają rękopis od szkiców oraz obsługują dwupoziomową hierarchię i techniczną kolejność. HTML właściwej treści jest przed zapisem oczyszczany po stronie serwera według jawnej listy elementów i wartości stylów zgodnej z funkcjami edytora. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
+Backend udostępnia chronione API dla projektów, rozdziałów, postaci, atrybutów projektowych i relacji między postaciami. Fundament danych elementów świata obejmuje kategorie `WorldElementCategory` oraz należące do nich obiekty `WorldElement`. API kategorii i elementów obsługuje ich listowanie, wyszukiwanie oraz podstawowe operacje zapisu, a element może mieć jeden opcjonalny obraz obsługiwany przez wspólny bezpieczny cykl życia plików. Relacyjny fundament wspólnych definicji i wartości atrybutów obsługuje zakresy postaci i kategorii elementów świata, typy `text` i `number` oraz izolację właściciela. Chronione API definicji pozwala je listować, tworzyć, zmieniać nazwę i bezpiecznie zmieniać typ lub usuwać z kontrolą istniejących wartości. Wspólny synchronizator wartości waliduje pełny zestaw przed transakcyjnym zapisem dla postaci i elementu świata; nie jest jeszcze podłączony do kontrolerów ani formularzy. Rozdziały przechowują synopsis, właściwą treść i zwykłe notatki, rozróżniają rękopis od szkiców oraz obsługują dwupoziomową hierarchię i techniczną kolejność. HTML właściwej treści jest przed zapisem oczyszczany po stronie serwera według jawnej listy elementów i wartości stylów zgodnej z funkcjami edytora. Para postaci może mieć tylko jedną relację, niezależnie od kolejności jej końców, a właściciel może zmienić nazwę istniejącej relacji. Przepływ konta obejmuje rejestrację, logowanie, wylogowanie, pobieranie i aktualizację użytkownika, zmianę hasła, usunięcie konta oraz reset hasła z linkiem kierującym do SPA.
 
 ### Frontend
 
@@ -57,7 +57,7 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 ## Znane ograniczenia
 
 - wydarzenia i osobne rekordy obrazów nie mają obecnie tras API;
-- elementy świata mają schemat, modele, relacje, polityki, API oraz frontend pełnego CRUD kategorii i elementów z jednym obrazem; wspólne definicje atrybutów mają API, ale wartości i formularze nie są jeszcze zintegrowane, a relacje między elementami i finalny polish pozostają na kolejne etapy;
+- elementy świata mają schemat, modele, relacje, polityki, API oraz frontend pełnego CRUD kategorii i elementów z jednym obrazem; wspólne definicje atrybutów mają API i współdzielony synchronizator wartości, ale kontrolery i formularze nie są jeszcze zintegrowane, a relacje między elementami i finalny polish pozostają na kolejne etapy;
 - starsze `project_attributes` i `characters.attributes` pozostają tymczasowo aktywne; nie migrowano ich danych ani nie podłączono ich do nowych tabel;
 - pliki zapisane na dysku `public` są dostępne poza kontrolerami i nie mają prywatnej kontroli dostępu;
 - część tras frontendowych i backendowych wymaga ujednolicenia;
@@ -66,4 +66,4 @@ GitHub Actions udostępnia dwa checki: pełny PHPUnit dla backendu oraz lintowan
 
 ## Ostatnia aktualizacja
 
-2026-11-04
+2026-11-05
