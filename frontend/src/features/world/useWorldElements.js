@@ -9,6 +9,9 @@ function elementFormData(values, updating = false) {
   formData.append('description', values.description);
 
   if (values.image) formData.append('image', values.image);
+  if (values.attributeValues !== undefined) {
+    formData.append('attribute_values', JSON.stringify(values.attributeValues));
+  }
   if (updating) {
     formData.append('_method', 'PATCH');
     if (values.removeImage && !values.image) formData.append('remove_image', '1');

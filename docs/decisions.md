@@ -75,3 +75,4 @@
 - API encji przyjmuje `attribute_values` jako obiekt w żądaniu JSON, a w `multipart/form-data` jako string zawierający obiekt JSON. Brak pola zachowuje wartości, obecna mapa jest pełną synchronizacją, a `{}` usuwa wszystkie wartości encji.
 - Szczegóły, utworzenie i aktualizacja encji zwracają `attribute_values` jako obiekt `definition_id => value`; liczby pozostają stringami. Lekkie listy nie dołączają wartości.
 - Dane encji i wartości są zapisywane w jednej transakcji. Nowy obraz jest sprzątany po dowolnym błędzie, a poprzedni plik jest usuwany dopiero po powodzeniu całej transakcji.
+- Frontend utrzymuje jeden stan definicji dla aktywnego zakresu i współdzieli neutralne komponenty pól oraz zarządzania między modułami. Moduł elementów świata przekazuje kontekst kategorii; późniejsza integracja postaci ma użyć tych samych elementów zamiast drugiej implementacji.

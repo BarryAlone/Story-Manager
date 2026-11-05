@@ -2,10 +2,21 @@ import { useState } from 'react';
 
 import { backendUrl } from '../../api';
 
-export default function WorldElementDetails({ category, disabled, element, onDelete, onEdit }) {
+export default function WorldElementDetails({
+  category,
+  definitions,
+  disabled,
+  element,
+  onDelete,
+  onEdit,
+}) {
   const imageUrl = element.image_path
     ? backendUrl(`/storage/${element.image_path.replace(/^\/+/, '')}`)
     : null;
+  const populatedAttributes = definitions.filter((definition) => {
+    const value = element.attribute_values?.[definition.id];
+    return value !== null && value !== undefined && String(value).trim() !== '';
+  });
 
   return (
     <div className="world-element-details">
@@ -22,6 +33,20 @@ export default function WorldElementDetails({ category, disabled, element, onDel
           ? <p>{element.description}</p>
           : <p className="world-element-details__empty">Brak opisu.</p>}
       </section>
+
+      {populatedAttributes.length > 0 && (
+        <section className="world-element-details__attributes">
+          <h4>Atrybuty</h4>
+          <dl>
+            {populatedAttributes.map((definition) => (
+              <div key={definition.id}>
+                <dt>{definition.name}</dt>
+                <dd>{element.attribute_values[definition.id]}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
 
       <footer className="world-element-details__actions">
         <button type="button" className="world-button world-button--primary" onClick={onEdit} disabled={disabled}>

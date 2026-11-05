@@ -1,8 +1,10 @@
 export default function WorldElementsToolbar({
   addButtonRef,
+  attributesButtonRef,
   category,
   disabled,
   onCreate,
+  onManageAttributes,
   onSearchChange,
   searchQuery,
 }) {
@@ -24,6 +26,15 @@ export default function WorldElementsToolbar({
             onChange={(event) => onSearchChange(event.target.value)}
           />
         </label>
+        <button
+          ref={attributesButtonRef}
+          type="button"
+          className="world-elements-toolbar__attributes"
+          onClick={onManageAttributes}
+          disabled={disabled}
+        >
+          Atrybuty kategorii
+        </button>
         <button
           ref={addButtonRef}
           type="button"

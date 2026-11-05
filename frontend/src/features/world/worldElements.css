@@ -281,6 +281,31 @@
   font-size: 0.82rem;
 }
 
+.world-elements-toolbar__attributes {
+  min-height: 36px;
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.world-elements-toolbar__attributes:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.world-elements-toolbar__attributes:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .world-elements-toolbar__add:disabled {
   cursor: not-allowed;
   opacity: 0.55;
@@ -676,6 +701,11 @@
   .world-elements-toolbar__actions {
     width: 100%;
     min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .world-elements-toolbar__actions .world-elements-toolbar__search {
+    flex-basis: 100%;
   }
 
   .world-elements-toolbar__add {

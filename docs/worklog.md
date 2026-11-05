@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-05 — Atrybuty elementów świata w SPA
+
+- Zakres: współdzielony hook i komponenty definicji oraz wartości, panel zarządzania atrybutami kategorii, dynamiczne pola formularza i prezentacja wartości w szczegółach elementu.
+- Wynik: jeden stan definicji obsługuje przełączanie kategorii, retry i ochronę przed spóźnionymi odpowiedziami. Formularz przesyła pełną mapę przez multipart, pokazuje błędy przy polach, a zwykłe i wymuszone usuwanie respektują `values_count` i ostrzeżenie o utracie wartości.
+- Testy: lint i build React SPA, testy zakresowe definicji, wartości i elementów świata — 60 testów i 385 asercji — oraz pełny PHPUnit — 189 testów i 1276 asercji — zakończone powodzeniem. Build nadal zgłasza nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-11-05 — Integracja wartości atrybutów z API encji
 
 - Zakres: opcjonalna pełna mapa `attribute_values` w tworzeniu i aktualizacji postaci oraz elementów świata, wspólne parsowanie JSON i multipart oraz stabilna mapa w odpowiedziach szczegółów i mutacji.
