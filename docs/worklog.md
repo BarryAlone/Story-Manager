@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-05 — Integracja wartości atrybutów z API encji
+
+- Zakres: opcjonalna pełna mapa `attribute_values` w tworzeniu i aktualizacji postaci oraz elementów świata, wspólne parsowanie JSON i multipart oraz stabilna mapa w odpowiedziach szczegółów i mutacji.
+- Wynik: dane encji i wartości są zapisywane atomowo, brak pola zachowuje wartości, `{}` je czyści, a błędy atrybutów cofają dane i zachowują bezpieczny lifecycle obrazów. Stare `characters.attributes` pozostaje niezależne; lekkie listy nie zostały rozszerzone.
+- Testy: test integracyjny — 15 testów i 98 asercji, testy zakresowe API, synchronizatora, autoryzacji i obrazów — 65 testów i 465 asercji — oraz pełny PHPUnit — 189 testów i 1276 asercji — zakończone powodzeniem. Pint dla zmienionych plików, walidacja Composera i kontrola różnic również przeszły.
+
 ## 2026-11-05 — Synchronizacja wspólnych wartości atrybutów
 
 - Zakres: jeden serwis pełnej synchronizacji wartości `text` i `number` dla postaci oraz elementów świata, z walidacją zakresu definicji, precyzji i pustych wartości.
