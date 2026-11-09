@@ -29,6 +29,7 @@ export default function WorldElementsToolbar({
         <button
           ref={attributesButtonRef}
           type="button"
+          data-world-panel-trigger
           className="world-elements-toolbar__attributes"
           onClick={onManageAttributes}
           disabled={disabled}
@@ -38,6 +39,7 @@ export default function WorldElementsToolbar({
         <button
           ref={addButtonRef}
           type="button"
+          data-world-panel-trigger
           className="world-elements-toolbar__add"
           onClick={onCreate}
           disabled={disabled}

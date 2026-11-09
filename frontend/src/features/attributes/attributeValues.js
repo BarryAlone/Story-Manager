@@ -16,3 +16,13 @@ export function attributeValueMapsEqual(first, second) {
 export function attributeValueError(errors, definitionId) {
   return errors?.[`attribute_values.${definitionId}`]?.[0] || '';
 }
+
+export function formatAttributeValue(definition, value) {
+  const text = String(value ?? '');
+  if (definition.value_type !== 'number' || !/^[+-]?\d+\.\d+$/.test(text)) return text;
+
+  const [integerPart, fractionPart] = text.split('.');
+  const trimmedFraction = fractionPart.replace(/0+$/, '');
+  const formatted = trimmedFraction ? `${integerPart}.${trimmedFraction}` : integerPart;
+  return formatted === '-0' || formatted === '+0' ? '0' : formatted;
+}

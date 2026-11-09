@@ -10,9 +10,11 @@ function initialValues(definition) {
 export default function AttributeDefinitionForm({
   definition = null,
   disabled,
+  isClosing = false,
   onCancel,
   onDirtyChange,
   onSubmit,
+  variant = 'default',
 }) {
   const initial = useMemo(() => initialValues(definition), [definition]);
   const [values, setValues] = useState(initial);
@@ -20,6 +22,7 @@ export default function AttributeDefinitionForm({
   const [generalError, setGeneralError] = useState('');
   const savingRef = useRef(false);
   const isDirty = values.name !== initial.name || values.value_type !== initial.value_type;
+  const idSuffix = definition?.id || 'new';
 
   useEffect(() => {
     onDirtyChange(isDirty);
@@ -49,11 +52,14 @@ export default function AttributeDefinitionForm({
   };
 
   return (
-    <form className="attribute-definition-form" onSubmit={submit}>
-      <label htmlFor="attribute-definition-name">
+    <form
+      className={`attribute-definition-form attribute-definition-form--${variant}${isClosing ? ' attribute-definition-form--closing' : ''}`}
+      onSubmit={submit}
+    >
+      <label htmlFor={`attribute-definition-name-${idSuffix}`}>
         Nazwa
         <input
-          id="attribute-definition-name"
+          id={`attribute-definition-name-${idSuffix}`}
           type="text"
           maxLength={128}
           value={values.name}
@@ -66,10 +72,10 @@ export default function AttributeDefinitionForm({
         {errors.name?.[0] && <span className="attribute-field-error" role="alert">{errors.name[0]}</span>}
       </label>
 
-      <label htmlFor="attribute-definition-type">
+      <label htmlFor={`attribute-definition-type-${idSuffix}`}>
         Typ
         <select
-          id="attribute-definition-type"
+          id={`attribute-definition-type-${idSuffix}`}
           value={values.value_type}
           disabled={disabled}
           aria-invalid={Boolean(errors.value_type)}
@@ -88,7 +94,7 @@ export default function AttributeDefinitionForm({
           Anuluj
         </button>
         <button type="submit" className="world-button world-button--primary" disabled={disabled || !values.name.trim()}>
-          {disabled ? 'Zapisywanie…' : definition ? 'Zapisz' : 'Dodaj'}
+          {disabled && !isClosing ? 'Zapisywanie…' : definition ? 'Zapisz' : 'Dodaj'}
         </button>
       </footer>
 

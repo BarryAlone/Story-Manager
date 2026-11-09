@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import WorldElementDetails from './WorldElementDetails';
 import WorldElementForm from './WorldElementForm';
+import useWorldPanelDismiss from './useWorldPanelDismiss';
 
 export default function WorldElementPanel({
   category,
@@ -11,6 +12,7 @@ export default function WorldElementPanel({
   details,
   error,
   isBusy,
+  isClosing,
   isLoading,
   mode,
   onBusyChange,
@@ -26,21 +28,26 @@ export default function WorldElementPanel({
 }) {
   const panelRef = useRef(null);
 
+  useWorldPanelDismiss({
+    disabled: isBusy || isClosing,
+    onOutsideClick: onClose,
+    panelRef,
+  });
+
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true });
   }, [details?.id, mode]);
 
   useEffect(() => {
     const closeWithEscape = (event) => {
-      if (event.key !== 'Escape' || isBusy) return;
+      if (event.defaultPrevented || event.key !== 'Escape' || isBusy || isClosing) return;
       event.preventDefault();
-      if (mode === 'edit') onCancelEdit();
-      else onClose();
+      onClose();
     };
 
     document.addEventListener('keydown', closeWithEscape);
     return () => document.removeEventListener('keydown', closeWithEscape);
-  }, [isBusy, mode, onCancelEdit, onClose]);
+  }, [isBusy, isClosing, onClose]);
 
   const title = mode === 'create'
     ? 'Dodaj element'
@@ -51,7 +58,7 @@ export default function WorldElementPanel({
   return (
     <aside
       ref={panelRef}
-      className="world-element-panel"
+      className={`world-element-panel${isClosing ? ' world-element-panel--closing' : ''}`}
       tabIndex="-1"
       aria-label={title}
     >

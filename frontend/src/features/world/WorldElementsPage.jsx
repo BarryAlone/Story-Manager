@@ -12,6 +12,7 @@ import WorldElementsToolbar from './WorldElementsToolbar';
 import useWorldElementCategories from './useWorldElementCategories';
 import useWorldElementDetails from './useWorldElementDetails';
 import useWorldElements from './useWorldElements';
+import useWorldPanelTransition from './useWorldPanelTransition';
 import './worldElements.css';
 import './worldElementPanel.css';
 
@@ -37,6 +38,7 @@ export default function WorldElementsPage() {
   const addButtonRef = useRef(null);
   const attributesButtonRef = useRef(null);
   const returnFocusRef = useRef(null);
+  const { cancelPanelClose, closingPanel, startPanelClose } = useWorldPanelTransition();
   const currentView = viewState.projectId === projectId
     ? viewState
     : { activeCategoryId: null, projectId, searchQuery: '' };
@@ -97,28 +99,30 @@ export default function WorldElementsPage() {
   }, []);
 
   const clearPanel = useCallback((shouldRestoreFocus = true) => {
+    cancelPanelClose();
     setPanelState(null);
     setIsPanelDirty(false);
     setIsPanelBusy(false);
     setIsDeletingElement(false);
     if (shouldRestoreFocus) restoreFocus();
-  }, [restoreFocus]);
+  }, [cancelPanelClose, restoreFocus]);
 
   const clearAttributesPanel = useCallback((shouldRestoreFocus = true) => {
+    cancelPanelClose();
     setAttributesPanelProjectId(null);
     setIsAttributesPanelDirty(false);
     if (shouldRestoreFocus) restoreFocus();
-  }, [restoreFocus]);
+  }, [cancelPanelClose, restoreFocus]);
 
   const requestClosePanel = useCallback(() => {
     if (isElementOperationActive || !confirmDiscardPanel()) return;
-    clearPanel();
-  }, [clearPanel, confirmDiscardPanel, isElementOperationActive]);
+    startPanelClose('element', () => clearPanel());
+  }, [clearPanel, confirmDiscardPanel, isElementOperationActive, startPanelClose]);
 
   const requestCloseAttributesPanel = useCallback(() => {
     if (isElementOperationActive || !confirmDiscardPanel()) return;
-    clearAttributesPanel();
-  }, [clearAttributesPanel, confirmDiscardPanel, isElementOperationActive]);
+    startPanelClose('attributes', () => clearAttributesPanel());
+  }, [clearAttributesPanel, confirmDiscardPanel, isElementOperationActive, startPanelClose]);
 
   const cancelEdit = useCallback(() => {
     if (isElementOperationActive || !confirmDiscardPanel()) return;
@@ -385,42 +389,46 @@ export default function WorldElementsPage() {
               )}
             </div>
 
-            {currentPanel && (
-              <WorldElementPanel
-                category={activeCategory}
-                definitions={definitionStore.definitions}
-                definitionsError={definitionStore.error}
-                definitionsReady={definitionsReady}
-                details={detailsStore.element}
-                error={detailsStore.error}
-                isBusy={isElementOperationActive}
-                isLoading={detailsStore.isLoading}
-                mode={currentPanel.mode}
-                onBusyChange={setIsPanelBusy}
-                onCancelEdit={cancelEdit}
-                onClose={requestClosePanel}
-                onDelete={deleteElement}
-                onDirtyChange={setIsPanelDirty}
-                onEdit={() => {
-                  setIsPanelDirty(false);
-                  setPanelState((current) => current ? { ...current, mode: 'edit' } : current);
-                }}
-                onManageAttributes={() => openAttributesPanel()}
-                onRetry={detailsStore.loadDetails}
-                onRetryDefinitions={definitionStore.loadDefinitions}
-                onSubmit={currentPanel.mode === 'create' ? createElement : updateElement}
-              />
-            )}
+            <div className="world-element-panel-layer">
+              {currentPanel && (
+                <WorldElementPanel
+                  category={activeCategory}
+                  definitions={definitionStore.definitions}
+                  definitionsError={definitionStore.error}
+                  definitionsReady={definitionsReady}
+                  details={detailsStore.element}
+                  error={detailsStore.error}
+                  isBusy={isElementOperationActive || closingPanel === 'element'}
+                  isClosing={closingPanel === 'element'}
+                  isLoading={detailsStore.isLoading}
+                  mode={currentPanel.mode}
+                  onBusyChange={setIsPanelBusy}
+                  onCancelEdit={cancelEdit}
+                  onClose={requestClosePanel}
+                  onDelete={deleteElement}
+                  onDirtyChange={setIsPanelDirty}
+                  onEdit={() => {
+                    setIsPanelDirty(false);
+                    setPanelState((current) => current ? { ...current, mode: 'edit' } : current);
+                  }}
+                  onManageAttributes={() => openAttributesPanel()}
+                  onRetry={detailsStore.loadDetails}
+                  onRetryDefinitions={definitionStore.loadDefinitions}
+                  onSubmit={currentPanel.mode === 'create' ? createElement : updateElement}
+                />
+              )}
 
-            {isAttributesPanelOpen && (
-              <AttributeDefinitionManager
-                contextLabel={activeCategory.name}
-                disabled={isElementOperationActive}
-                onClose={requestCloseAttributesPanel}
-                onDirtyChange={setIsAttributesPanelDirty}
-                store={definitionStore}
-              />
-            )}
+              {isAttributesPanelOpen && (
+                <AttributeDefinitionManager
+                  contextLabel={activeCategory.name}
+                  disabled={isElementOperationActive || closingPanel === 'attributes'}
+                  isClosing={closingPanel === 'attributes'}
+                  onClose={requestCloseAttributesPanel}
+                  onDirtyChange={setIsAttributesPanelDirty}
+                  store={definitionStore}
+                />
+              )}
+            </div>
           </>
         )}
 
