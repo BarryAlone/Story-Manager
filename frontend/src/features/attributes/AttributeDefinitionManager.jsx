@@ -5,14 +5,34 @@ import AttributeDefinitionMenu from './AttributeDefinitionMenu';
 import useWorldPanelDismiss from '../world/useWorldPanelDismiss';
 
 const ATTRIBUTE_FORM_TRANSITION_MS = 140;
+const DEFAULT_USAGE_LABELS = {
+  few: 'elementy',
+  many: 'elementów',
+  one: 'element',
+};
+
+function usageLabel(count, labels) {
+  const absolute = Math.abs(Number(count));
+  const lastTwoDigits = absolute % 100;
+  const lastDigit = absolute % 10;
+
+  if (absolute === 1) return labels.one;
+  if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+    return labels.few;
+  }
+  return labels.many;
+}
 
 export default function AttributeDefinitionManager({
   contextLabel,
   disabled,
+  emptyMessage = 'Ta kategoria nie ma jeszcze atrybutów.',
   isClosing,
   onClose,
   onDirtyChange,
+  panelTitle = 'Atrybuty',
   store,
+  usageLabels = DEFAULT_USAGE_LABELS,
 }) {
   const [formDefinition, setFormDefinition] = useState(undefined);
   const [isFormClosing, setIsFormClosing] = useState(false);
@@ -146,11 +166,11 @@ export default function AttributeDefinitionManager({
       ref={panelRef}
       className={`world-element-panel attribute-definition-panel${isClosing ? ' world-element-panel--closing' : ''}`}
       tabIndex="-1"
-      aria-label="Atrybuty"
+      aria-label={panelTitle}
     >
       <header className="world-element-panel__header">
         <div>
-          <h2>Atrybuty</h2>
+          <h2>{panelTitle}</h2>
           <span>{contextLabel}</span>
         </div>
         <button type="button" aria-label="Zamknij panel atrybutów" onClick={onClose} disabled={disabled}>×</button>
@@ -197,7 +217,7 @@ export default function AttributeDefinitionManager({
                 <strong>{forceDelete.message}</strong>
                 <p>
                   Atrybut ma {forceDelete.valuesCount} zapisanych {forceDelete.valuesCount === 1 ? 'wartość' : 'wartości'}.
-                  Wymuszone usunięcie skasuje je ze wszystkich elementów.
+                  Wymuszone usunięcie skasuje je ze wszystkich {usageLabels.many}.
                 </p>
                 <div>
                   <button type="button" onClick={() => setForceDelete(null)} disabled={disabled}>Anuluj</button>
@@ -209,7 +229,7 @@ export default function AttributeDefinitionManager({
             )}
 
             {store.definitions.length === 0 ? (
-              <AttributeState text="Ta kategoria nie ma jeszcze atrybutów." />
+              <AttributeState text={emptyMessage} />
             ) : (
               <ul className="attribute-definition-list">
                 {store.definitions.map((definition) => (
@@ -230,7 +250,7 @@ export default function AttributeDefinitionManager({
                         <div className="attribute-definition-list__summary">
                           <strong title={definition.name}>{definition.name}</strong>
                           <span>
-                            {definition.value_type === 'number' ? 'Liczba' : 'Tekst'} · używany przez {definition.values_count} elementów
+                            {definition.value_type === 'number' ? 'Liczba' : 'Tekst'} · używany przez {definition.values_count} {usageLabel(definition.values_count, usageLabels)}
                           </span>
                         </div>
                         <AttributeDefinitionMenu
