@@ -1,42 +1,94 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import AttributeDefinitionForm from './AttributeDefinitionForm';
+import AttributeDefinitionMenu from './AttributeDefinitionMenu';
+import useWorldPanelDismiss from '../world/useWorldPanelDismiss';
+
+const ATTRIBUTE_FORM_TRANSITION_MS = 140;
 
 export default function AttributeDefinitionManager({
   contextLabel,
   disabled,
+  isClosing,
   onClose,
   onDirtyChange,
   store,
 }) {
   const [formDefinition, setFormDefinition] = useState(undefined);
+  const [isFormClosing, setIsFormClosing] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [actionError, setActionError] = useState('');
   const [forceDelete, setForceDelete] = useState(null);
   const panelRef = useRef(null);
+  const addButtonRef = useRef(null);
+  const menuButtonRefs = useRef(new Map());
+  const formCloseTimerRef = useRef(null);
+
+  useWorldPanelDismiss({
+    disabled: disabled || isClosing,
+    onOutsideClick: onClose,
+    panelRef,
+  });
 
   const reportDirty = useCallback((dirty) => {
     setIsFormDirty(dirty);
     onDirtyChange(dirty);
   }, [onDirtyChange]);
 
-  const closeForm = useCallback(() => {
-    if (isFormDirty && !window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')) {
-      return false;
-    }
+  const restoreFormFocus = useCallback((definition) => {
+    window.requestAnimationFrame(() => {
+      const target = definition
+        ? menuButtonRefs.current.get(definition.id)
+        : addButtonRef.current;
+      target?.focus({ preventScroll: true });
+    });
+  }, []);
 
-    setFormDefinition(undefined);
+  const transitionForm = useCallback((nextDefinition, focusDefinition = null) => {
+    if (formCloseTimerRef.current !== null) return false;
+
+    setIsFormClosing(true);
     reportDirty(false);
+    formCloseTimerRef.current = window.setTimeout(() => {
+      formCloseTimerRef.current = null;
+      setFormDefinition(nextDefinition);
+      setIsFormClosing(false);
+      if (nextDefinition === undefined) restoreFormFocus(focusDefinition);
+    }, ATTRIBUTE_FORM_TRANSITION_MS);
     return true;
-  }, [isFormDirty, reportDirty]);
+  }, [reportDirty, restoreFormFocus]);
+
+  const closeForm = useCallback(() => {
+    if (isFormClosing) return false;
+    if (isFormDirty && !window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')) return false;
+
+    return transitionForm(undefined, formDefinition || null);
+  }, [formDefinition, isFormClosing, isFormDirty, transitionForm]);
+
+  const openForm = useCallback((definition) => {
+    if (isFormClosing) return;
+    if (formDefinition !== undefined) {
+      if (isFormDirty && !window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')) return;
+      setActionError('');
+      transitionForm(definition);
+      return;
+    }
+    setActionError('');
+    setFormDefinition(definition);
+    reportDirty(false);
+  }, [formDefinition, isFormClosing, isFormDirty, reportDirty, transitionForm]);
 
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true });
   }, []);
 
+  useEffect(() => () => {
+    if (formCloseTimerRef.current !== null) window.clearTimeout(formCloseTimerRef.current);
+  }, []);
+
   useEffect(() => {
     const closeWithEscape = (event) => {
-      if (event.key !== 'Escape' || disabled) return;
+      if (event.defaultPrevented || event.key !== 'Escape' || disabled || isClosing) return;
       event.preventDefault();
       if (formDefinition !== undefined) {
         closeForm();
@@ -49,14 +101,14 @@ export default function AttributeDefinitionManager({
 
     document.addEventListener('keydown', closeWithEscape);
     return () => document.removeEventListener('keydown', closeWithEscape);
-  }, [closeForm, disabled, forceDelete, formDefinition, onClose]);
+  }, [closeForm, disabled, forceDelete, formDefinition, isClosing, onClose]);
 
   const saveDefinition = async (values) => {
-    if (formDefinition) await store.updateDefinition(formDefinition.id, values);
+    const editedDefinition = formDefinition || null;
+    if (editedDefinition) await store.updateDefinition(editedDefinition.id, values);
     else await store.createDefinition(values);
-    setFormDefinition(undefined);
-    reportDirty(false);
     setActionError('');
+    transitionForm(undefined, editedDefinition);
   };
 
   const requestDelete = async (definition) => {
@@ -90,7 +142,12 @@ export default function AttributeDefinitionManager({
   };
 
   return (
-    <aside ref={panelRef} className="world-element-panel attribute-definition-panel" tabIndex="-1" aria-label="Atrybuty">
+    <aside
+      ref={panelRef}
+      className={`world-element-panel attribute-definition-panel${isClosing ? ' world-element-panel--closing' : ''}`}
+      tabIndex="-1"
+      aria-label="Atrybuty"
+    >
       <header className="world-element-panel__header">
         <div>
           <h2>Atrybuty</h2>
@@ -105,26 +162,33 @@ export default function AttributeDefinitionManager({
           <AttributeState text={store.error} action="Spróbuj ponownie" onAction={store.loadDefinitions} error />
         )}
 
-        {!store.isLoading && !store.error && formDefinition !== undefined && (
-          <AttributeDefinitionForm
-            key={formDefinition?.id || 'new'}
-            definition={formDefinition || null}
-            disabled={disabled}
-            onCancel={closeForm}
-            onDirtyChange={reportDirty}
-            onSubmit={saveDefinition}
-          />
-        )}
-
-        {!store.isLoading && !store.error && formDefinition === undefined && (
+        {!store.isLoading && !store.error && (
           <>
             <div className="attribute-definition-manager__toolbar">
               <p>{store.definitions.length} {store.definitions.length === 1 ? 'atrybut' : 'atrybutów'}</p>
-              <button type="button" onClick={() => {
-                reportDirty(false);
-                setFormDefinition(null);
-              }} disabled={disabled}>+ Dodaj</button>
+              <button
+                ref={addButtonRef}
+                type="button"
+                onClick={() => openForm(null)}
+                disabled={disabled || formDefinition !== undefined || isFormClosing}
+              >
+                + Dodaj
+              </button>
             </div>
+
+            {formDefinition === null && (
+              <div className="attribute-definition-manager__create-form">
+                <AttributeDefinitionForm
+                  key="new"
+                  disabled={disabled || isFormClosing}
+                  isClosing={isFormClosing}
+                  onCancel={closeForm}
+                  onDirtyChange={reportDirty}
+                  onSubmit={saveDefinition}
+                  variant="compact"
+                />
+              </div>
+            )}
 
             {actionError && <p className="attribute-definition-manager__error" role="alert">{actionError}</p>}
 
@@ -149,18 +213,38 @@ export default function AttributeDefinitionManager({
             ) : (
               <ul className="attribute-definition-list">
                 {store.definitions.map((definition) => (
-                  <li key={definition.id}>
-                    <div>
-                      <strong>{definition.name}</strong>
-                      <span>{definition.value_type === 'number' ? 'Liczba' : 'Tekst'} · używany przez {definition.values_count} elementów</span>
-                    </div>
-                    <div className="attribute-definition-list__actions">
-                      <button type="button" onClick={() => {
-                        reportDirty(false);
-                        setFormDefinition(definition);
-                      }} disabled={disabled}>Edytuj</button>
-                      <button type="button" onClick={() => requestDelete(definition)} disabled={disabled}>Usuń</button>
-                    </div>
+                  <li key={definition.id} className={formDefinition?.id === definition.id ? 'attribute-definition-list__editing' : ''}>
+                    {formDefinition?.id === definition.id ? (
+                      <AttributeDefinitionForm
+                        key={definition.id}
+                        definition={definition}
+                        disabled={disabled || isFormClosing}
+                        isClosing={isFormClosing}
+                        onCancel={closeForm}
+                        onDirtyChange={reportDirty}
+                        onSubmit={saveDefinition}
+                        variant="inline"
+                      />
+                    ) : (
+                      <>
+                        <div className="attribute-definition-list__summary">
+                          <strong title={definition.name}>{definition.name}</strong>
+                          <span>
+                            {definition.value_type === 'number' ? 'Liczba' : 'Tekst'} · używany przez {definition.values_count} elementów
+                          </span>
+                        </div>
+                        <AttributeDefinitionMenu
+                          buttonRef={(node) => {
+                            if (node) menuButtonRefs.current.set(definition.id, node);
+                            else menuButtonRefs.current.delete(definition.id);
+                          }}
+                          definitionName={definition.name}
+                          disabled={disabled}
+                          onDelete={() => requestDelete(definition)}
+                          onEdit={() => openForm(definition)}
+                        />
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>

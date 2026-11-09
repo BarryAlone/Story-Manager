@@ -159,18 +159,6 @@ export default function WorldElementForm({
         />
       </label>
 
-      <label htmlFor="world-element-description">
-        Opis <span>(opcjonalny)</span>
-        <textarea
-          id="world-element-description"
-          maxLength={20000}
-          rows={9}
-          value={values.description}
-          disabled={isSaving}
-          onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))}
-        />
-      </label>
-
       <section className="world-element-form__attributes" aria-labelledby="world-element-attributes-title">
         <h3 id="world-element-attributes-title">Atrybuty</h3>
         {!definitionsReady && !definitionsError && (
@@ -204,6 +192,18 @@ export default function WorldElementForm({
           />
         )}
       </section>
+
+      <label htmlFor="world-element-description">
+        Opis <span>(opcjonalny)</span>
+        <textarea
+          id="world-element-description"
+          maxLength={20000}
+          rows={7}
+          value={values.description}
+          disabled={isSaving}
+          onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))}
+        />
+      </label>
 
       <div className="world-element-form__image-field">
         <span className="world-element-form__label">Obraz <span>(opcjonalny)</span></span>

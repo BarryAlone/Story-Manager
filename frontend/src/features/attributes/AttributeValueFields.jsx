@@ -15,7 +15,7 @@ export default function AttributeValueFields({
 
         return (
           <label key={definition.id} htmlFor={`attribute-value-${id}`}>
-            {definition.name}
+            <span className="attribute-value-fields__name" title={definition.name}>{definition.name}</span>
             <input
               id={`attribute-value-${id}`}
               type={definition.value_type === 'number' ? 'number' : 'text'}

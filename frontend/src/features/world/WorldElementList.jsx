@@ -19,6 +19,7 @@ export default function WorldElementList({ elements, onSelect, selectedElementId
           >
             <button
               type="button"
+              data-world-panel-trigger
               aria-label={`Otwórz szczegóły: ${element.name}`}
               onClick={(event) => onSelect(element, event)}
             >
