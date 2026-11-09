@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Chapter;
 use App\Models\Character;
 use App\Models\Project;
-use App\Models\ProjectAttribute;
 use App\Services\AttributeValuesInputParser;
 use App\Services\AttributeValueSynchronizer;
 use App\Services\PublicImageStorage;
@@ -30,13 +29,8 @@ class CharacterController extends Controller
                 ->where('user_id', $request->user()->id)
                 ->firstOrFail();
             $characters = $ownedProject->characters()->get();
-            $attributes = $ownedProject->projectAttributes()->get();
         } else {
             $characters = Character::whereHas(
-                'project',
-                fn ($query) => $query->where('user_id', $request->user()->id)
-            )->get();
-            $attributes = ProjectAttribute::whereHas(
                 'project',
                 fn ($query) => $query->where('user_id', $request->user()->id)
             )->get();
@@ -44,23 +38,11 @@ class CharacterController extends Controller
 
         return response()->json([
             'characters' => $characters,
-            'attributes' => $attributes,
         ], 200);
     }
 
     public function store(Request $request)
     {
-        $attributesInput = $request->input('attributes');
-
-        if (! is_null($attributesInput) && ! is_array($attributesInput)) {
-            $decoded = json_decode($attributesInput, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                $request->merge(['attributes' => $decoded]);
-            } else {
-                $request->merge(['attributes' => null]);
-            }
-        }
-
         $validated = $request->validate([
             'project_id' => 'required|integer|exists:projects,id',
             'chapter_id' => 'nullable|integer|exists:chapters,id',
@@ -74,7 +56,6 @@ class CharacterController extends Controller
             'description' => 'nullable|string',
             'description_long' => 'nullable|string',
             'character_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'attributes' => 'nullable',
         ]);
 
         Project::whereKey($validated['project_id'])
@@ -123,17 +104,6 @@ class CharacterController extends Controller
         $character = Character::findOrFail($id);
         Gate::authorize('update', $character);
         $attributeValuesInput = $this->attributeValuesInput->parse($request);
-        $attributesInput = $request->input('attributes');
-
-        if (! is_null($attributesInput) && ! is_array($attributesInput)) {
-            $decoded = json_decode($attributesInput, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                $request->merge(['attributes' => $decoded]);
-            } else {
-                $request->merge(['attributes' => null]);
-            }
-        }
-
         $validated = $request->validate([
             'character_id' => 'nullable|integer|exists:characters,id',
             'name' => [
@@ -146,7 +116,6 @@ class CharacterController extends Controller
             'description' => 'nullable|string',
             'description_long' => 'nullable|string',
             'character_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
-            'attributes' => 'nullable',
         ]);
 
         $oldImagePath = $character->character_image;
@@ -198,11 +167,9 @@ class CharacterController extends Controller
     {
         $character = Character::findOrFail($id);
         Gate::authorize('view', $character);
-        $projectAttributes = ProjectAttribute::where('project_id', $character->project_id)->get();
 
         return response()->json([
             'character' => $this->characterResponse($character),
-            'attributes' => $projectAttributes,
         ], 200);
     }
 
@@ -217,11 +184,8 @@ class CharacterController extends Controller
             ->firstOrFail();
         Gate::authorize('view', $character);
 
-        $projectAttributes = ProjectAttribute::where('project_id', $project)->get();
-
         return response()->json([
             'character' => $this->characterResponse($character),
-            'attributes' => $projectAttributes,
         ], 200);
     }
 

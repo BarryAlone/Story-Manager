@@ -7,7 +7,6 @@ use App\Http\Controllers\ChapterStructureController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterRelationshipController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ProjectAttributeController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectInspirationController;
 use App\Http\Controllers\WorldElementCategoryController;
@@ -69,13 +68,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/characters/{id}', [CharacterController::class, 'update']);
     Route::get('/projects/{project}/characters/{id}', [CharacterController::class, 'showInProject']);
     Route::get('/characters/{id}', [CharacterController::class, 'show']);
-
-    // ProjectAttribute
-    Route::get('/project-attributes', [ProjectAttributeController::class, 'index']);
-    Route::post('/project-attributes', [ProjectAttributeController::class, 'store']);
-    Route::get('/projects/{projectId}/attributes', [ProjectAttributeController::class, 'index']);
-    Route::put('/project-attributes/{id}', [ProjectAttributeController::class, 'update']);
-    Route::delete('/project-attributes/{id}', [ProjectAttributeController::class, 'destroy']);
 
     // CharacterRelationship
     Route::get('/projects/{project}/character-relationships', [CharacterRelationshipController::class, 'index']);

@@ -54,7 +54,7 @@
 - Kategorie elementów świata są przechowywane w `world_element_categories`, a należące do nich obiekty w `world_elements`.
 - Własność elementu wynika z kategorii i projektu; element nie otrzymuje osobnego `project_id` ani `user_id`.
 - Nazwa kategorii jest unikalna w projekcie bez uwzględniania wielkości liter i otaczających spacji. Nazwy elementów mogą się powtarzać.
-- Obecny system atrybutów postaci pozostaje oddzielony od pierwszego etapu elementów świata. Wspólne definicje i wartości atrybutów wymagają osobnego kontraktu i migracji zachowującej istniejące dane.
+- Postacie i elementy świata korzystają z jednego mechanizmu definicji i wartości atrybutów, zachowując osobne zakresy domenowe.
 - Element świata przechowuje jeden opcjonalny `image_path`. API zapisuje pliki w `world-elements/` przez `PublicImageStorage`, usuwa zastępowane pliki dopiero po udanym zapisie bazy i sprząta obrazy elementów podczas usuwania projektu. Galerie pozostają poza tym etapem.
 - Kategorie „Lokalizacje”, „Przedmioty” i „Magia” nie powstają automatycznie. Przyszły interfejs pokaże je jako propozycje wymagające świadomej akcji użytkownika.
 - API nie usuwa kategorii zawierającej elementy i zwraca wtedy `409 Conflict`; kaskada bazy pozostaje potrzebna wyłącznie do usuwania całego projektu oraz operacji infrastrukturalnych.
@@ -65,7 +65,7 @@
 - Nazwa definicji jest unikalna po normalizacji w obrębie zakresu: całego projektu dla postaci albo pojedynczej kategorii dla elementów świata.
 - Wartości postaci i elementów świata korzystają ze wspólnej tabeli `attribute_values`. Dokładnie jedna encja i dokładnie jedna kolumna wartości muszą być ustawione.
 - MVP obsługuje typy `text` i `number`; liczby są przechowywane jako `DECIMAL(20,6)`, bez użycia typu zmiennoprzecinkowego.
-- Starsze `project_attributes` i JSON `characters.attributes` pozostają tymczasowo bez zmian. Dane testowe nie są migrowane, a stary mechanizm zostanie usunięty dopiero po przełączeniu API i formularzy.
+- Wspólne tabele definicji i wartości są jedynym źródłem danych atrybutów; wcześniejszy, projektowy mechanizm został usunięty bez migracji danych roboczych.
 - Definicje są zarządzane przez jedno API z dwoma kontekstami: projekt określa zakres postaci, a kategoria określa zakres elementów świata. Klient nie może ustawiać pól zakresu ani kolejności.
 - Typ używanej definicji nie jest automatycznie konwertowany. Zmiana typu i zwykłe usunięcie są blokowane odpowiedzią `409`, jeśli istnieją wartości; wymuszone usunięcie wymaga jawnego `force=true` i usuwa wartości kaskadowo.
 - Nowe definicje otrzymują kolejny `sort_order` w swoim zakresie. Ręczne porządkowanie definicji pozostaje poza bieżącym etapem.
@@ -75,4 +75,4 @@
 - API encji przyjmuje `attribute_values` jako obiekt w żądaniu JSON, a w `multipart/form-data` jako string zawierający obiekt JSON. Brak pola zachowuje wartości, obecna mapa jest pełną synchronizacją, a `{}` usuwa wszystkie wartości encji.
 - Szczegóły, utworzenie i aktualizacja encji zwracają `attribute_values` jako obiekt `definition_id => value`; liczby pozostają stringami. Lekkie listy nie dołączają wartości.
 - Dane encji i wartości są zapisywane w jednej transakcji. Nowy obraz jest sprzątany po dowolnym błędzie, a poprzedni plik jest usuwany dopiero po powodzeniu całej transakcji.
-- Frontend utrzymuje jeden stan definicji dla aktywnego zakresu i współdzieli neutralne komponenty pól oraz zarządzania między modułami. Moduł elementów świata przekazuje kontekst kategorii; późniejsza integracja postaci ma użyć tych samych elementów zamiast drugiej implementacji.
+- Frontend utrzymuje jeden stan definicji dla aktywnego zakresu i współdzieli neutralne komponenty pól oraz zarządzania między modułami postaci i elementów świata.

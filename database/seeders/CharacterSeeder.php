@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Character;
-
+use Illuminate\Database\Seeder;
 
 class CharacterSeeder extends Seeder
 {
@@ -21,7 +19,6 @@ class CharacterSeeder extends Seeder
             'description' => 'Hobbit z Shire',
             'description_long' => 'To jest pełny, długi opis postaci, który będzie się wyświetlał po wejściu w szczegóły.',
             'character_image' => null,
-            'attributes' => null
         ]);
 
         Character::create([
@@ -31,17 +28,15 @@ class CharacterSeeder extends Seeder
             'description' => 'Książe Ereboru',
             'description_long' => 'To jest pełny, długi opis postaci, który będzie się wyświetlał po wejściu w szczegóły.',
             'character_image' => null,
-            'attributes' => null
         ]);
 
-         Character::create([
+        Character::create([
             'project_id' => 1,
             'name' => 'Gandalf Szary',
             'group_name' => 'Drużyna pierścienia',
             'description' => 'Potężny mag',
             'description_long' => 'To jest pełny, długi opis postaci, który będzie się wyświetlał po wejściu w szczegóły.',
             'character_image' => null,
-            'attributes' => null
         ]);
     }
 }

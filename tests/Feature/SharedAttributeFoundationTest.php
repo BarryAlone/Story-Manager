@@ -64,6 +64,8 @@ class SharedAttributeFoundationTest extends TestCase
             'created_at',
             'updated_at',
         ]));
+        $this->assertFalse(Schema::hasTable('project_attributes'));
+        $this->assertFalse(Schema::hasColumn('characters', 'attributes'));
 
         $this->assertTrue($characterDefinition->project->is($project));
         $this->assertTrue($worldDefinition->worldElementCategory->is($category));
