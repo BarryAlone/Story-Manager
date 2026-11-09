@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-09 — Usunięcie poprzedniego systemu atrybutów
+
+- Zakres: usunięcie nieużywanego modelu, API, ekranu i pól starego mechanizmu po przełączeniu postaci oraz elementów świata na wspólne definicje i wartości.
+- Wynik: świeży schemat zawiera wyłącznie relacyjne definicje i wartości atrybutów, a routing, nawigacja oraz kontrakty postaci nie udostępniają poprzedniego mechanizmu.
+- Testy: testy wspólnego systemu — 61 testów i 321 asercji — oraz pełny PHPUnit — 189 testów i 1257 asercji — zakończone powodzeniem. Lint i build React SPA, ścisła walidacja Composera oraz kontrola różnic również przeszły; build zachowuje nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-11-05 — Atrybuty elementów świata w SPA
 
 - Zakres: współdzielony hook i komponenty definicji oraz wartości, panel zarządzania atrybutami kategorii, dynamiczne pola formularza i prezentacja wartości w szczegółach elementu.
@@ -11,7 +17,7 @@ Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres,
 ## 2026-11-05 — Integracja wartości atrybutów z API encji
 
 - Zakres: opcjonalna pełna mapa `attribute_values` w tworzeniu i aktualizacji postaci oraz elementów świata, wspólne parsowanie JSON i multipart oraz stabilna mapa w odpowiedziach szczegółów i mutacji.
-- Wynik: dane encji i wartości są zapisywane atomowo, brak pola zachowuje wartości, `{}` je czyści, a błędy atrybutów cofają dane i zachowują bezpieczny lifecycle obrazów. Stare `characters.attributes` pozostaje niezależne; lekkie listy nie zostały rozszerzone.
+- Wynik: dane encji i wartości są zapisywane atomowo, brak pola zachowuje wartości, `{}` je czyści, a błędy atrybutów cofają dane i zachowują bezpieczny lifecycle obrazów. Lekkie listy nie zostały rozszerzone.
 - Testy: test integracyjny — 15 testów i 98 asercji, testy zakresowe API, synchronizatora, autoryzacji i obrazów — 65 testów i 465 asercji — oraz pełny PHPUnit — 189 testów i 1276 asercji — zakończone powodzeniem. Pint dla zmienionych plików, walidacja Composera i kontrola różnic również przeszły.
 
 ## 2026-11-05 — Synchronizacja wspólnych wartości atrybutów
@@ -23,13 +29,13 @@ Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres,
 ## 2026-11-04 — Wspólne API definicji atrybutów
 
 - Zakres: chronione endpointy listowania i tworzenia definicji postaci oraz kategorii świata, wspólna aktualizacja i bezpieczne usuwanie definicji.
-- Wynik: nazwy są normalizowane i unikalne w zakresie, nowe rekordy otrzymują kolejny `sort_order`, a używane definicje blokują zmianę typu i zwykłe usunięcie odpowiedzią `409`. Jawne `force=true` usuwa definicję wraz z jej wartościami. API wartości, formularze i starszy system pozostają bez zmian.
+- Wynik: nazwy są normalizowane i unikalne w zakresie, nowe rekordy otrzymują kolejny `sort_order`, a używane definicje blokują zmianę typu i zwykłe usunięcie odpowiedzią `409`. Jawne `force=true` usuwa definicję wraz z jej wartościami; API wartości i formularze nie należały do tego etapu.
 - Testy: kontrakt API definicji — 17 testów i 131 asercji, testy zakresowe — 45 testów i 323 asercje — oraz pełny PHPUnit — 160 testów i 1139 asercji — zakończone powodzeniem. Walidacja Composera, kontrola tras, składnia PHP, Pint i kontrola różnic również przeszły.
 
 ## 2026-11-04 — Fundament wspólnego systemu atrybutów
 
 - Zakres: nowe relacyjne tabele, modele, relacje i polityka wspólnych definicji oraz wartości atrybutów postaci i elementów świata.
-- Wynik: zakres definicji, znormalizowane nazwy, typy `text` i `number`, precyzyjne wartości liczbowe, jednoznaczny właściciel wartości, unikalność oraz kaskady są chronione przez modele i bazę testową. Starszy system pozostaje tymczasowo aktywny bez migracji danych; API i frontend nie korzystają jeszcze z nowych tabel.
+- Wynik: zakres definicji, znormalizowane nazwy, typy `text` i `number`, precyzyjne wartości liczbowe, jednoznaczny właściciel wartości, unikalność oraz kaskady są chronione przez modele i bazę testową.
 - Testy: testy zakresowe — 37 testów i 232 asercje — oraz pełny PHPUnit — 143 testy i 1008 asercji — zakończone powodzeniem; walidacja Composera, składnia PHP i kontrola różnic również przeszły.
 
 ## 2026-11-04 — Zarządzanie elementami świata

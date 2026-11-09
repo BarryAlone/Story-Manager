@@ -60,7 +60,6 @@ class AttributeValueApiIntegrationTest extends TestCase
         $response = $this->actingAs($user)->postJson('/api/characters', [
             'project_id' => $project->id,
             'name' => 'Anna',
-            'attributes' => ['legacy' => 'zachowane'],
             'attribute_values' => [
                 (string) $text->id => 'Wysoka',
                 (string) $number->id => '62.500000',
@@ -70,8 +69,7 @@ class AttributeValueApiIntegrationTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonPath("attribute_values.{$text->id}", 'Wysoka')
-            ->assertJsonPath("attribute_values.{$number->id}", '62.500000')
-            ->assertJsonPath('attributes.legacy', 'zachowane');
+            ->assertJsonPath("attribute_values.{$number->id}", '62.500000');
 
         $characterId = $response->json('id');
 
@@ -86,7 +84,7 @@ class AttributeValueApiIntegrationTest extends TestCase
         $user = User::factory()->create();
         $project = $this->projectFor($user);
         $definition = $this->characterDefinitionFor($project, 'Frakcja');
-        $character = $this->characterFor($project, 'Anna', ['legacy' => 'bez zmian']);
+        $character = $this->characterFor($project, 'Anna');
         $this->sync($character, [$definition->id => 'Północ']);
 
         $this->actingAs($user)->putJson("/api/characters/{$character->id}", [
@@ -99,8 +97,6 @@ class AttributeValueApiIntegrationTest extends TestCase
             'attribute_definition_id' => $definition->id,
             'value_text' => 'Północ',
         ]);
-        $this->assertSame(['legacy' => 'bez zmian'], $character->fresh()->attributes);
-
         $response = $this->actingAs($user)->putJson("/api/characters/{$character->id}", [
             'name' => 'Anna po zmianie',
             'attribute_values' => new stdClass,
@@ -108,7 +104,6 @@ class AttributeValueApiIntegrationTest extends TestCase
 
         $this->assertStringContainsString('"attribute_values":{}', $response->getContent());
         $this->assertDatabaseCount('attribute_values', 0);
-        $this->assertSame(['legacy' => 'bez zmian'], $character->fresh()->attributes);
     }
 
     public function test_invalid_character_value_rolls_back_character_update_and_existing_values(): void
@@ -428,7 +423,7 @@ class AttributeValueApiIntegrationTest extends TestCase
         $project = $this->projectFor($owner, 'Własny');
         $otherProject = $this->projectFor($other, 'Obcy');
         $foreignDefinition = $this->characterDefinitionFor($otherProject, 'Sekret');
-        $character = $this->characterFor($project, 'Anna', ['legacy' => 'wartość']);
+        $character = $this->characterFor($project, 'Anna');
 
         $this->actingAs($owner)->putJson("/api/characters/{$character->id}", [
             'name' => 'Nie powinna zostać',
@@ -438,8 +433,6 @@ class AttributeValueApiIntegrationTest extends TestCase
             ->assertJsonValidationErrors("attribute_values.{$foreignDefinition->id}");
 
         $this->assertSame('Anna', $character->fresh()->name);
-        $this->assertSame(['legacy' => 'wartość'], $character->attributes);
-
         $this->actingAs($other)->getJson("/api/characters/{$character->id}")->assertNotFound();
         $this->actingAs($other)->putJson("/api/characters/{$character->id}", [
             'name' => 'Cudza zmiana',
@@ -474,16 +467,11 @@ class AttributeValueApiIntegrationTest extends TestCase
         return Project::create(['user_id' => $user->id, 'name' => $name]);
     }
 
-    /** @param array<string, mixed>|null $legacyAttributes */
-    private function characterFor(
-        Project $project,
-        string $name = 'Postać',
-        ?array $legacyAttributes = null,
-    ): Character {
+    private function characterFor(Project $project, string $name = 'Postać'): Character
+    {
         return Character::create([
             'project_id' => $project->id,
             'name' => $name,
-            'attributes' => $legacyAttributes,
         ]);
     }
 

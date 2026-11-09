@@ -25,11 +25,6 @@ class Project extends Model
         return $this->hasMany(Chapter::class);
     }
 
-    public function projectAttributes(): HasMany
-    {
-        return $this->hasMany(ProjectAttribute::class);
-    }
-
     public function attributeDefinitions(): HasMany
     {
         return $this->hasMany(AttributeDefinition::class);

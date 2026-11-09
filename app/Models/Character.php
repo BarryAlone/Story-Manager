@@ -16,11 +16,6 @@ class Character extends Model
         'description',
         'description_long',
         'character_image',
-        'attributes',
-    ];
-
-    protected $casts = [
-        'attributes' => 'array',
     ];
 
     public function project(): BelongsTo

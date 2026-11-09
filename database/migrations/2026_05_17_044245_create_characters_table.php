@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->text('description_long')->nullable();
             $table->string('character_image')->nullable();
-            $table->json('attributes')->nullable();
             $table->timestamps();
         });
     }

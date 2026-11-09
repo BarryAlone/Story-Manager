@@ -49,20 +49,19 @@ Accept: application/json
   "name": "Inny typek",
   "description": "Czarodziej",
   "character_image": null,
-  "attributes": []
+  "attribute_values": {}
 }
 
-### Pobieranie atrybutów projektu (Test GET)
-GET http://127.0.0.1:8000/api/project-attributes
+### Pobieranie definicji atrybutów postaci (Test GET)
+GET http://127.0.0.1:8000/api/projects/1/character-attribute-definitions
 Accept: application/json
 
-### Tworzenie atrybutów projektu (Test POST)
-POST http://127.0.0.1:8000/api/project-attributes
+### Tworzenie definicji atrybutu postaci (Test POST)
+POST http://127.0.0.1:8000/api/projects/1/character-attribute-definitions
 Content-Type: application/json
 Accept: application/json
 
 {
-  "project_id": 1,
   "name": "Siła Magiczna",
-  "type": "integer"
+  "value_type": "number"
 }

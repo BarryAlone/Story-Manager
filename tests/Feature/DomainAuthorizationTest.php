@@ -6,7 +6,6 @@ use App\Models\Chapter;
 use App\Models\Character;
 use App\Models\CharacterRelationship;
 use App\Models\Project;
-use App\Models\ProjectAttribute;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -40,11 +39,6 @@ class DomainAuthorizationTest extends TestCase
             ['GET', '/api/characters/1'],
             ['PUT', '/api/characters/1'],
             ['DELETE', '/api/characters/1'],
-            ['GET', '/api/project-attributes'],
-            ['POST', '/api/project-attributes'],
-            ['GET', '/api/projects/1/attributes'],
-            ['PUT', '/api/project-attributes/1'],
-            ['DELETE', '/api/project-attributes/1'],
             ['GET', '/api/projects/1/character-relationships'],
             ['POST', '/api/character-relationships'],
             ['PATCH', '/api/character-relationships/1'],
@@ -152,8 +146,6 @@ class DomainAuthorizationTest extends TestCase
         $ownedCharacter = Character::create($this->characterData($ownedProject, 'Owned character'));
         $ownedCharacterTwo = Character::create($this->characterData($ownedProject, 'Owned character two'));
         $otherCharacter = Character::create($this->characterData($otherProject, 'Other character'));
-        $ownedAttribute = ProjectAttribute::create($this->attributeData($ownedProject, 'Owned attribute'));
-        $otherAttribute = ProjectAttribute::create($this->attributeData($otherProject, 'Other attribute'));
         $ownedRelationship = CharacterRelationship::create([
             'character_1_id' => $ownedCharacter->id,
             'character_2_id' => $ownedCharacterTwo->id,
@@ -176,11 +168,6 @@ class DomainAuthorizationTest extends TestCase
             ->assertJsonFragment(['id' => $ownedCharacter->id])
             ->assertJsonMissing(['id' => $otherCharacter->id]);
         $this->actingAs($owner)
-            ->getJson('/api/project-attributes')
-            ->assertOk()
-            ->assertJsonFragment(['id' => $ownedAttribute->id])
-            ->assertJsonMissing(['id' => $otherAttribute->id]);
-        $this->actingAs($owner)
             ->getJson("/api/projects/{$ownedProject->id}/character-relationships")
             ->assertOk()
             ->assertJsonFragment(['id' => $ownedRelationship->id])
@@ -191,9 +178,6 @@ class DomainAuthorizationTest extends TestCase
             ->assertNotFound();
         $this->actingAs($owner)
             ->getJson("/api/projects/{$otherProject->id}/characters")
-            ->assertNotFound();
-        $this->actingAs($owner)
-            ->getJson("/api/projects/{$otherProject->id}/attributes")
             ->assertNotFound();
         $this->actingAs($owner)
             ->getJson("/api/projects/{$otherProject->id}/character-relationships")
@@ -222,12 +206,6 @@ class DomainAuthorizationTest extends TestCase
             'name' => 'Injected character',
         ])->assertNotFound();
 
-        $this->actingAs($otherUser)->postJson('/api/project-attributes', [
-            'project_id' => $project->id,
-            'name' => 'Injected attribute',
-            'type' => 'text',
-        ])->assertNotFound();
-
         $otherCharacter = Character::create(
             $this->characterData($this->project($otherUser, 'Other project'), 'Other character')
         );
@@ -239,7 +217,6 @@ class DomainAuthorizationTest extends TestCase
 
         $this->assertDatabaseMissing('chapters', ['name' => 'Injected chapter']);
         $this->assertDatabaseMissing('characters', ['name' => 'Injected character']);
-        $this->assertDatabaseMissing('project_attributes', ['name' => 'Injected attribute']);
         $this->assertDatabaseMissing('character_relationships', ['relation_name' => 'Injected relation']);
     }
 
@@ -251,7 +228,6 @@ class DomainAuthorizationTest extends TestCase
         $chapter = Chapter::create($this->chapterData($project, 'Private chapter', 1));
         $character = Character::create($this->characterData($project, 'Private character'));
         $secondCharacter = Character::create($this->characterData($project, 'Private character two'));
-        $attribute = ProjectAttribute::create($this->attributeData($project, 'Private attribute'));
         $relationship = CharacterRelationship::create([
             'character_1_id' => $character->id,
             'character_2_id' => $secondCharacter->id,
@@ -271,11 +247,6 @@ class DomainAuthorizationTest extends TestCase
         ])->assertNotFound();
         $this->actingAs($otherUser)->deleteJson("/api/characters/{$character->id}")->assertNotFound();
 
-        $this->actingAs($otherUser)->putJson("/api/project-attributes/{$attribute->id}", [
-            'name' => 'Changed attribute',
-            'type' => 'number',
-        ])->assertNotFound();
-        $this->actingAs($otherUser)->deleteJson("/api/project-attributes/{$attribute->id}")->assertNotFound();
         $this->actingAs($otherUser)->patchJson("/api/character-relationships/{$relationship->id}", [
             'relation_name' => 'Changed relation',
         ])->assertNotFound();
@@ -283,7 +254,6 @@ class DomainAuthorizationTest extends TestCase
 
         $this->assertDatabaseHas('chapters', ['id' => $chapter->id, 'name' => 'Private chapter']);
         $this->assertDatabaseHas('characters', ['id' => $character->id, 'name' => 'Private character']);
-        $this->assertDatabaseHas('project_attributes', ['id' => $attribute->id, 'name' => 'Private attribute']);
         $this->assertDatabaseHas('character_relationships', [
             'id' => $relationship->id,
             'relation_name' => 'Private relation',
@@ -386,13 +356,6 @@ class DomainAuthorizationTest extends TestCase
         $firstCharacterId = $firstCharacterResponse->json('id');
         $secondCharacterId = $secondCharacterResponse->json('id');
 
-        $attributeResponse = $this->actingAs($owner)->postJson('/api/project-attributes', [
-            'project_id' => $project->id,
-            'name' => 'Age',
-            'type' => 'number',
-        ])->assertCreated();
-        $attributeId = $attributeResponse->json('id');
-
         $relationshipResponse = $this->actingAs($owner)->postJson('/api/character-relationships', [
             'character_1_id' => $firstCharacterId,
             'character_2_id' => $secondCharacterId,
@@ -409,10 +372,6 @@ class DomainAuthorizationTest extends TestCase
         ])->assertOk();
         $this->actingAs($owner)->putJson("/api/characters/{$firstCharacterId}", [
             'name' => 'Updated first character',
-        ])->assertOk();
-        $this->actingAs($owner)->putJson("/api/project-attributes/{$attributeId}", [
-            'name' => 'Updated age',
-            'type' => 'number',
         ])->assertOk();
         $this->actingAs($owner)->postJson("/api/chapters/{$firstChapterId}/swap", [
             'target_id' => $secondChapterId,
@@ -441,10 +400,6 @@ class DomainAuthorizationTest extends TestCase
         $this->assertDatabaseHas('characters', [
             'id' => $firstCharacterId,
             'name' => 'Updated first character',
-        ]);
-        $this->assertDatabaseHas('project_attributes', [
-            'id' => $attributeId,
-            'name' => 'Updated age',
         ]);
         $this->assertDatabaseHas('character_relationships', [
             'id' => $relationshipResponse->json('id'),
@@ -540,16 +495,6 @@ class DomainAuthorizationTest extends TestCase
         return [
             'project_id' => $project->id,
             'name' => $name,
-        ];
-    }
-
-    /** @return array<string, int|string> */
-    private function attributeData(Project $project, string $name): array
-    {
-        return [
-            'project_id' => $project->id,
-            'name' => $name,
-            'type' => 'text',
         ];
     }
 }

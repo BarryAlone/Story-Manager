@@ -9,7 +9,6 @@ import CharacterDetail from './CharacterDetail';
 import ChapterList from './ChapterList';
 import RelationshipList from './RelationshipList';
 import ChapterDetail from './ChapterDetail';
-import AttributeList from './AttributeList'; // Upewnij się, że masz ten import!
 import AuthProvider from './AuthProvider';
 import Login from './Login';
 import Register from './Register';
@@ -59,7 +58,6 @@ function App() {
               <Route path="characters/:characterId" element={<CharacterDetail />} />
               <Route path="chapters" element={<ChapterList />} />
               <Route path="chapters/:chapterId" element={<ChapterDetail />} />
-              <Route path="attributes" element={<AttributeList />} />
               <Route path="relationships" element={<RelationshipList />} />
               <Route path="inspirations" element={<InspirationsPage />} />
               <Route path="world-elements" element={<WorldElementsPage />} />
