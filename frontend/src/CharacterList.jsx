@@ -1,98 +1,193 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import deleteIcon from './assets/icons/trash-can.png';
 import editIcon from './assets/icons/pencil.png';
 import FABIcon from './assets/icons/plus.png';
 import { apiFetch, backendUrl } from './api';
+import AttributeDefinitionManager from './features/attributes/AttributeDefinitionManager';
+import AttributeValueFields from './features/attributes/AttributeValueFields';
+import {
+  attributeValueMapsEqual,
+  buildAttributeValueMap,
+} from './features/attributes/attributeValues';
+import useAttributeDefinitions from './features/attributes/useAttributeDefinitions';
+import './features/attributes/attributes.css';
+import { appendCharacterAttributeValues, characterApiError } from './features/characters/characterApi';
+import './features/characters/characterAttributes.css';
+import useWorldPanelTransition from './features/world/useWorldPanelTransition';
+import './features/world/worldElementPanel.css';
+
+const CHARACTER_USAGE_LABELS = {
+  few: 'postacie',
+  many: 'postaci',
+  one: 'postać',
+};
 
 function CharacterList() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const [characters, setCharacters] = useState([]);
-  const [projectAttributes, setProjectAttributes] = useState([]);
+  const [listError, setListError] = useState('');
 
-  // Formularz
   const [newName, setNewName] = useState('');
   const [newGroupName, setNewGroupName] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [newDescriptionLong, setNewDescriptionLong] = useState('');
   const [newCharacterImage, setNewCharacterImage] = useState(null);
-  const [characterAttributes, setCharacterAttributes] = useState({});
+  const [characterAttributeValues, setCharacterAttributeValues] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [isLoadingCharacterForm, setIsLoadingCharacterForm] = useState(false);
+  const [isSavingCharacter, setIsSavingCharacter] = useState(false);
+  const [initialForm, setInitialForm] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCharacterId, setEditingCharacterId] = useState(null);
-  const [showAttributeForm, setShowAttributeForm] = useState(false);
-  const [newAttributeName, setNewAttributeName] = useState('');
-  const [newAttributeType, setNewAttributeType] = useState('text');
+  const [isAttributesPanelOpen, setIsAttributesPanelOpen] = useState(false);
+  const [isAttributesPanelDirty, setIsAttributesPanelDirty] = useState(false);
+  const attributesButtonRef = useRef(null);
+  const collectionControllerRef = useRef(null);
+  const characterFormControllerRef = useRef(null);
+  const projectIdRef = useRef(projectId);
+  const savingRef = useRef(false);
+  const { cancelPanelClose, closingPanel, startPanelClose } = useWorldPanelTransition();
+  const definitionStore = useAttributeDefinitions({
+    collectionEndpoint: projectId
+      ? `/api/projects/${projectId}/character-attribute-definitions`
+      : null,
+    scopeKey: projectId ? `character-project:${projectId}` : null,
+  });
+  const definitionsReady = !definitionStore.isLoading && !definitionStore.error;
+  const normalizedCharacterAttributeValues = useMemo(
+    () => buildAttributeValueMap(definitionStore.definitions, characterAttributeValues),
+    [characterAttributeValues, definitionStore.definitions],
+  );
+  const isCharacterFormDirty = useMemo(() => {
+    if (!isModalOpen || !initialForm) return false;
+
+    return newName !== initialForm.name
+      || newGroupName !== initialForm.groupName
+      || newDescription !== initialForm.description
+      || newDescriptionLong !== initialForm.descriptionLong
+      || Boolean(newCharacterImage)
+      || !attributeValueMapsEqual(
+        normalizedCharacterAttributeValues,
+        buildAttributeValueMap(definitionStore.definitions, initialForm.attributeValues),
+      );
+  }, [definitionStore.definitions, initialForm, isModalOpen, newCharacterImage, newDescription, newDescriptionLong, newGroupName, newName, normalizedCharacterAttributeValues]);
 
   useEffect(() => {
-    apiFetch(`/api/projects/${projectId}/characters`)
-      .then(response => response.json())
-      .then(data => {
-        setCharacters(data.characters || data);
-        setProjectAttributes(data.attributes || []);
-      })
-      .catch(error => console.error('Błąd:', error));
+    projectIdRef.current = projectId;
+    collectionControllerRef.current?.abort();
+    characterFormControllerRef.current?.abort();
+    const controller = new AbortController();
+    collectionControllerRef.current = controller;
+    let cancelled = false;
 
-    apiFetch(`/api/projects/${projectId}/attributes`)
-      .then(response => response.json())
-      .then(data => setProjectAttributes(data))
-      .catch(error => console.error('Błąd pobierania atrybutów:', error));
-  }, [projectId]);
-
-  const handleAddAttribute = () => {
-    if (!newAttributeName.trim()) return;
-
-    apiFetch('/api/project-attributes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        project_id: projectId,
-        name: newAttributeName,
-        type: newAttributeType
-      })
+    Promise.resolve().then(() => {
+      if (cancelled) return null;
+      setCharacters([]);
+      setListError('');
+      setIsModalOpen(false);
+      setIsAttributesPanelOpen(false);
+      setIsSavingCharacter(false);
+      savingRef.current = false;
+      return apiFetch(`/api/projects/${projectId}/characters`, { signal: controller.signal });
     })
-      .then(response => response.json())
-      .then(data => {
-        setProjectAttributes([...projectAttributes, data]);
-        setNewAttributeName('');
-        setNewAttributeType('text');
-        setShowAttributeForm(false);
+      .then(async (response) => {
+        if (!response) return null;
+        if (!response.ok) throw await characterApiError(response, 'Nie udało się pobrać postaci.');
+        return response.json();
       })
-      .catch(error => console.error('Błąd dodawania atrybutu:', error));
-  };
-
-  const handleDeleteAttribute = (attributeId) => {
-    if (!window.confirm('Czy na pewno chcesz usunąć ten atrybut?')) return;
-
-    apiFetch(`/api/project-attributes/${attributeId}`, {
-      method: 'DELETE'
-    })
-      .then(response => {
-        if (response.ok) {
-          setProjectAttributes(projectAttributes.filter(attr => attr.id !== attributeId));
-          setCharacterAttributes(prev => {
-            const next = { ...prev };
-            delete next[attributeId];
-            return next;
-          });
+      .then((data) => {
+        if (data && !controller.signal.aborted && projectIdRef.current === projectId) {
+          setCharacters(data.characters || data);
         }
       })
-      .catch(error => console.error('Błąd usuwania atrybutu:', error));
+      .catch((error) => {
+        if (error?.name !== 'AbortError' && projectIdRef.current === projectId) {
+          setListError(error.message || 'Nie udało się pobrać postaci.');
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [projectId]);
+
+  useEffect(() => () => characterFormControllerRef.current?.abort(), []);
+
+  const resetAndCloseModal = useCallback(() => {
+    characterFormControllerRef.current?.abort();
+    setInitialForm(null);
+    setEditingCharacterId(null);
+    setNewName('');
+    setNewGroupName('');
+    setNewDescription('');
+    setNewDescriptionLong('');
+    setCharacterAttributeValues({});
+    setNewCharacterImage(null);
+    setFieldErrors({});
+    setFormError('');
+    setIsLoadingCharacterForm(false);
+    setIsSavingCharacter(false);
+    savingRef.current = false;
+    setIsModalOpen(false);
+  }, []);
+
+  const requestCloseModal = useCallback(() => {
+    if (isSavingCharacter) return;
+    if (isCharacterFormDirty && !window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')) return;
+    resetAndCloseModal();
+  }, [isCharacterFormDirty, isSavingCharacter, resetAndCloseModal]);
+
+  const initializeCharacterForm = useCallback((character = null) => {
+    const attributeValues = character?.attribute_values || {};
+    const initial = {
+      attributeValues,
+      description: character?.description || '',
+      descriptionLong: character?.description_long || '',
+      groupName: character?.group_name || '',
+      name: character?.name || '',
+    };
+
+    setInitialForm(initial);
+    setEditingCharacterId(character?.id || null);
+    setNewName(initial.name);
+    setNewGroupName(initial.groupName);
+    setNewDescription(initial.description);
+    setNewDescriptionLong(initial.descriptionLong);
+    setCharacterAttributeValues(attributeValues);
+    setNewCharacterImage(null);
+    setFieldErrors({});
+    setFormError('');
+  }, []);
+
+  const openCreateModal = () => {
+    initializeCharacterForm();
+    setIsModalOpen(true);
   };
 
-  const handleSaveCharacter = () => {
+  const handleSaveCharacter = async () => {
+    if (savingRef.current || isLoadingCharacterForm) return;
+
+    const requestedProjectId = projectId;
+    savingRef.current = true;
+    setIsSavingCharacter(true);
+    setFieldErrors({});
+    setFormError('');
     const formData = new FormData();
     formData.append('project_id', projectId);
     formData.append('name', newName);
     formData.append('group_name', newGroupName || '');
     formData.append('description', newDescription || '');
     formData.append('description_long', newDescriptionLong || '');
-
-    Object.entries(characterAttributes).forEach(([key, value]) => {
-      formData.append(`attributes[${key}]`, value);
-    });
+    appendCharacterAttributeValues(
+      formData,
+      definitionsReady ? normalizedCharacterAttributeValues : undefined,
+    );
     
     if (newCharacterImage) {
       formData.append('character_image', newCharacterImage);
@@ -105,74 +200,97 @@ function CharacterList() {
       formData.append('_method', 'PUT'); 
     }
 
-    apiFetch(url, {
-      method: 'POST',
-      headers: { 'Accept': 'application/json' },
-      body: formData
-    })
-      .then(async response => {
-        if (!response.ok) {
-          const err = await response.json();
-          console.error("Błąd walidacji:", err);
-          throw new Error('Błąd przy zapisie postaci');
-        }
-        return response.json();
-      })
-      .then(savedCharacter => {
-        if (editingCharacterId) {
-          setCharacters(characters.map(char => char.id === editingCharacterId ? savedCharacter : char));
-        } else {
-          setCharacters([...characters, savedCharacter]);
-        }
-        closeModal();
-      })
-      .catch(error => console.error('Błąd zapisu:', error));
+    try {
+      const response = await apiFetch(url, { method: 'POST', body: formData });
+      if (!response.ok) throw await characterApiError(response, 'Nie udało się zapisać postaci.');
+      const savedCharacter = await response.json();
+
+      if (projectIdRef.current !== requestedProjectId) return;
+      setCharacters((current) => editingCharacterId
+        ? current.map((character) => Number(character.id) === Number(editingCharacterId) ? savedCharacter : character)
+        : [...current, savedCharacter]);
+      await definitionStore.refreshDefinitions();
+      resetAndCloseModal();
+    } catch (error) {
+      if (projectIdRef.current !== requestedProjectId) return;
+      setFieldErrors(error.errors || {});
+      setFormError(error.message || 'Nie udało się zapisać postaci.');
+    } finally {
+      savingRef.current = false;
+      if (projectIdRef.current === requestedProjectId) setIsSavingCharacter(false);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!window.confirm("Czy na pewno chcesz usunąć tę postać?")) return;
 
-    apiFetch(`/api/characters/${id}`, { method: 'DELETE' })
-      .then(response => {
-        if (response.ok) setCharacters(characters.filter(char => char.id !== id));
-      })
-      .catch(error => console.error('Błąd usuwania:', error));
+    try {
+      const response = await apiFetch(`/api/characters/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw await characterApiError(response, 'Nie udało się usunąć postaci.');
+      setCharacters((current) => current.filter((character) => Number(character.id) !== Number(id)));
+      await definitionStore.refreshDefinitions();
+    } catch (error) {
+      setListError(error.message || 'Nie udało się usunąć postaci.');
+    }
   };
 
-  const openEditModal = (character) => {
-    setEditingCharacterId(character.id);
-    setNewName(character.name);
-    setNewGroupName(character.group_name || '');
-    setNewDescription(character.description || '');
-    setNewDescriptionLong(character.description_long || '');
-    setCharacterAttributes(character.attributes || {});
-    setNewCharacterImage(null);
-    setShowAttributeForm(false);
-    setNewAttributeName('');
-    setNewAttributeType('text');
+  const openEditModal = async (character) => {
+    const requestedProjectId = projectId;
+    characterFormControllerRef.current?.abort();
+    const controller = new AbortController();
+    characterFormControllerRef.current = controller;
+    initializeCharacterForm(character);
     setIsModalOpen(true);
+    setIsLoadingCharacterForm(true);
+
+    try {
+      const response = await apiFetch(`/api/characters/${character.id}`, { signal: controller.signal });
+      if (!response.ok) throw await characterApiError(response, 'Nie udało się pobrać danych postaci.');
+      const payload = await response.json();
+      if (controller.signal.aborted || projectIdRef.current !== requestedProjectId) return;
+      initializeCharacterForm(payload.character || payload);
+    } catch (error) {
+      if (error?.name !== 'AbortError' && projectIdRef.current === requestedProjectId) {
+        setFormError(error.message || 'Nie udało się pobrać danych postaci.');
+      }
+    } finally {
+      if (!controller.signal.aborted && projectIdRef.current === requestedProjectId) {
+        setIsLoadingCharacterForm(false);
+      }
+    }
   };
 
-  const closeModal = () => {
-    setEditingCharacterId(null);
-    setNewName('');
-    setNewGroupName('');
-    setNewDescription('');
-    setNewDescriptionLong('');
-    setCharacterAttributes({});
-    setNewCharacterImage(null);
-    setShowAttributeForm(false);
-    setNewAttributeName('');
-    setNewAttributeType('text');
-    setIsModalOpen(false);
-  };
+  const requestCloseAttributesPanel = useCallback(() => {
+    if (definitionStore.isMutating || closingPanel === 'attributes') return;
+    if (isAttributesPanelDirty && !window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')) return;
+    startPanelClose('attributes', () => {
+      cancelPanelClose();
+      setIsAttributesPanelOpen(false);
+      setIsAttributesPanelDirty(false);
+      window.requestAnimationFrame(() => attributesButtonRef.current?.focus());
+    });
+  }, [cancelPanelClose, closingPanel, definitionStore.isMutating, isAttributesPanelDirty, startPanelClose]);
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0 }}>Postacie</h1>
+    <div className="character-list-page">
+      <div className="character-list-page__toolbar">
+        <h1>Postacie</h1>
+        <button
+          ref={attributesButtonRef}
+          type="button"
+          className="character-list-page__attributes-button"
+          data-world-panel-trigger
+          onClick={() => {
+            setIsAttributesPanelDirty(false);
+            setIsAttributesPanelOpen(true);
+          }}
+          disabled={definitionStore.isMutating || isAttributesPanelOpen}
+        >
+          Atrybuty postaci
+        </button>
         <button 
-          onClick={() => { closeModal(); setIsModalOpen(true); }}
+          type="button"
+          onClick={openCreateModal}
           style={{ 
             position: 'fixed',
             bottom: '40px',
@@ -198,149 +316,59 @@ function CharacterList() {
         </button>
       </div>
 
+      {listError && <p className="character-form__error" role="alert">{listError}</p>}
+
       {/* --- MODAL --- */}
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, overflowY: 'auto' }}>
           <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '5px', width: '400px', margin: '20px 0', maxHeight: '90vh', overflowY: 'auto' }}>
             <h2 style={{ marginTop: 0 }}>{editingCharacterId ? 'Edytuj postać' : 'Nowa postać'}</h2>
-            <input type="text" placeholder="Imię postaci" value={newName} onChange={(e) => setNewName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
-            <input type="text" placeholder="Frakcja / Grupa (opcjonalnie)" value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setNewCharacterImage(e.target.files[0])} style={{ width: '100%', padding: '10px', marginBottom: '15px', boxSizing: 'border-box' }} />
+            {isLoadingCharacterForm && <p>Ładowanie danych postaci…</p>}
+            <input type="text" placeholder="Imię postaci" value={newName} disabled={isSavingCharacter || isLoadingCharacterForm} onChange={(e) => setNewName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
+            <input type="text" placeholder="Frakcja / Grupa (opcjonalnie)" value={newGroupName} disabled={isSavingCharacter || isLoadingCharacterForm} onChange={(e) => setNewGroupName(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }} />
+            <input type="file" accept="image/jpeg,image/png,image/webp" disabled={isSavingCharacter || isLoadingCharacterForm} onChange={(e) => setNewCharacterImage(e.target.files[0] || null)} style={{ width: '100%', padding: '10px', marginBottom: '15px', boxSizing: 'border-box' }} />
 
-            {/* SEKCJA ATRYBUTÓW */}
-            <hr style={{ margin: '15px 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h3 style={{ margin: 0, fontSize: '1rem', color: '#374151' }}>Atrybuty postaci</h3>
-              <button
-                onClick={() => setShowAttributeForm(true)}
-                style={{
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '50%',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: '#f3f4f6',
-                  color: '#374151',
-                  fontSize: '1.2rem',
-                  lineHeight: '1',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                title="Dodaj nowy atrybut"
-              >
-                +
-              </button>
-            </div>
-
-            {/* Wyświetlanie istniejących atrybutów projektu */}
-            <div style={{ marginBottom: '15px', maxHeight: '150px', overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '10px' }}>
-              {projectAttributes.length > 0 ? (
-                projectAttributes.map(attr => (
-                  <div key={attr.id} style={{ position: 'relative', marginBottom: '10px', display: 'flex', gap: '10px', alignItems: 'center', padding: '8px 10px', borderRadius: '5px', backgroundColor: '#f8fafc' }}>
-                    <label style={{ flex: 1, fontSize: '0.9rem', fontWeight: '500', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                      <span>{attr.name}:</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDeleteAttribute(attr.id); }}
-                        title="Usuń atrybut"
-                        style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '3px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          color: '#6b7280',
-                          cursor: 'pointer',
-                          fontSize: '1rem',
-                          fontWeight: '700',
-                          lineHeight: '1',
-                          padding: 0,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-
-                      </button>
-                    </label>
-                    <input 
-                      type={attr.type === 'number' ? 'number' : 'text'} 
-                      value={characterAttributes[attr.id] || ''} 
-                      onChange={(e) => setCharacterAttributes({...characterAttributes, [attr.id]: e.target.value})}
-                      placeholder="Wartość" 
-                      style={{ flex: 1, padding: '8px', borderRadius: '3px', border: '1px solid #d1d5db' }}
-                    />
-                  </div>
-                ))
-              ) : (
-                <p style={{ margin: 0, fontSize: '0.9rem', color: '#9ca3af' }}>Brak atrybutów. Dodaj nowy atrybut poniżej.</p>
+            <section className="character-form__attributes" aria-labelledby="character-form-attributes-title">
+              <h3 id="character-form-attributes-title">Atrybuty</h3>
+              {definitionStore.isLoading && <p className="character-form__attributes-state">Ładowanie atrybutów…</p>}
+              {definitionStore.error && (
+                <p className="character-form__attributes-state character-form__attributes-state--error" role="alert">
+                  Nie udało się pobrać atrybutów.{' '}
+                  <button type="button" onClick={definitionStore.loadDefinitions}>Spróbuj ponownie</button>
+                </p>
               )}
-            </div>
-
-            {/* Formularz dodawania nowego atrybutu */}
-            {showAttributeForm && (
-              <div style={{ marginBottom: '15px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '5px', border: '1px solid #e5e7eb' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#374151' }}>Nowy atrybut</div>
-                  <button
-                    onClick={() => { setShowAttributeForm(false); setNewAttributeName(''); setNewAttributeType('text'); }}
-                    title="Anuluj"
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      border: 'none',
-                      backgroundColor: 'transparent',
-                      color: '#6b7280',
-                      cursor: 'pointer',
-                      fontSize: '1rem',
-                      fontWeight: '700',
-                      lineHeight: '1',
-                      padding: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-                <div style={{ display: 'grid', gap: '10px', marginBottom: '10px' }}>
-                  <input 
-                    type="text" 
-                    placeholder="Nazwa atrybutu (np. Wzrost, Rasa)" 
-                    value={newAttributeName} 
-                    onChange={(e) => setNewAttributeName(e.target.value)}
-                    style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '5px', border: '1px solid #d1d5db', backgroundColor: 'white' }}
-                  />
-                  <select 
-                    value={newAttributeType} 
-                    onChange={(e) => setNewAttributeType(e.target.value)}
-                    style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '5px', border: '1px solid #d1d5db', backgroundColor: 'white' }}
-                  >
-                    <option value="text">Tekst</option>
-                    <option value="number">Liczba</option>
-                  </select>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button 
-                    onClick={handleAddAttribute}
-                    style={{ padding: '10px 16px', backgroundColor: '#4B5563', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: '500' }}
-                  >
-                    Zapisz
-                  </button>
-                </div>
-              </div>
-            )}
+              {definitionsReady && definitionStore.definitions.length === 0 && (
+                <p className="character-form__attributes-state">Projekt nie ma jeszcze atrybutów postaci.</p>
+              )}
+              {definitionsReady && definitionStore.definitions.length > 0 && (
+                <AttributeValueFields
+                  definitions={definitionStore.definitions}
+                  disabled={isSavingCharacter || isLoadingCharacterForm}
+                  errors={fieldErrors}
+                  values={normalizedCharacterAttributeValues}
+                  onChange={(definitionId, value) => {
+                    setFieldErrors((current) => ({
+                      ...current,
+                      [`attribute_values.${definitionId}`]: undefined,
+                    }));
+                    setCharacterAttributeValues((current) => ({ ...current, [definitionId]: value }));
+                  }}
+                />
+              )}
+            </section>
 
             {/* Pole na krótki i długi opis */}
-            <textarea placeholder="Krótki opis postaci" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', minHeight: '80px' }} />
-            <textarea placeholder="Długi opis postaci" value={newDescriptionLong} onChange={(e) => setNewDescriptionLong(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', minHeight: '80px' }} />
+            <textarea placeholder="Krótki opis postaci" value={newDescription} disabled={isSavingCharacter || isLoadingCharacterForm} onChange={(e) => setNewDescription(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', minHeight: '80px' }} />
+            <textarea placeholder="Długi opis postaci" value={newDescriptionLong} disabled={isSavingCharacter || isLoadingCharacterForm} onChange={(e) => setNewDescriptionLong(e.target.value)} style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box', minHeight: '80px' }} />
+
+            {formError && <p className="character-form__error" role="alert">{formError}</p>}
 
             {/* Przyciski akcji */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '15px' }}>
-              <button onClick={closeModal} style={{ padding: '10px 20px', backgroundColor: '#ccc', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Anuluj</button>
-              <button onClick={handleSaveCharacter} style={{ padding: '10px 20px', backgroundColor: '#4B5563', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Zapisz</button>
+              <button type="button" onClick={requestCloseModal} disabled={isSavingCharacter} style={{ padding: '10px 20px', backgroundColor: '#ccc', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Anuluj</button>
+              <button type="button" onClick={handleSaveCharacter} disabled={isSavingCharacter || isLoadingCharacterForm || !newName.trim()} style={{ padding: '10px 20px', backgroundColor: '#4B5563', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                {isSavingCharacter ? 'Zapisywanie…' : 'Zapisz'}
+              </button>
             </div>
           </div>
         </div>
@@ -426,6 +454,22 @@ function CharacterList() {
             </div>
           );
         })}
+      </div>
+
+      <div className="world-element-panel-layer character-attribute-panel-layer">
+        {isAttributesPanelOpen && (
+          <AttributeDefinitionManager
+            contextLabel="Postacie w projekcie"
+            disabled={definitionStore.isMutating || closingPanel === 'attributes'}
+            emptyMessage="Projekt nie ma jeszcze atrybutów postaci."
+            isClosing={closingPanel === 'attributes'}
+            onClose={requestCloseAttributesPanel}
+            onDirtyChange={setIsAttributesPanelDirty}
+            panelTitle="Atrybuty postaci"
+            store={definitionStore}
+            usageLabels={CHARACTER_USAGE_LABELS}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,56 +1,119 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Editor } from '@tinymce/tinymce-react';
 import editIcon from './assets/icons/pencil.png';
 import { apiFetch, backendUrl } from './api';
+import AttributeDefinitionManager from './features/attributes/AttributeDefinitionManager';
+import AttributeValueFields from './features/attributes/AttributeValueFields';
+import { buildAttributeValueMap } from './features/attributes/attributeValues';
+import useAttributeDefinitions from './features/attributes/useAttributeDefinitions';
+import './features/attributes/attributes.css';
+import CharacterAttributeSummary from './features/characters/CharacterAttributeSummary';
+import { appendCharacterAttributeValues, characterApiError } from './features/characters/characterApi';
+import './features/characters/characterAttributes.css';
+import useWorldPanelTransition from './features/world/useWorldPanelTransition';
+import './features/world/worldElementPanel.css';
+
+const CHARACTER_USAGE_LABELS = {
+  few: 'postacie',
+  many: 'postaci',
+  one: 'postać',
+};
 
 function CharacterDetail() {
   const { projectId, characterId } = useParams();
   const [character, setCharacter] = useState(null);
-  const [projectAttributes, setProjectAttributes] = useState([]);
   const [form, setForm] = useState({
     name: '',
     group_name: '',
     description: '',
     description_long: '',
-    attributes: {},
     imageFile: null,
   });
+  const [attributeValueDraft, setAttributeValueDraft] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
   const [editingFields, setEditingFields] = useState({
     name: false,
     group_name: false,
     description: false,
     description_long: false,
     image: false,
-    attributes: {},
+    attribute_values: false,
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [isAttributesPanelOpen, setIsAttributesPanelOpen] = useState(false);
+  const [isAttributesPanelDirty, setIsAttributesPanelDirty] = useState(false);
+  const attributesButtonRef = useRef(null);
+  const requestControllerRef = useRef(null);
+  const savingRef = useRef(false);
+  const routeKeyRef = useRef(`${projectId}:${characterId}`);
+  const { cancelPanelClose, closingPanel, startPanelClose } = useWorldPanelTransition();
+  const definitionStore = useAttributeDefinitions({
+    collectionEndpoint: projectId
+      ? `/api/projects/${projectId}/character-attribute-definitions`
+      : null,
+    scopeKey: projectId ? `character-project:${projectId}` : null,
+  });
+  const definitionsReady = !definitionStore.isLoading && !definitionStore.error;
+  const currentAttributeValues = useMemo(
+    () => buildAttributeValueMap(definitionStore.definitions, {
+      ...(character?.attribute_values || {}),
+      ...attributeValueDraft,
+    }),
+    [attributeValueDraft, character?.attribute_values, definitionStore.definitions],
+  );
 
   useEffect(() => {
-    apiFetch(`/api/characters/${characterId}`)
-      .then(response => response.json())
-      .then(data => {
+    routeKeyRef.current = `${projectId}:${characterId}`;
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    let cancelled = false;
+
+    Promise.resolve().then(() => {
+      if (cancelled) return null;
+      setCharacter(null);
+      setLoadError('');
+      setSaveError('');
+      setFieldErrors({});
+      setAttributeValueDraft({});
+      setIsSaving(false);
+      savingRef.current = false;
+      return apiFetch(`/api/projects/${projectId}/characters/${characterId}`, { signal: controller.signal });
+    })
+      .then(async (response) => {
+        if (!response) return null;
+        if (!response.ok) throw await characterApiError(response, 'Nie udało się pobrać danych postaci.');
+        return response.json();
+      })
+      .then((data) => {
+        if (!data || controller.signal.aborted || routeKeyRef.current !== `${projectId}:${characterId}`) return;
         const characterData = data.character || data;
         setCharacter(characterData);
-        setProjectAttributes(data.attributes || []);
         setForm({
           name: characterData.name || '',
           group_name: characterData.group_name || '',
           description: characterData.description || '',
           description_long: characterData.description_long || '',
-          attributes: characterData.attributes || {},
           imageFile: null,
         });
       })
-      .catch(error => {
-        console.error('Błąd pobierania profilu:', error);
-        setError('Nie udało się pobrać danych postaci.');
+      .catch((error) => {
+        if (error?.name !== 'AbortError' && routeKeyRef.current === `${projectId}:${characterId}`) {
+          setLoadError(error.message || 'Nie udało się pobrać danych postaci.');
+        }
       });
-  }, [characterId]);
 
-  if (error) {
-    return <div style={{ padding: '20px', color: '#b91c1c' }}>{error}</div>;
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [characterId, projectId]);
+
+  if (loadError) {
+    return <div style={{ padding: '20px', color: '#b91c1c' }}>{loadError}</div>;
   }
 
   if (!character) {
@@ -63,16 +126,6 @@ function CharacterDetail() {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAttributeChange = (attrId, value) => {
-    setForm(prev => ({
-      ...prev,
-      attributes: {
-        ...prev.attributes,
-        [attrId]: value,
-      },
-    }));
-  };
-
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setForm(prev => ({ ...prev, imageFile: e.target.files[0] }));
@@ -80,45 +133,48 @@ function CharacterDetail() {
     }
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
+    if (savingRef.current) return;
+
+    const requestedRouteKey = `${projectId}:${characterId}`;
+    savingRef.current = true;
     setIsSaving(true);
-    setError(null);
+    setSaveError('');
+    setFieldErrors({});
 
     const formData = new FormData();
     formData.append('name', form.name);
     formData.append('group_name', form.group_name || '');
     formData.append('description', form.description || '');
     formData.append('description_long', form.description_long || '');
-    Object.entries(form.attributes).forEach(([key, value]) => {
-      formData.append(`attributes[${key}]`, value);
-    });
+    appendCharacterAttributeValues(formData, definitionsReady ? currentAttributeValues : undefined);
     if (form.imageFile) {
       formData.append('character_image', form.imageFile);
     }
     formData.append('_method', 'PUT');
 
-    apiFetch(`/api/characters/${characterId}`, {
-      method: 'POST',
-      headers: { 'Accept': 'application/json' },
-      body: formData,
-    })
-      .then(async response => {
-        setIsSaving(false);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Błąd zapisu');
-        }
-        return response.json();
-      })
-      .then(updatedCharacter => {
-        setCharacter(updatedCharacter);
-        setForm(prev => ({ ...prev, imageFile: null }));
-        setEditingFields({ name: false, group_name: false, description: false, description_long: false, image: false, attributes: {} });
-      })
-      .catch(err => {
-        console.error('Błąd zapisu postaci:', err);
-        setError('Nie udało się zapisać zmian.');
+    try {
+      const response = await apiFetch(`/api/characters/${characterId}`, {
+        method: 'POST',
+        body: formData,
       });
+      if (!response.ok) throw await characterApiError(response, 'Nie udało się zapisać zmian.');
+      const updatedCharacter = await response.json();
+      if (routeKeyRef.current !== requestedRouteKey) return;
+
+      setCharacter(updatedCharacter);
+      setForm((current) => ({ ...current, imageFile: null }));
+      setAttributeValueDraft({});
+      setEditingFields({ name: false, group_name: false, description: false, description_long: false, image: false, attribute_values: false });
+      await definitionStore.refreshDefinitions();
+    } catch (error) {
+      if (routeKeyRef.current !== requestedRouteKey) return;
+      setFieldErrors(error.errors || {});
+      setSaveError(error.message || 'Nie udało się zapisać zmian.');
+    } finally {
+      savingRef.current = false;
+      if (routeKeyRef.current === requestedRouteKey) setIsSaving(false);
+    }
   };
 
   const handleReset = () => {
@@ -127,11 +183,23 @@ function CharacterDetail() {
       group_name: character.group_name || '',
       description: character.description || '',
       description_long: character.description_long || '',
-      attributes: character.attributes || {},
       imageFile: null,
     });
-    setEditingFields({ name: false, group_name: false, description: false, description_long: false, image: false, attributes: {} });
-    setError(null);
+    setAttributeValueDraft({});
+    setEditingFields({ name: false, group_name: false, description: false, description_long: false, image: false, attribute_values: false });
+    setFieldErrors({});
+    setSaveError('');
+  };
+
+  const requestCloseAttributesPanel = () => {
+    if (definitionStore.isMutating || closingPanel === 'attributes') return;
+    if (isAttributesPanelDirty && !window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')) return;
+    startPanelClose('attributes', () => {
+      cancelPanelClose();
+      setIsAttributesPanelOpen(false);
+      setIsAttributesPanelDirty(false);
+      window.requestAnimationFrame(() => attributesButtonRef.current?.focus());
+    });
   };
 
   return (
@@ -210,47 +278,62 @@ function CharacterDetail() {
             </button>
           </div>
 
-          {projectAttributes && projectAttributes.length > 0 && (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h3 style={{ margin: 0, color: '#374151' }}>Atrybuty</h3>
+          <section className="character-detail__attributes" aria-labelledby="character-detail-attributes-title">
+            <div className="character-detail__attributes-header">
+              <h3 id="character-detail-attributes-title">Atrybuty</h3>
+              <div className="character-detail__attributes-actions">
+                {definitionsReady && definitionStore.definitions.length > 0 && !editingFields.attribute_values && (
+                  <button
+                    type="button"
+                    onClick={() => setEditingFields((current) => ({ ...current, attribute_values: true }))}
+                  >
+                    Edytuj wartości
+                  </button>
+                )}
+                <button
+                  ref={attributesButtonRef}
+                  type="button"
+                  data-world-panel-trigger
+                  onClick={() => {
+                    setIsAttributesPanelDirty(false);
+                    setIsAttributesPanelOpen(true);
+                  }}
+                  disabled={definitionStore.isMutating || isAttributesPanelOpen}
+                >
+                  Zarządzaj atrybutami
+                </button>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '15px' }}>
-                {projectAttributes.map(attr => (
-                  <div key={attr.id} style={{ padding: '14px', backgroundColor: '#f3f4f6', borderRadius: '10px', border: '1px solid #e5e7eb' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#374151' }}>{attr.name}</span>
-                      <button
-                        onClick={() => setEditingFields(prev => ({
-                          ...prev,
-                          attributes: {
-                            ...prev.attributes,
-                            [attr.id]: true,
-                          },
-                        }))}
-                        title={`Edytuj ${attr.name}`}
-                        style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-                      >
-                        <img src={editIcon} alt="Edytuj" style={{ width: '16px', height: '16px' }} />
-                      </button>
-                    </div>
-                    {editingFields.attributes[attr.id] ? (
-                      <input
-                        type={attr.type === 'number' ? 'number' : 'text'}
-                        value={form.attributes[attr.id] ?? ''}
-                        onChange={(e) => handleAttributeChange(attr.id, e.target.value)}
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d1d5db' }}
-                      />
-                    ) : (
-                      <div style={{ fontSize: '1.05rem', color: '#4b5563', fontWeight: 500 }}>
-                        {form.attributes[attr.id] ?? '—'}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+            </div>
+
+            {definitionStore.isLoading && <p className="character-form__attributes-state">Ładowanie atrybutów…</p>}
+            {definitionStore.error && (
+              <p className="character-form__attributes-state character-form__attributes-state--error" role="alert">
+                Nie udało się pobrać atrybutów.{' '}
+                <button type="button" onClick={definitionStore.loadDefinitions}>Spróbuj ponownie</button>
+              </p>
+            )}
+            {definitionsReady && editingFields.attribute_values && (
+              <AttributeValueFields
+                definitions={definitionStore.definitions}
+                disabled={isSaving}
+                errors={fieldErrors}
+                values={currentAttributeValues}
+                onChange={(definitionId, value) => {
+                  setFieldErrors((current) => ({
+                    ...current,
+                    [`attribute_values.${definitionId}`]: undefined,
+                  }));
+                  setAttributeValueDraft((current) => ({ ...current, [definitionId]: value }));
+                }}
+              />
+            )}
+            {definitionsReady && !editingFields.attribute_values && (
+              <CharacterAttributeSummary
+                definitions={definitionStore.definitions}
+                values={character.attribute_values}
+              />
+            )}
+          </section>
 
           <div style={{ marginBottom: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -277,6 +360,7 @@ function CharacterDetail() {
             )}
           </div>
 
+          {saveError && <p className="character-form__error" role="alert">{saveError}</p>}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '25px', gap: '10px' }}>
             <button
               onClick={handleReset}
@@ -339,6 +423,22 @@ function CharacterDetail() {
               <p style={{ margin: 0, color: '#94a3b8' }}>Brak rozbudowanego opisu. Kliknij ikonę edycji, aby dodać tekst.</p>
             )}
           </div>
+        )}
+      </div>
+
+      <div className="world-element-panel-layer character-attribute-panel-layer">
+        {isAttributesPanelOpen && (
+          <AttributeDefinitionManager
+            contextLabel="Postacie w projekcie"
+            disabled={definitionStore.isMutating || closingPanel === 'attributes'}
+            emptyMessage="Projekt nie ma jeszcze atrybutów postaci."
+            isClosing={closingPanel === 'attributes'}
+            onClose={requestCloseAttributesPanel}
+            onDirtyChange={setIsAttributesPanelDirty}
+            panelTitle="Atrybuty postaci"
+            store={definitionStore}
+            usageLabels={CHARACTER_USAGE_LABELS}
+          />
         )}
       </div>
     </div>
