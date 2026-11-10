@@ -8,7 +8,7 @@ export default function CharacterGrid({ characters, onDelete, onEdit, onOpen }) 
           key={character.id}
           character={character}
           onDelete={() => onDelete(character.id)}
-          onEdit={() => onEdit(character)}
+          onEdit={(trigger) => onEdit(character, trigger)}
           onOpen={() => onOpen(character.id)}
         />
       ))}

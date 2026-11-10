@@ -9,10 +9,10 @@ import WorldCategorySidebar from './WorldCategorySidebar';
 import WorldElementList from './WorldElementList';
 import WorldElementPanel from './WorldElementPanel';
 import WorldElementsToolbar from './WorldElementsToolbar';
+import usePanelTransition from '../panels/usePanelTransition';
 import useWorldElementCategories from './useWorldElementCategories';
 import useWorldElementDetails from './useWorldElementDetails';
 import useWorldElements from './useWorldElements';
-import useWorldPanelTransition from './useWorldPanelTransition';
 import './worldElements.css';
 import './worldElementPanel.css';
 
@@ -38,7 +38,7 @@ export default function WorldElementsPage() {
   const addButtonRef = useRef(null);
   const attributesButtonRef = useRef(null);
   const returnFocusRef = useRef(null);
-  const { cancelPanelClose, closingPanel, startPanelClose } = useWorldPanelTransition();
+  const { cancelPanelClose, closingPanel, startPanelClose } = usePanelTransition();
   const currentView = viewState.projectId === projectId
     ? viewState
     : { activeCategoryId: null, projectId, searchQuery: '' };

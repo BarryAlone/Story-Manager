@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import AttributeDefinitionForm from './AttributeDefinitionForm';
 import AttributeDefinitionMenu from './AttributeDefinitionMenu';
-import useWorldPanelDismiss from '../world/useWorldPanelDismiss';
+import usePanelDismiss from '../panels/usePanelDismiss';
 
 const ATTRIBUTE_FORM_TRANSITION_MS = 140;
 const DEFAULT_USAGE_LABELS = {
@@ -44,7 +44,7 @@ export default function AttributeDefinitionManager({
   const menuButtonRefs = useRef(new Map());
   const formCloseTimerRef = useRef(null);
 
-  useWorldPanelDismiss({
+  usePanelDismiss({
     disabled: disabled || isClosing,
     onOutsideClick: onClose,
     panelRef,

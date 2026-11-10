@@ -5,11 +5,11 @@ import FABIcon from './assets/icons/plus.png';
 import AttributeDefinitionManager from './features/attributes/AttributeDefinitionManager';
 import useAttributeDefinitions from './features/attributes/useAttributeDefinitions';
 import './features/attributes/attributes.css';
-import CharacterForm from './features/characters/CharacterForm';
 import CharacterGrid from './features/characters/CharacterGrid';
+import CharacterPanel from './features/characters/CharacterPanel';
 import './features/characters/characterAttributes.css';
 import useCharacters from './features/characters/useCharacters';
-import useWorldPanelTransition from './features/world/useWorldPanelTransition';
+import usePanelTransition from './features/panels/usePanelTransition';
 import './features/world/worldElementPanel.css';
 
 const CHARACTER_USAGE_LABELS = {
@@ -21,15 +21,19 @@ const CHARACTER_USAGE_LABELS = {
 function CharacterList() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formPanelMode, setFormPanelMode] = useState(null);
   const [editingCharacter, setEditingCharacter] = useState(null);
   const [formVersion, setFormVersion] = useState(0);
   const [formLoadError, setFormLoadError] = useState('');
   const [isLoadingCharacterForm, setIsLoadingCharacterForm] = useState(false);
+  const [isFormPanelBusy, setIsFormPanelBusy] = useState(false);
+  const [isFormPanelDirty, setIsFormPanelDirty] = useState(false);
   const [isAttributesPanelOpen, setIsAttributesPanelOpen] = useState(false);
   const [isAttributesPanelDirty, setIsAttributesPanelDirty] = useState(false);
   const attributesButtonRef = useRef(null);
+  const addButtonRef = useRef(null);
   const formRequestRef = useRef(0);
+  const returnFocusRef = useRef(null);
   const {
     cancelCharacterRequest,
     characters,
@@ -39,7 +43,7 @@ function CharacterList() {
     saveCharacter,
     setError: setListError,
   } = useCharacters(projectId);
-  const { cancelPanelClose, closingPanel, startPanelClose } = useWorldPanelTransition();
+  const { cancelPanelClose, closingPanel, startPanelClose } = usePanelTransition();
   const definitionStore = useAttributeDefinitions({
     collectionEndpoint: projectId
       ? `/api/projects/${projectId}/character-attribute-definitions`
@@ -52,43 +56,90 @@ function CharacterList() {
     formRequestRef.current += 1;
     Promise.resolve().then(() => {
       if (cancelled) return;
-      setIsModalOpen(false);
+      cancelPanelClose();
+      setFormPanelMode(null);
       setEditingCharacter(null);
       setFormLoadError('');
       setIsLoadingCharacterForm(false);
+      setIsFormPanelBusy(false);
+      setIsFormPanelDirty(false);
       setIsAttributesPanelOpen(false);
+      setIsAttributesPanelDirty(false);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [projectId]);
+  }, [cancelPanelClose, projectId]);
 
-  const closeForm = useCallback(() => {
+  const restoreFocus = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      if (returnFocusRef.current?.isConnected) returnFocusRef.current.focus();
+      else addButtonRef.current?.focus();
+    });
+  }, []);
+
+  const clearFormPanel = useCallback((shouldRestoreFocus = true) => {
+    cancelPanelClose();
     formRequestRef.current += 1;
     cancelCharacterRequest();
     setEditingCharacter(null);
     setFormLoadError('');
     setIsLoadingCharacterForm(false);
-    setIsModalOpen(false);
-  }, [cancelCharacterRequest]);
+    setIsFormPanelBusy(false);
+    setIsFormPanelDirty(false);
+    setFormPanelMode(null);
+    if (shouldRestoreFocus) restoreFocus();
+  }, [cancelCharacterRequest, cancelPanelClose, restoreFocus]);
 
-  const openCreateModal = () => {
+  const clearAttributesPanel = useCallback((shouldRestoreFocus = true) => {
+    cancelPanelClose();
+    setIsAttributesPanelOpen(false);
+    setIsAttributesPanelDirty(false);
+    if (shouldRestoreFocus) restoreFocus();
+  }, [cancelPanelClose, restoreFocus]);
+
+  const confirmDiscardPanel = useCallback(() => (
+    (!isFormPanelDirty && !isAttributesPanelDirty)
+    || window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')
+  ), [isAttributesPanelDirty, isFormPanelDirty]);
+
+  const requestCloseFormPanel = useCallback(() => {
+    if (isFormPanelBusy || closingPanel === 'character' || !confirmDiscardPanel()) return;
+    startPanelClose('character', () => clearFormPanel());
+  }, [clearFormPanel, closingPanel, confirmDiscardPanel, isFormPanelBusy, startPanelClose]);
+
+  const closeSavedFormPanel = useCallback(() => {
+    setIsFormPanelDirty(false);
+    startPanelClose('character', () => clearFormPanel());
+  }, [clearFormPanel, startPanelClose]);
+
+  const openCreatePanel = (trigger = addButtonRef.current) => {
+    if (isFormPanelBusy || definitionStore.isMutating || !confirmDiscardPanel()) return;
+    returnFocusRef.current = trigger;
+    clearAttributesPanel(false);
     formRequestRef.current += 1;
     setFormVersion((current) => current + 1);
     setEditingCharacter(null);
     setFormLoadError('');
     setIsLoadingCharacterForm(false);
-    setIsModalOpen(true);
+    setIsFormPanelBusy(false);
+    setIsFormPanelDirty(false);
+    setFormPanelMode('create');
   };
 
-  const openEditModal = async (character) => {
+  const openEditPanel = async (character, trigger) => {
+    if (isFormPanelBusy || definitionStore.isMutating || !confirmDiscardPanel()) return;
+    returnFocusRef.current = trigger;
+    clearAttributesPanel(false);
     const requestId = formRequestRef.current + 1;
     formRequestRef.current = requestId;
     setFormVersion((current) => current + 1);
     setEditingCharacter(character);
     setFormLoadError('');
-    setIsModalOpen(true);
+    setIsFormPanelBusy(false);
+    setIsFormPanelDirty(false);
+    setFormPanelMode('edit');
     setIsLoadingCharacterForm(true);
 
     try {
@@ -112,12 +163,17 @@ function CharacterList() {
     return savedCharacter;
   };
 
-  const handleDelete = async (characterId) => {
-    if (!window.confirm('Czy na pewno chcesz usunąć tę postać?')) return;
+  const requestDeleteCharacter = async (characterId) => {
+    if (!window.confirm('Czy na pewno chcesz usunąć tę postać?')) return false;
 
+    const deleted = await deleteCharacter(characterId);
+    if (deleted) await definitionStore.refreshDefinitions();
+    return deleted;
+  };
+
+  const handleDelete = async (characterId) => {
     try {
-      const deleted = await deleteCharacter(characterId);
-      if (deleted) await definitionStore.refreshDefinitions();
+      await requestDeleteCharacter(characterId);
     } catch (error) {
       setListError(error.message || 'Nie udało się usunąć postaci.');
     }
@@ -125,14 +181,17 @@ function CharacterList() {
 
   const requestCloseAttributesPanel = useCallback(() => {
     if (definitionStore.isMutating || closingPanel === 'attributes') return;
-    if (isAttributesPanelDirty && !window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')) return;
-    startPanelClose('attributes', () => {
-      cancelPanelClose();
-      setIsAttributesPanelOpen(false);
-      setIsAttributesPanelDirty(false);
-      window.requestAnimationFrame(() => attributesButtonRef.current?.focus());
-    });
-  }, [cancelPanelClose, closingPanel, definitionStore.isMutating, isAttributesPanelDirty, startPanelClose]);
+    if (!confirmDiscardPanel()) return;
+    startPanelClose('attributes', () => clearAttributesPanel());
+  }, [clearAttributesPanel, closingPanel, confirmDiscardPanel, definitionStore.isMutating, startPanelClose]);
+
+  const openAttributesPanel = (trigger = attributesButtonRef.current) => {
+    if (isFormPanelBusy || definitionStore.isMutating || !confirmDiscardPanel()) return;
+    returnFocusRef.current = attributesButtonRef.current || trigger;
+    clearFormPanel(false);
+    setIsAttributesPanelDirty(false);
+    setIsAttributesPanelOpen(true);
+  };
 
   return (
     <div className="character-list-page">
@@ -143,17 +202,16 @@ function CharacterList() {
           type="button"
           className="character-list-page__attributes-button"
           data-world-panel-trigger
-          onClick={() => {
-            setIsAttributesPanelDirty(false);
-            setIsAttributesPanelOpen(true);
-          }}
+          onClick={(event) => openAttributesPanel(event.currentTarget)}
           disabled={definitionStore.isMutating || isAttributesPanelOpen}
         >
           Atrybuty postaci
         </button>
         <button
+          ref={addButtonRef}
           type="button"
-          onClick={openCreateModal}
+          data-panel-trigger
+          onClick={(event) => openCreatePanel(event.currentTarget)}
           style={{
             position: 'fixed',
             bottom: '40px',
@@ -169,7 +227,7 @@ function CharacterList() {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            zIndex: 1000,
+            zIndex: formPanelMode || isAttributesPanelOpen ? 10 : 1000,
             transition: 'transform 0.2s',
           }}
           onMouseEnter={(event) => { event.currentTarget.style.transform = 'scale(1.1)'; }}
@@ -181,27 +239,36 @@ function CharacterList() {
 
       {listError && <p className="character-form__error" role="alert">{listError}</p>}
 
-      {isModalOpen && (
-        <CharacterForm
-          key={formVersion}
-          character={editingCharacter}
-          definitionStore={definitionStore}
-          isLoading={isLoadingCharacterForm}
-          loadError={formLoadError}
-          onClose={closeForm}
-          onSave={handleSaveCharacter}
-          projectId={projectId}
-        />
-      )}
-
       <CharacterGrid
         characters={characters}
         onDelete={handleDelete}
-        onEdit={openEditModal}
+        onEdit={openEditPanel}
         onOpen={(characterId) => navigate(`/project/${projectId}/characters/${characterId}`)}
       />
 
       <div className="world-element-panel-layer character-attribute-panel-layer">
+        {formPanelMode && (
+          <CharacterPanel
+            character={editingCharacter}
+            definitionStore={definitionStore}
+            formVersion={formVersion}
+            isBusy={isFormPanelBusy || definitionStore.isMutating}
+            isClosing={closingPanel === 'character'}
+            isLoading={isLoadingCharacterForm}
+            loadError={formLoadError}
+            mode={formPanelMode}
+            onBusyChange={setIsFormPanelBusy}
+            onClose={requestCloseFormPanel}
+            onDelete={requestDeleteCharacter}
+            onDeleted={closeSavedFormPanel}
+            onDirtyChange={setIsFormPanelDirty}
+            onManageAttributes={openAttributesPanel}
+            onSave={handleSaveCharacter}
+            onSaved={closeSavedFormPanel}
+            projectId={projectId}
+          />
+        )}
+
         {isAttributesPanelOpen && (
           <AttributeDefinitionManager
             contextLabel="Postacie w projekcie"
