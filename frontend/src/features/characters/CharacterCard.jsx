@@ -31,9 +31,10 @@ export default function CharacterCard({ character, onDelete, onEdit, onOpen }) {
     >
       <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px', zIndex: 10 }}>
         <button
+          data-panel-trigger
           onClick={(event) => {
             event.stopPropagation();
-            onEdit();
+            onEdit(event.currentTarget);
           }}
           title="Edytuj"
           style={{ width: '35px', height: '35px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.8)', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', opacity: 0.7 }}

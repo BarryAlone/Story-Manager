@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export default function useWorldPanelDismiss({
+export default function usePanelDismiss({
   disabled,
   onOutsideClick,
   panelRef,
@@ -12,8 +12,8 @@ export default function useWorldPanelDismiss({
       const target = event.target;
       if (!(target instanceof Node)) return;
       if (panelRef.current?.contains(target)) return;
-      if (target instanceof Element && target.closest('[data-world-panel-portal]')) return;
-      if (target instanceof Element && target.closest('[data-world-panel-trigger]')) return;
+      if (target instanceof Element && target.closest('[data-panel-portal], [data-world-panel-portal]')) return;
+      if (target instanceof Element && target.closest('[data-panel-trigger], [data-world-panel-trigger]')) return;
       onOutsideClick();
     };
 

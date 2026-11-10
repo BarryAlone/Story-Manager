@@ -8,7 +8,7 @@ import './features/attributes/attributes.css';
 import CharacterDetailsContent from './features/characters/CharacterDetailsContent';
 import './features/characters/characterAttributes.css';
 import useCharacterDetails from './features/characters/useCharacterDetails';
-import useWorldPanelTransition from './features/world/useWorldPanelTransition';
+import usePanelTransition from './features/panels/usePanelTransition';
 import './features/world/worldElementPanel.css';
 
 const CHARACTER_USAGE_LABELS = {
@@ -52,7 +52,7 @@ function CharacterDetailEditor({
   const [isAttributesPanelOpen, setIsAttributesPanelOpen] = useState(false);
   const [isAttributesPanelDirty, setIsAttributesPanelDirty] = useState(false);
   const attributesButtonRef = useRef(null);
-  const { cancelPanelClose, closingPanel, startPanelClose } = useWorldPanelTransition();
+  const { cancelPanelClose, closingPanel, startPanelClose } = usePanelTransition();
   const definitionStore = useAttributeDefinitions({
     collectionEndpoint: projectId
       ? `/api/projects/${projectId}/character-attribute-definitions`

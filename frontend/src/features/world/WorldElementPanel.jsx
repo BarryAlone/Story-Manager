@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import WorldElementDetails from './WorldElementDetails';
 import WorldElementForm from './WorldElementForm';
-import useWorldPanelDismiss from './useWorldPanelDismiss';
+import usePanelDismiss from '../panels/usePanelDismiss';
 
 export default function WorldElementPanel({
   category,
@@ -28,7 +28,7 @@ export default function WorldElementPanel({
 }) {
   const panelRef = useRef(null);
 
-  useWorldPanelDismiss({
+  usePanelDismiss({
     disabled: isBusy || isClosing,
     onOutsideClick: onClose,
     panelRef,
