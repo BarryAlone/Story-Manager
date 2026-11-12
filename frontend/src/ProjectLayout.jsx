@@ -12,6 +12,7 @@ function ProjectLayout() {
   const { projectId } = useParams();
   const location = useLocation();
   const isFullscreenView = [
+    `/project/${projectId}/characters`,
     `/project/${projectId}/inspirations`,
     `/project/${projectId}/world-elements`,
   ].includes(location.pathname);

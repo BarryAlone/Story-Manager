@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import FABIcon from './assets/icons/plus.png';
 import AttributeDefinitionManager from './features/attributes/AttributeDefinitionManager';
 import useAttributeDefinitions from './features/attributes/useAttributeDefinitions';
 import './features/attributes/attributes.css';
 import CharacterGrid from './features/characters/CharacterGrid';
 import CharacterPanel from './features/characters/CharacterPanel';
 import './features/characters/characterAttributes.css';
+import './features/characters/characterList.css';
 import useCharacters from './features/characters/useCharacters';
 import usePanelTransition from './features/panels/usePanelTransition';
 import './features/world/worldElementPanel.css';
@@ -39,7 +39,9 @@ function CharacterList() {
     characters,
     deleteCharacter,
     error: listError,
+    isLoading: isLoadingCharacters,
     loadCharacter,
+    reload: reloadCharacters,
     saveCharacter,
     setError: setListError,
   } = useCharacters(projectId);
@@ -171,11 +173,16 @@ function CharacterList() {
     return deleted;
   };
 
-  const handleDelete = async (characterId) => {
+  const handleDelete = async (characterId, trigger) => {
     try {
-      await requestDeleteCharacter(characterId);
+      const deleted = await requestDeleteCharacter(characterId);
+      window.requestAnimationFrame(() => {
+        if (!deleted && trigger?.isConnected) trigger.focus();
+        else addButtonRef.current?.focus();
+      });
     } catch (error) {
       setListError(error.message || 'Nie udało się usunąć postaci.');
+      window.requestAnimationFrame(() => trigger?.isConnected && trigger.focus());
     }
   };
 
@@ -196,55 +203,83 @@ function CharacterList() {
   return (
     <div className="character-list-page">
       <div className="character-list-page__toolbar">
-        <h1>Postacie</h1>
-        <button
-          ref={attributesButtonRef}
-          type="button"
-          className="character-list-page__attributes-button"
-          data-world-panel-trigger
-          onClick={(event) => openAttributesPanel(event.currentTarget)}
-          disabled={definitionStore.isMutating || isAttributesPanelOpen}
-        >
-          Atrybuty postaci
-        </button>
-        <button
-          ref={addButtonRef}
-          type="button"
-          data-panel-trigger
-          onClick={(event) => openCreatePanel(event.currentTarget)}
-          style={{
-            position: 'fixed',
-            bottom: '40px',
-            right: '40px',
-            width: '60px',
-            height: '60px',
-            borderRadius: '50%',
-            border: 'none',
-            cursor: 'pointer',
-            backgroundColor: '#6c7683',
-            opacity: 0.9,
-            boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: formPanelMode || isAttributesPanelOpen ? 10 : 1000,
-            transition: 'transform 0.2s',
-          }}
-          onMouseEnter={(event) => { event.currentTarget.style.transform = 'scale(1.1)'; }}
-          onMouseLeave={(event) => { event.currentTarget.style.transform = 'scale(1)'; }}
-        >
-          <img src={FABIcon} alt="Dodaj postać" style={{ width: '24px', height: '24px' }} />
-        </button>
+        <div className="character-list-page__heading">
+          <h1>Postacie</h1>
+          <span className="character-list-page__count" aria-live="polite">
+            {characters.length} {characters.length === 1 ? 'postać' : characters.length > 1 && characters.length < 5 ? 'postacie' : 'postaci'}
+          </span>
+        </div>
+
+        <div className="character-list-page__actions">
+          <button
+            ref={attributesButtonRef}
+            type="button"
+            className="character-list-page__action"
+            data-world-panel-trigger
+            onClick={(event) => openAttributesPanel(event.currentTarget)}
+            disabled={definitionStore.isMutating || isAttributesPanelOpen}
+          >
+            Atrybuty postaci
+          </button>
+          <button
+            ref={addButtonRef}
+            type="button"
+            className="character-list-page__action character-list-page__action--primary"
+            data-panel-trigger
+            onClick={(event) => openCreatePanel(event.currentTarget)}
+          >
+            Dodaj postać
+          </button>
+        </div>
       </div>
 
-      {listError && <p className="character-form__error" role="alert">{listError}</p>}
-
-      <CharacterGrid
-        characters={characters}
-        onDelete={handleDelete}
-        onEdit={openEditPanel}
-        onOpen={(characterId) => navigate(`/project/${projectId}/characters/${characterId}`)}
-      />
+      {isLoadingCharacters && characters.length === 0 ? (
+        <div className="character-list-page__state" role="status" aria-label="Ładowanie postaci">
+          <div className="character-list-page__state-content">
+            <span className="character-list-page__loading-indicator" aria-hidden="true" />
+            <p>Ładowanie postaci…</p>
+          </div>
+        </div>
+      ) : listError && characters.length === 0 ? (
+        <div className="character-list-page__state" role="alert">
+          <div className="character-list-page__state-content">
+            <h2>Nie udało się pobrać postaci</h2>
+            <p>{listError}</p>
+            <button type="button" className="character-list-page__retry" onClick={reloadCharacters}>
+              Spróbuj ponownie
+            </button>
+          </div>
+        </div>
+      ) : characters.length === 0 ? (
+        <div className="character-list-page__state">
+          <div className="character-list-page__state-content">
+            <h2>Nie ma jeszcze żadnych postaci</h2>
+            <p>Dodaj pierwszą postać, aby rozpocząć tworzenie obsady projektu.</p>
+            <button
+              type="button"
+              className="character-list-page__action character-list-page__action--primary"
+              onClick={(event) => openCreatePanel(event.currentTarget)}
+            >
+              Dodaj postać
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {listError && (
+            <div className="character-list-page__inline-error" role="alert">
+              <span>{listError}</span>
+              <button type="button" onClick={reloadCharacters}>Spróbuj ponownie</button>
+            </div>
+          )}
+          <CharacterGrid
+            characters={characters}
+            onDelete={handleDelete}
+            onEdit={openEditPanel}
+            onOpen={(characterId) => navigate(`/project/${projectId}/characters/${characterId}`)}
+          />
+        </>
+      )}
 
       <div className="world-element-panel-layer character-attribute-panel-layer">
         {formPanelMode && (

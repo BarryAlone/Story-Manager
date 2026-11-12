@@ -6,45 +6,55 @@ import { characterApiError } from './characterApi';
 export default function useCharacters(projectId) {
   const [characters, setCharacters] = useState([]);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const collectionControllerRef = useRef(null);
   const characterControllerRef = useRef(null);
   const projectIdRef = useRef(projectId);
 
-  useEffect(() => {
-    projectIdRef.current = projectId;
+  const loadCharacters = useCallback(async () => {
     collectionControllerRef.current?.abort();
     characterControllerRef.current?.abort();
     const controller = new AbortController();
     collectionControllerRef.current = controller;
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await apiFetch(`/api/projects/${projectId}/characters`, { signal: controller.signal });
+      if (!response.ok) {
+        throw await characterApiError(response, 'Nie udało się pobrać postaci.');
+      }
+      const data = await response.json();
+
+      if (!controller.signal.aborted && projectIdRef.current === projectId) {
+        setCharacters(data.characters || data);
+      }
+    } catch (requestError) {
+      if (requestError?.name !== 'AbortError' && projectIdRef.current === projectId) {
+        setError(requestError.message || 'Nie udało się pobrać postaci.');
+      }
+    } finally {
+      if (!controller.signal.aborted && projectIdRef.current === projectId) {
+        setIsLoading(false);
+      }
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    projectIdRef.current = projectId;
     let cancelled = false;
 
     Promise.resolve().then(() => {
-      if (cancelled) return null;
+      if (cancelled) return;
       setCharacters([]);
-      setError('');
-      return apiFetch(`/api/projects/${projectId}/characters`, { signal: controller.signal });
-    })
-      .then(async (response) => {
-        if (!response) return null;
-        if (!response.ok) throw await characterApiError(response, 'Nie udało się pobrać postaci.');
-        return response.json();
-      })
-      .then((data) => {
-        if (data && !controller.signal.aborted && projectIdRef.current === projectId) {
-          setCharacters(data.characters || data);
-        }
-      })
-      .catch((requestError) => {
-        if (requestError?.name !== 'AbortError' && projectIdRef.current === projectId) {
-          setError(requestError.message || 'Nie udało się pobrać postaci.');
-        }
-      });
+      loadCharacters();
+    });
 
     return () => {
       cancelled = true;
-      controller.abort();
+      collectionControllerRef.current?.abort();
     };
-  }, [projectId]);
+  }, [loadCharacters, projectId]);
 
   useEffect(() => () => characterControllerRef.current?.abort(), []);
 
@@ -100,7 +110,9 @@ export default function useCharacters(projectId) {
     characters,
     deleteCharacter,
     error,
+    isLoading,
     loadCharacter,
+    reload: loadCharacters,
     saveCharacter,
     setError,
   };
