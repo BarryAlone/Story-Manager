@@ -1,43 +1,3 @@
-.character-list-page {
-  position: relative;
-  min-height: 100%;
-}
-
-.character-list-page__toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.character-list-page__toolbar h1 {
-  margin: 0;
-}
-
-.character-list-page__attributes-button {
-  padding: 8px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #fff;
-  color: #334155;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.84rem;
-  font-weight: 650;
-}
-
-.character-list-page__attributes-button:hover:not(:disabled) {
-  border-color: #93c5fd;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.character-list-page__attributes-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
 .world-element-panel-layer.character-attribute-panel-layer {
   position: fixed;
   top: 65px;
@@ -220,8 +180,4 @@
     left: 80px;
   }
 
-  .character-list-page__toolbar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 }
