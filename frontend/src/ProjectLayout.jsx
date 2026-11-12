@@ -11,6 +11,7 @@ import { apiFetch } from './api';
 function ProjectLayout() {
   const { projectId } = useParams();
   const location = useLocation();
+  const isCharacterList = location.pathname === `/project/${projectId}/characters`;
   const isFullscreenView = [
     `/project/${projectId}/characters`,
     `/project/${projectId}/inspirations`,
@@ -128,7 +129,13 @@ function ProjectLayout() {
         </header>
 
         {/* GŁÓWNY OBSZAR ROBOCZY */}
-        <main style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: isFullscreenView ? 0 : '30px' }}>
+        <main style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          padding: isFullscreenView ? 0 : '30px',
+          scrollbarGutter: isCharacterList ? 'stable' : undefined,
+        }}>
           <Outlet />
         </main>
 

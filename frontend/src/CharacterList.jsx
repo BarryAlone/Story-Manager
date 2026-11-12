@@ -5,10 +5,12 @@ import AttributeDefinitionManager from './features/attributes/AttributeDefinitio
 import useAttributeDefinitions from './features/attributes/useAttributeDefinitions';
 import './features/attributes/attributes.css';
 import CharacterGrid from './features/characters/CharacterGrid';
+import CharacterListFilters from './features/characters/CharacterListFilters';
 import CharacterPanel from './features/characters/CharacterPanel';
 import './features/characters/characterAttributes.css';
 import './features/characters/characterList.css';
 import useCharacters from './features/characters/useCharacters';
+import useCharacterListFilters from './features/characters/useCharacterListFilters';
 import usePanelTransition from './features/panels/usePanelTransition';
 import './features/world/worldElementPanel.css';
 
@@ -16,6 +18,15 @@ const CHARACTER_USAGE_LABELS = {
   few: 'postacie',
   many: 'postaci',
   one: 'postać',
+};
+
+const characterCountLabel = (count) => {
+  if (count === 1) return 'postać';
+  const lastTwoDigits = count % 100;
+  const lastDigit = count % 10;
+  return lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)
+    ? 'postacie'
+    : 'postaci';
 };
 
 function CharacterList() {
@@ -45,6 +56,7 @@ function CharacterList() {
     saveCharacter,
     setError: setListError,
   } = useCharacters(projectId);
+  const characterFilters = useCharacterListFilters(characters);
   const { cancelPanelClose, closingPanel, startPanelClose } = usePanelTransition();
   const definitionStore = useAttributeDefinitions({
     collectionEndpoint: projectId
@@ -206,9 +218,28 @@ function CharacterList() {
         <div className="character-list-page__heading">
           <h1>Postacie</h1>
           <span className="character-list-page__count" aria-live="polite">
-            {characters.length} {characters.length === 1 ? 'postać' : characters.length > 1 && characters.length < 5 ? 'postacie' : 'postaci'}
+            {characterFilters.visibleCharacters.length === characters.length
+              ? `${characters.length} ${characterCountLabel(characters.length)}`
+              : `${characterFilters.visibleCharacters.length} z ${characters.length} postaci`}
           </span>
         </div>
+
+        {characters.length > 0 && (
+          <CharacterListFilters
+            activeFilterCount={characterFilters.activeFilterCount}
+            availableGroups={characterFilters.availableGroups}
+            hasUngroupedCharacters={characterFilters.hasUngroupedCharacters}
+            isGrouped={characterFilters.isGrouped}
+            onClear={characterFilters.clearFilters}
+            onGroupingChange={characterFilters.setIsGrouped}
+            onQueryChange={characterFilters.setQuery}
+            onSortOrderChange={characterFilters.setSortOrder}
+            onToggleGroup={characterFilters.toggleGroup}
+            query={characterFilters.query}
+            selectedGroupKeys={characterFilters.selectedGroupKeys}
+            sortOrder={characterFilters.sortOrder}
+          />
+        )}
 
         <div className="character-list-page__actions">
           <button
@@ -264,6 +295,16 @@ function CharacterList() {
             </button>
           </div>
         </div>
+      ) : characterFilters.visibleCharacters.length === 0 ? (
+        <div className="character-list-page__state">
+          <div className="character-list-page__state-content">
+            <h2>Brak pasujących postaci</h2>
+            <p>Zmień wyszukiwaną frazę lub wyczyść ustawione filtry.</p>
+            <button type="button" className="character-list-page__retry" onClick={characterFilters.clearFilters}>
+              Wyczyść filtry
+            </button>
+          </div>
+        </div>
       ) : (
         <>
           {listError && (
@@ -272,12 +313,31 @@ function CharacterList() {
               <button type="button" onClick={reloadCharacters}>Spróbuj ponownie</button>
             </div>
           )}
-          <CharacterGrid
-            characters={characters}
-            onDelete={handleDelete}
-            onEdit={openEditPanel}
-            onOpen={(characterId) => navigate(`/project/${projectId}/characters/${characterId}`)}
-          />
+          {characterFilters.isGrouped ? (
+            <div className="character-groups">
+              {characterFilters.groupedCharacters.map((section, index) => (
+                <section key={section.key} className="character-group" aria-labelledby={`character-group-${index}`}>
+                  <div className="character-group__heading">
+                    <h2 id={`character-group-${index}`} title={section.label}>{section.label}</h2>
+                    <span>{section.characters.length} {characterCountLabel(section.characters.length)}</span>
+                  </div>
+                  <CharacterGrid
+                    characters={section.characters}
+                    onDelete={handleDelete}
+                    onEdit={openEditPanel}
+                    onOpen={(characterId) => navigate(`/project/${projectId}/characters/${characterId}`)}
+                  />
+                </section>
+              ))}
+            </div>
+          ) : (
+            <CharacterGrid
+              characters={characterFilters.visibleCharacters}
+              onDelete={handleDelete}
+              onEdit={openEditPanel}
+              onOpen={(characterId) => navigate(`/project/${projectId}/characters/${characterId}`)}
+            />
+          )}
         </>
       )}
 
