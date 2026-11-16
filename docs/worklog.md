@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-16 — Fundament sekcji opisowych postaci
+
+- Zakres: relacyjne definicje sekcji wspólne dla projektu, indywidualne treści postaci, relacje modeli, polityki własności oraz integralność i kaskady bazy.
+- Wynik: definicje mają znormalizowane, unikalne tytuły i stabilną kolejność, a jedna postać może przechowywać najwyżej jedną treść danej sekcji. Brak rekordu oznacza pustą sekcję; API, frontend, sanitizacja i migracja `description_long` pozostają poza etapem.
+- Testy: test fundamentu — 12 testów i 34 asercje; zestaw postaci, autoryzacji, atrybutów i obrazów — 64 testy i 378 asercji; pełny PHPUnit — 201 testów i 1291 asercji. Składnia PHP, Pint, ścisła walidacja Composera i `git diff --check` zakończyły się powodzeniem.
+
 ## 2026-11-09 — Usunięcie poprzedniego systemu atrybutów
 
 - Zakres: usunięcie nieużywanego modelu, API, ekranu i pól starego mechanizmu po przełączeniu postaci oraz elementów świata na wspólne definicje i wartości.

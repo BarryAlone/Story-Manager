@@ -20,6 +20,11 @@ class Project extends Model
         return $this->hasMany(Character::class);
     }
 
+    public function characterSectionDefinitions(): HasMany
+    {
+        return $this->hasMany(CharacterSectionDefinition::class)->ordered();
+    }
+
     public function chapters(): HasMany
     {
         return $this->hasMany(Chapter::class);

@@ -76,3 +76,11 @@
 - Szczegóły, utworzenie i aktualizacja encji zwracają `attribute_values` jako obiekt `definition_id => value`; liczby pozostają stringami. Lekkie listy nie dołączają wartości.
 - Dane encji i wartości są zapisywane w jednej transakcji. Nowy obraz jest sprzątany po dowolnym błędzie, a poprzedni plik jest usuwany dopiero po powodzeniu całej transakcji.
 - Frontend utrzymuje jeden stan definicji dla aktywnego zakresu i współdzieli neutralne komponenty pól oraz zarządzania między modułami postaci i elementów świata.
+
+## Sekcje opisowe postaci
+
+- Definicje sekcji są wspólne dla wszystkich postaci jednego projektu i mają stabilną kolejność `sort_order`, a treść każdej definicji jest przechowywana osobno dla konkretnej postaci.
+- Brak rekordu treści oznacza pustą sekcję. Dodanie definicji nie tworzy automatycznie pustych rekordów dla istniejących postaci.
+- MVP obsługuje jeden poziom sekcji bez podsekcji i hierarchii.
+- Treść sekcji może przechowywać długi HTML, ale przyszłe API musi oczyścić go po stronie serwera przed zapisem.
+- Istniejące pole `characters.description_long` i aktualne renderowanie historii pozostają bez zmian do czasu osobnej integracji API i SPA.
