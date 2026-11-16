@@ -17,6 +17,7 @@
 ## Zakończone
 
 - [x] Dodano backendowy fundament wspólnych definicji i indywidualnych treści sekcji opisowych postaci.
+- [x] Dodano chronione API definicji i treści sekcji postaci z porządkowaniem, bezpiecznym usuwaniem i sanitizacją HTML.
 - [x] Utworzono bazową strukturę backendu i API dla głównych zasobów.
 - [x] Dodano podstawowy backendowy przepływ rejestracji, logowania, wylogowania i bieżącego użytkownika.
 - [x] Zintegrowano sesyjne uwierzytelnianie cookie + Sanctum z React SPA, obejmując logowanie, bieżącego użytkownika, ochronę widoków i wylogowanie.

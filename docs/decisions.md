@@ -82,5 +82,7 @@
 - Definicje sekcji są wspólne dla wszystkich postaci jednego projektu i mają stabilną kolejność `sort_order`, a treść każdej definicji jest przechowywana osobno dla konkretnej postaci.
 - Brak rekordu treści oznacza pustą sekcję. Dodanie definicji nie tworzy automatycznie pustych rekordów dla istniejących postaci.
 - MVP obsługuje jeden poziom sekcji bez podsekcji i hierarchii.
-- Treść sekcji może przechowywać długi HTML, ale przyszłe API musi oczyścić go po stronie serwera przed zapisem.
+- Treść sekcji przechowuje długi HTML oczyszczany przed zapisem przez ten sam serwis oparty na `symfony/html-sanitizer`, który obsługuje treść rozdziałów. Surowy payload ma limit 2 000 000 znaków, a HTML pozbawiony rzeczywistej treści jest odrzucany odpowiedzią `422`.
+- Zwykłe usunięcie używanej definicji jest blokowane odpowiedzią `409`; jawne `force=true` usuwa definicję i wszystkie jej treści kaskadowo. Usunięcie treści konkretnej postaci jest idempotentne i nie usuwa globalnej definicji.
+- Zmiana kolejności przyjmuje dokładnie raz wszystkie identyfikatory definicji projektu i wykonuje aktualizację atomowo.
 - Istniejące pole `characters.description_long` i aktualne renderowanie historii pozostają bez zmian do czasu osobnej integracji API i SPA.

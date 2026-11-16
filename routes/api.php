@@ -6,6 +6,8 @@ use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ChapterStructureController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterRelationshipController;
+use App\Http\Controllers\CharacterSectionContentController;
+use App\Http\Controllers\CharacterSectionDefinitionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectInspirationController;
@@ -68,6 +70,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/characters/{id}', [CharacterController::class, 'update']);
     Route::get('/projects/{project}/characters/{id}', [CharacterController::class, 'showInProject']);
     Route::get('/characters/{id}', [CharacterController::class, 'show']);
+
+    // Character sections
+    Route::get('/projects/{project}/character-section-definitions', [CharacterSectionDefinitionController::class, 'index']);
+    Route::post('/projects/{project}/character-section-definitions', [CharacterSectionDefinitionController::class, 'store']);
+    Route::patch('/projects/{project}/character-section-definitions/order', [CharacterSectionDefinitionController::class, 'reorder']);
+    Route::patch('/character-section-definitions/{definition}', [CharacterSectionDefinitionController::class, 'update']);
+    Route::delete('/character-section-definitions/{definition}', [CharacterSectionDefinitionController::class, 'destroy']);
+    Route::get('/characters/{character}/section-contents', [CharacterSectionContentController::class, 'index']);
+    Route::put('/characters/{character}/section-contents/{definition}', [CharacterSectionContentController::class, 'upsert']);
+    Route::delete('/characters/{character}/section-contents/{definition}', [CharacterSectionContentController::class, 'destroy']);
 
     // CharacterRelationship
     Route::get('/projects/{project}/character-relationships', [CharacterRelationshipController::class, 'index']);
