@@ -1,5 +1,6 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Editor } from '@tinymce/tinymce-react';
-import { Link } from 'react-router-dom';
 
 import editIcon from '../../assets/icons/pencil.png';
 import { backendUrl } from '../../api';
@@ -24,110 +25,268 @@ export default function CharacterDetailsContent({
   onOpenAttributes,
   onReset,
   onSave,
-  projectId,
   saveError,
 }) {
   const imageUrl = character.character_image
     ? backendUrl(`/storage/${character.character_image}`)
     : null;
+  const selectedImageUrl = useMemo(
+    () => (form.imageFile ? URL.createObjectURL(form.imageFile) : null),
+    [form.imageFile],
+  );
+  const visibleImageUrl = selectedImageUrl || imageUrl;
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+  const imageInputRef = useRef(null);
+  const imagePreviewButtonRef = useRef(null);
+  const lightboxCloseButtonRef = useRef(null);
+  const wasImagePreviewOpenRef = useRef(false);
+  const isEditing = Object.values(editingFields).some(Boolean);
+  const beginEditingFromSurface = (event, field, enabled = true) => {
+    if (!enabled || editingFields[field]) return;
+    if (event.target.closest('button, a, input, textarea, select, [contenteditable="true"], .tox-tinymce')) return;
+    onEditField(field);
+  };
+
+  useEffect(() => () => {
+    if (selectedImageUrl) URL.revokeObjectURL(selectedImageUrl);
+  }, [selectedImageUrl]);
+
+  useEffect(() => {
+    if (!isImagePreviewOpen) return undefined;
+
+    lightboxCloseButtonRef.current?.focus({ preventScroll: true });
+    const closeWithKeyboard = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsImagePreviewOpen(false);
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        lightboxCloseButtonRef.current?.focus({ preventScroll: true });
+      }
+    };
+
+    document.addEventListener('keydown', closeWithKeyboard, true);
+    return () => document.removeEventListener('keydown', closeWithKeyboard, true);
+  }, [isImagePreviewOpen]);
+
+  useEffect(() => {
+    if (isImagePreviewOpen) {
+      wasImagePreviewOpenRef.current = true;
+      return;
+    }
+
+    if (wasImagePreviewOpenRef.current) {
+      wasImagePreviewOpenRef.current = false;
+      imagePreviewButtonRef.current?.focus({ preventScroll: true });
+    }
+  }, [isImagePreviewOpen]);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <Link to={`/project/${projectId}/characters`} style={{ textDecoration: 'none', color: '#4B5563', marginBottom: '20px', display: 'inline-block' }}>
-        ← Powrót do listy postaci
-      </Link>
-
-      <div style={{ display: 'flex', gap: '40px', marginTop: '20px', flexWrap: 'wrap' }}>
-        <div style={{ width: '300px', minWidth: '280px', borderRadius: '10px', backgroundColor: '#374151', overflow: 'hidden' }}>
-          {imageUrl ? (
-            <img src={imageUrl} alt={character.name} style={{ width: '100%', height: '400px', objectFit: 'cover' }} />
-          ) : (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px', color: '#9ca3af' }}>Brak zdjęcia</div>
-          )}
-          <div style={{ padding: '14px', backgroundColor: '#f8fafc', borderTop: '1px solid #e5e7eb' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#374151' }}>Zdjęcie postaci</div>
-              <button
-                onClick={() => onEditField('image')}
-                title="Zmień zdjęcie"
-                style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-              >
-                <img src={editIcon} alt="Edytuj" style={{ width: '18px', height: '18px' }} />
-              </button>
-            </div>
-            {editingFields.image && (
-              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onImageChange} style={{ marginTop: '12px', width: '100%' }} />
-            )}
-          </div>
-        </div>
-
-        <div style={{ flex: 1, minWidth: '320px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ flex: 1 }}>
+    <div className="character-wiki">
+      <div className="character-wiki__layout">
+        <main className="character-wiki__article">
+          <header className="character-wiki__article-header">
+            <div
+              className={`character-wiki__title-row${editingFields.name ? '' : ' character-wiki__editable'}`}
+              onClick={(event) => beginEditingFromSurface(event, 'name')}
+            >
               {editingFields.name ? (
                 <input
+                  className="character-wiki__title-input"
                   type="text"
                   value={form.name}
+                  aria-label="Nazwa postaci"
                   onChange={(event) => onInputChange('name', event.target.value)}
-                  style={{ width: '100%', padding: '14px', fontSize: '2rem', fontWeight: 700, borderRadius: '8px', border: '1px solid #d1d5db' }}
                 />
               ) : (
-                <h1 style={{ margin: 0, fontSize: '2.5rem' }}>{character.name}</h1>
+                <h1>{character.name}</h1>
               )}
+              <EditButton label="Edytuj nazwę postaci" onClick={() => onEditField('name')} />
             </div>
-            <button
-              onClick={() => onEditField('name')}
-              title="Edytuj imię"
-              style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-            >
-              <img src={editIcon} alt="Edytuj" style={{ width: '18px', height: '18px' }} />
-            </button>
-          </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '18px' }}>
-            {editingFields.group_name ? (
+            <div
+              className={`character-wiki__intro${editingFields.description ? '' : ' character-wiki__editable'}`}
+              onClick={(event) => beginEditingFromSurface(event, 'description')}
+            >
+              {editingFields.description ? (
+                <textarea
+                  value={form.description}
+                  aria-label="Krótki opis postaci"
+                  rows={5}
+                  onChange={(event) => onInputChange('description', event.target.value)}
+                />
+              ) : (
+                <p className={character.description ? '' : 'character-wiki__empty-text'}>
+                  {character.description || 'Ta postać nie ma jeszcze krótkiego opisu.'}
+                </p>
+              )}
+              <div className="character-wiki__intro-heading">
+                <EditButton label="Edytuj krótki opis" onClick={() => onEditField('description')} />
+              </div>
+            </div>
+          </header>
+
+          <section
+            className={`character-wiki__history${editingFields.description_long ? '' : ' character-wiki__editable'}`}
+            aria-labelledby="character-history-title"
+            onClick={(event) => beginEditingFromSurface(event, 'description_long')}
+          >
+            <div className="character-wiki__section-heading">
+              <h2 id="character-history-title">Historia postaci</h2>
+              <EditButton label="Edytuj historię postaci" onClick={() => onEditField('description_long')} />
+            </div>
+
+            {editingFields.description_long ? (
+              <div className="character-wiki__editor">
+                <Editor
+                  apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+                  value={form.description_long}
+                  onEditorChange={(content) => onInputChange('description_long', content)}
+                  init={{
+                    height: 'calc(100vh - 260px)',
+                    menubar: false,
+                    plugins: [
+                      'advlist autolink lists link charmap preview anchor',
+                      'searchreplace visualblocks code fullscreen',
+                      'insertdatetime table code help wordcount',
+                    ],
+                    toolbar:
+                      'undo redo | formatselect | bold italic underline strikethrough | '
+                      + 'alignleft aligncenter alignright | bullist numlist outdent indent | '
+                      + 'blockquote | link | removeformat | code',
+                    content_style: 'body { font-family: Inter, system-ui, sans-serif; font-size: 14px; }',
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="character-wiki__history-content">
+                {character.description_long ? (
+                  <div dangerouslySetInnerHTML={{ __html: character.description_long }} />
+                ) : (
+                  <p className="character-wiki__empty-text">
+                    Brak historii postaci. Użyj akcji edycji, aby dodać tekst.
+                  </p>
+                )}
+              </div>
+            )}
+          </section>
+
+          {saveError && <p className="character-form__error" role="alert">{saveError}</p>}
+          {isEditing && (
+            <div className="character-wiki__save-actions">
+              <button type="button" className="character-wiki__button" onClick={onReset}>
+                Anuluj zmiany
+              </button>
+              <button
+                type="button"
+                className="character-wiki__button character-wiki__button--primary"
+                onClick={onSave}
+                disabled={isSaving}
+              >
+                {isSaving ? 'Zapisuję…' : 'Zapisz zmiany'}
+              </button>
+            </div>
+          )}
+        </main>
+
+        <aside className="character-wiki__infobox" aria-label={`Informacje o postaci: ${character.name}`}>
+          <div
+            className={`character-wiki__infobox-title${editingFields.name ? '' : ' character-wiki__editable'}`}
+            onClick={(event) => beginEditingFromSurface(event, 'name')}
+          >
+            {editingFields.name ? (
               <input
                 type="text"
-                value={form.group_name}
-                onChange={(event) => onInputChange('group_name', event.target.value)}
-                placeholder="Frakcja / grupa"
-                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d1d5db' }}
+                value={form.name}
+                aria-label="Nazwa postaci"
+                onChange={(event) => onInputChange('name', event.target.value)}
               />
             ) : (
-              <span style={{ backgroundColor: '#4B5563', color: 'white', padding: '8px 16px', borderRadius: '15px', fontSize: '0.95rem' }}>
-                {character.group_name || 'Brak grupy'}
-              </span>
+              <h2 title={character.name}>{character.name}</h2>
             )}
-            <button
-              onClick={() => onEditField('group_name')}
-              title="Edytuj grupę"
-              style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-            >
-              <img src={editIcon} alt="Edytuj" style={{ width: '18px', height: '18px' }} />
-            </button>
+            <EditButton label="Edytuj nazwę postaci" onClick={() => onEditField('name')} />
           </div>
 
-          <section className="character-detail__attributes" aria-labelledby="character-detail-attributes-title">
+          <div className="character-wiki__portrait">
+            {visibleImageUrl ? (
+              <button
+                ref={imagePreviewButtonRef}
+                type="button"
+                className="character-wiki__portrait-preview"
+                aria-label={`Powiększ portret postaci: ${form.name || character.name}`}
+                title={`Powiększ portret postaci: ${form.name || character.name}`}
+                onClick={() => setIsImagePreviewOpen(true)}
+              >
+                <img src={visibleImageUrl} alt={`Portret postaci: ${form.name || character.name}`} />
+              </button>
+            ) : (
+              <div className="character-wiki__portrait-placeholder">
+                <span aria-hidden="true">{character.name.trim().charAt(0).toLocaleUpperCase('pl-PL') || '?'}</span>
+                <small>Brak zdjęcia</small>
+              </div>
+            )}
+            <EditButton label="Zmień zdjęcie postaci" onClick={() => imageInputRef.current?.click()} />
+            <input
+              ref={imageInputRef}
+              className="character-wiki__image-file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={onImageChange}
+            />
+          </div>
+
+          <div
+            className={`character-wiki__infobox-identity${editingFields.group_name ? '' : ' character-wiki__editable'}`}
+            onClick={(event) => beginEditingFromSurface(event, 'group_name')}
+          >
+            <div className="character-wiki__group-row">
+              <span className="character-wiki__group-label">Grupa:</span>
+              {editingFields.group_name ? (
+                <input
+                  type="text"
+                  value={form.group_name}
+                  aria-label="Grupa postaci"
+                  placeholder="Frakcja / grupa"
+                  onChange={(event) => onInputChange('group_name', event.target.value)}
+                />
+              ) : (
+                <span className={`character-wiki__group-value${character.group_name ? '' : ' character-wiki__group--empty'}`} title={character.group_name || 'Brak grupy'}>
+                  {character.group_name || 'Brak grupy'}
+                </span>
+              )}
+              <EditButton label="Edytuj grupę postaci" onClick={() => onEditField('group_name')} />
+            </div>
+          </div>
+
+          <section
+            className={`character-detail__attributes${editingFields.attribute_values || !definitionsReady || definitionStore.definitions.length === 0 ? '' : ' character-wiki__editable'}`}
+            aria-labelledby="character-detail-attributes-title"
+            onClick={(event) => beginEditingFromSurface(
+              event,
+              'attribute_values',
+              definitionsReady && definitionStore.definitions.length > 0,
+            )}
+          >
             <div className="character-detail__attributes-header">
               <h3 id="character-detail-attributes-title">Atrybuty</h3>
-              <div className="character-detail__attributes-actions">
-                {definitionsReady && definitionStore.definitions.length > 0 && !editingFields.attribute_values && (
-                  <button
-                    type="button"
-                    onClick={() => onEditField('attribute_values')}
-                  >
-                    Edytuj wartości
-                  </button>
-                )}
+              <div className="character-detail__attributes-controls">
                 <button
                   ref={attributesButtonRef}
                   type="button"
+                  className="character-detail__attributes-manage"
                   data-world-panel-trigger
                   onClick={onOpenAttributes}
                   disabled={definitionStore.isMutating || isAttributesPanelOpen}
                 >
                   Zarządzaj atrybutami
                 </button>
+                {definitionsReady && definitionStore.definitions.length > 0 && !editingFields.attribute_values && (
+                  <EditButton label="Edytuj wartości atrybutów" onClick={() => onEditField('attribute_values')} />
+                )}
               </div>
             </div>
 
@@ -153,98 +312,52 @@ export default function CharacterDetailsContent({
                 values={character.attribute_values}
               />
             )}
+
           </section>
-
-          <div style={{ marginBottom: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h3 style={{ margin: 0, color: '#374151' }}>Biografia / Opis</h3>
-              <button
-                onClick={() => onEditField('description')}
-                title="Edytuj opis"
-                style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-              >
-                <img src={editIcon} alt="Edytuj" style={{ width: '18px', height: '18px' }} />
-              </button>
-            </div>
-            {editingFields.description ? (
-              <textarea
-                value={form.description}
-                onChange={(event) => onInputChange('description', event.target.value)}
-                rows={6}
-                style={{ width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #d1d5db', resize: 'vertical' }}
-              />
-            ) : (
-              <p style={{ lineHeight: '1.6', color: '#4b5563', whiteSpace: 'pre-wrap' }}>
-                {character.description || 'Ta postać nie ma jeszcze opisu.'}
-              </p>
-            )}
-          </div>
-
-          {saveError && <p className="character-form__error" role="alert">{saveError}</p>}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '25px', gap: '10px' }}>
-            <button
-              onClick={onReset}
-              style={{ padding: '10px 18px', border: '1px solid #d1d5db', backgroundColor: '#fff', color: '#374151', borderRadius: '8px', cursor: 'pointer' }}
-            >
-              Anuluj zmiany
-            </button>
-            <button
-              onClick={onSave}
-              disabled={isSaving}
-              style={{ padding: '10px 18px', backgroundColor: '#4B5563', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-            >
-              {isSaving ? 'Zapisuję...' : 'Zapisz zmiany'}
-            </button>
-          </div>
-        </div>
+        </aside>
       </div>
 
-      <div style={{ marginTop: '32px', padding: '24px', borderRadius: '18px', backgroundColor: '#f8fafc', border: '1px solid #e5e7eb' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '14px' }}>
-          <div>
-            <h2 style={{ margin: 0, color: '#1f2937', fontSize: '1.25rem' }}>Historia postaci</h2>
-          </div>
+      {isImagePreviewOpen && visibleImageUrl && createPortal(
+        <div
+          className="world-element-image-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Powiększony portret postaci: ${form.name || character.name}`}
+          data-panel-portal
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setIsImagePreviewOpen(false);
+          }}
+        >
           <button
-            onClick={() => onEditField('description_long')}
-            title="Edytuj rozbudowany opis"
-            style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
+            ref={lightboxCloseButtonRef}
+            type="button"
+            className="world-element-image-lightbox__close"
+            aria-label="Zamknij powiększony portret"
+            onClick={() => setIsImagePreviewOpen(false)}
           >
-            <img src={editIcon} alt="Edytuj" style={{ width: '18px', height: '18px' }} />
+            ×
           </button>
-        </div>
-
-        {editingFields.description_long ? (
-          <div style={{ backgroundColor: '}#ffffff', borderRadius: '14px', overflow: 'hidden', width: '100%', minHeight: 'calc(65vh)', maxHeight: 'calc(100vh - 220px)' }}>
-            <Editor
-              apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-              value={form.description_long}
-              onEditorChange={(content) => onInputChange('description_long', content)}
-              init={{
-                height: 'calc(100vh - 260px)',
-                menubar: false,
-                plugins: [
-                  'advlist autolink lists link charmap preview anchor',
-                  'searchreplace visualblocks code fullscreen',
-                  'insertdatetime table code help wordcount',
-                ],
-                toolbar:
-                  'undo redo | formatselect | bold italic underline strikethrough | '
-                  + 'alignleft aligncenter alignright | bullist numlist outdent indent | '
-                  + 'blockquote | link | removeformat | code',
-                content_style: 'body { font-family: Inter, system-ui, sans-serif; font-size: 14px; }',
-              }}
-            />
-          </div>
-        ) : (
-          <div style={{ minHeight: '220px', maxHeight: '420px', overflowY: 'auto', padding: '18px', backgroundColor: 'white', borderRadius: '14px', border: '1px solid #e5e7eb', color: '#334155' }}>
-            {character.description_long ? (
-              <div dangerouslySetInnerHTML={{ __html: character.description_long }} />
-            ) : (
-              <p style={{ margin: 0, color: '#94a3b8' }}>Brak rozbudowanego opisu. Kliknij ikonę edycji, aby dodać tekst.</p>
-            )}
-          </div>
-        )}
-      </div>
+          <img src={visibleImageUrl} alt={`Powiększony portret postaci: ${form.name || character.name}`} />
+        </div>,
+        document.body,
+      )}
     </div>
+  );
+}
+
+function EditButton({ label, onClick }) {
+  return (
+    <button
+      type="button"
+      className="character-wiki__edit-button"
+      aria-label={label}
+      title={label}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+    >
+      <img src={editIcon} alt="" />
+    </button>
   );
 }

@@ -7,6 +7,7 @@ import useAttributeDefinitions from './features/attributes/useAttributeDefinitio
 import './features/attributes/attributes.css';
 import CharacterDetailsContent from './features/characters/CharacterDetailsContent';
 import './features/characters/characterAttributes.css';
+import './features/characters/characterDetails.css';
 import useCharacterDetails from './features/characters/useCharacterDetails';
 import usePanelTransition from './features/panels/usePanelTransition';
 import './features/world/worldElementPanel.css';
@@ -164,11 +165,11 @@ function CharacterDetail() {
   const details = useCharacterDetails({ characterId, projectId });
 
   if (details.loadError) {
-    return <div style={{ padding: '20px', color: '#b91c1c' }}>{details.loadError}</div>;
+    return <div className="character-detail-state character-detail-state--error">{details.loadError}</div>;
   }
 
   if (!details.character) {
-    return <div style={{ padding: '20px' }}>Ładowanie profilu postaci...</div>;
+    return <div className="character-detail-state">Ładowanie profilu postaci...</div>;
   }
 
   return (

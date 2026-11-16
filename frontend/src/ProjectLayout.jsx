@@ -12,8 +12,8 @@ function ProjectLayout() {
   const { projectId } = useParams();
   const location = useLocation();
   const isCharacterList = location.pathname === `/project/${projectId}/characters`;
-  const isFullscreenView = [
-    `/project/${projectId}/characters`,
+  const isCharacterView = location.pathname.startsWith(`/project/${projectId}/characters`);
+  const isFullscreenView = isCharacterList || [
     `/project/${projectId}/inspirations`,
     `/project/${projectId}/world-elements`,
   ].includes(location.pathname);
@@ -134,7 +134,7 @@ function ProjectLayout() {
           minHeight: 0,
           overflowY: 'auto',
           padding: isFullscreenView ? 0 : '30px',
-          scrollbarGutter: isCharacterList ? 'stable' : undefined,
+          scrollbarGutter: isCharacterView ? 'stable' : undefined,
         }}>
           <Outlet />
         </main>
