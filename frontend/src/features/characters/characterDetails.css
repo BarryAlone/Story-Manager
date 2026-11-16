@@ -1,0 +1,599 @@
+.character-wiki {
+  width: 100%;
+  max-width: 1380px;
+  margin: 0 auto;
+  color: #1f2937;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.character-wiki button:focus-visible,
+.character-wiki input:focus-visible,
+.character-wiki textarea:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 2px;
+}
+
+.character-wiki__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+  align-items: start;
+  gap: clamp(28px, 4vw, 58px);
+}
+
+.character-wiki__article {
+  min-width: 0;
+}
+
+.character-wiki__article-header {
+  padding-bottom: 26px;
+  border-bottom: 1px solid #dbe2ea;
+}
+
+.character-wiki__title-row,
+.character-wiki__intro-heading,
+.character-wiki__section-heading,
+.character-wiki__group-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.character-wiki__title-row h1 {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #111827;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.12;
+}
+
+.character-wiki__title-row {
+  position: relative;
+  padding-right: 40px;
+}
+
+.character-wiki__title-row > .character-wiki__edit-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.character-wiki__title-input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #111827;
+  font: inherit;
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-weight: 700;
+}
+
+.character-wiki__edit-button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  padding: 0;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.38;
+  transition: opacity 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.character-wiki__edit-button:hover {
+  border-color: #dbe2ea;
+  background: #f8fafc;
+}
+
+.character-wiki__edit-button img {
+  width: 17px;
+  height: 17px;
+  opacity: 0.72;
+}
+
+.character-wiki__editable {
+  cursor: pointer;
+  transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.character-wiki__editable:hover {
+  background-color: rgba(239, 246, 255, 0.62);
+  box-shadow: 0 0 0 5px rgba(147, 197, 253, 0.16);
+}
+
+.character-wiki__title-row:hover > .character-wiki__edit-button,
+.character-wiki__title-row:focus-within > .character-wiki__edit-button,
+.character-wiki__intro:hover .character-wiki__intro-heading > .character-wiki__edit-button,
+.character-wiki__intro:focus-within .character-wiki__intro-heading > .character-wiki__edit-button,
+.character-wiki__section-heading:hover > .character-wiki__edit-button,
+.character-wiki__section-heading:focus-within > .character-wiki__edit-button,
+.character-wiki__portrait:hover > .character-wiki__edit-button,
+.character-wiki__portrait:focus-within > .character-wiki__edit-button,
+.character-wiki__group-row:hover > .character-wiki__edit-button,
+.character-wiki__group-row:focus-within > .character-wiki__edit-button,
+.character-wiki__edit-button:focus-visible {
+  opacity: 1;
+}
+
+.character-wiki__intro {
+  position: relative;
+  min-width: 0;
+  margin-top: 18px;
+  padding-right: 40px;
+}
+
+.character-wiki__intro-heading {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.character-wiki__intro p {
+  min-width: 0;
+  margin: 0;
+  color: #475569;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.character-wiki__intro textarea {
+  width: 100%;
+  min-height: 130px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #334155;
+  font: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.character-wiki__empty-text {
+  color: #94a3b8 !important;
+  font-style: italic;
+}
+
+.character-wiki__history {
+  margin-top: 30px;
+}
+
+.character-wiki__section-heading {
+  position: relative;
+  justify-content: flex-start;
+  padding-right: 40px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.character-wiki__section-heading > .character-wiki__edit-button {
+  position: absolute;
+  top: -3px;
+  right: 0;
+}
+
+.character-wiki__section-heading h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.3rem;
+  line-height: 1.35;
+}
+
+.character-wiki__history-content {
+  min-height: 240px;
+  padding: 20px 2px;
+  overflow-wrap: anywhere;
+  color: #334155;
+  font-size: 0.96rem;
+  line-height: 1.75;
+}
+
+.character-wiki__history-content > div > :first-child {
+  margin-top: 0;
+}
+
+.character-wiki__history-content img,
+.character-wiki__history-content table {
+  max-width: 100%;
+}
+
+.character-wiki__editor {
+  width: 100%;
+  min-height: 65vh;
+  margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.character-wiki__save-actions {
+  position: fixed;
+  z-index: 45;
+  right: calc(30px + max(0px, (100vw - 1520px) / 2) + 320px + clamp(28px, 4vw, 58px));
+  bottom: 22px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding: 8px;
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  backdrop-filter: blur(6px);
+}
+
+.character-wiki__article:has(.character-wiki__save-actions) {
+  padding-bottom: 66px;
+}
+
+.character-wiki__button {
+  min-height: 36px;
+  padding: 7px 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.character-wiki__button--primary {
+  border-color: #475569;
+  background: #475569;
+  color: #fff;
+}
+
+.character-wiki__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.character-wiki__infobox {
+  position: fixed;
+  z-index: 10;
+  top: 95px;
+  right: max(30px, calc((100vw - 1460px) / 2));
+  width: 320px;
+  box-sizing: border-box;
+  max-height: calc(100vh - 125px);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  scrollbar-width: thin;
+}
+
+.character-wiki__portrait {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid #dbe2ea;
+  background: #e2e8f0;
+}
+
+.character-wiki__infobox-title {
+  position: relative;
+  padding: 10px 46px;
+  border-bottom: 1px solid #dbe2ea;
+  text-align: center;
+}
+
+.character-wiki__infobox-title h2 {
+  margin: 0;
+  overflow: hidden;
+  color: #1e293b;
+  font-size: 1.08rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.character-wiki__infobox-title input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  color: #1e293b;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.character-wiki__infobox-title > .character-wiki__edit-button {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+}
+
+.character-wiki__portrait-preview,
+.character-wiki__portrait-placeholder {
+  display: block;
+  width: 100%;
+  height: min(360px, 46vh);
+}
+
+.character-wiki__portrait-preview {
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.character-wiki__portrait-preview > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.character-wiki__portrait-placeholder {
+  display: grid;
+  place-content: center;
+  place-items: center;
+  gap: 8px;
+  background: linear-gradient(145deg, #e2e8f0, #cbd5e1);
+  color: #64748b;
+}
+
+.character-wiki__portrait-placeholder > span {
+  font-size: 3rem;
+  font-weight: 750;
+}
+
+.character-wiki__portrait-placeholder small {
+  font-size: 0.76rem;
+}
+
+.character-wiki__portrait > .character-wiki__edit-button {
+  position: absolute;
+  z-index: 1;
+  top: 9px;
+  right: 9px;
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.character-wiki__image-file {
+  display: none;
+}
+
+.character-wiki__infobox-identity {
+  position: relative;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.character-wiki__group-row {
+  position: relative;
+  justify-content: flex-start;
+  padding-right: 34px;
+}
+
+.character-wiki__group-row > .character-wiki__edit-button {
+  position: absolute;
+  top: -5px;
+  right: 0;
+}
+
+.character-wiki__group-label {
+  flex: 0 0 auto;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.character-wiki__group-value {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.character-wiki__group--empty {
+  color: #94a3b8 !important;
+  font-style: italic;
+  font-weight: 400 !important;
+}
+
+.character-wiki__group-row input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  color: #334155;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.character-wiki .character-detail__attributes {
+  position: relative;
+  margin: 0;
+  padding: 14px;
+}
+
+.character-wiki .character-detail__attributes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.character-wiki .character-detail__attributes-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 3px;
+}
+
+.character-wiki .character-detail__attributes-header h3 {
+  margin: 0;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.character-wiki .character-detail__attributes-manage {
+  min-height: 28px;
+  padding: 4px 7px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+.character-wiki .character-detail__attributes-manage:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.character-wiki .character-detail__attributes-manage:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.character-wiki .character-attributes__summary {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin: 0;
+}
+
+.character-wiki .character-attributes__summary > div {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px 7px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: #f8fafc;
+}
+
+.character-wiki .character-attributes__summary dt,
+.character-wiki .character-attributes__summary dd {
+  min-width: 0;
+  margin: 0;
+}
+
+.character-wiki .character-attributes__summary dt {
+  max-width: 125px;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.character-wiki .character-attributes__summary dt::after {
+  content: ':';
+}
+
+.character-wiki .character-attributes__summary dd {
+  overflow-wrap: anywhere;
+  color: #1e293b;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.character-wiki .character-attributes__empty {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.character-wiki .character-detail__attributes .attribute-value-fields {
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.character-wiki__infobox-title:hover > .character-wiki__edit-button,
+.character-wiki__infobox-title:focus-within > .character-wiki__edit-button,
+.character-wiki .character-detail__attributes:hover .character-detail__attributes-header .character-wiki__edit-button,
+.character-wiki .character-detail__attributes:focus-within .character-detail__attributes-header .character-wiki__edit-button {
+  opacity: 1;
+}
+
+.character-wiki__infobox .character-wiki__editable:hover,
+.character-wiki__infobox .character-wiki__editable:focus-within {
+  background-color: rgba(239, 246, 255, 0.62);
+  box-shadow: inset 3px 0 0 rgba(96, 165, 250, 0.62);
+}
+
+.character-detail-state {
+  padding: 20px;
+  color: #475569;
+}
+
+.character-detail-state--error {
+  color: #b91c1c;
+}
+
+@media (max-width: 920px) {
+  .character-wiki__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .character-wiki__infobox {
+    position: static;
+    order: -1;
+    width: auto;
+    max-height: none;
+  }
+
+  .character-wiki__portrait-preview,
+  .character-wiki__portrait-placeholder {
+    height: min(380px, 52vh);
+  }
+
+  .character-wiki__save-actions {
+    right: 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .character-wiki__save-actions {
+    right: 16px;
+    bottom: 16px;
+    left: 96px;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .character-wiki__button {
+    width: 100%;
+  }
+}
+
+@media (hover: none) {
+  .character-wiki__edit-button {
+    opacity: 1;
+  }
+}
