@@ -28,6 +28,11 @@ class Character extends Model
         return $this->hasMany(AttributeValue::class);
     }
 
+    public function sectionContents(): HasMany
+    {
+        return $this->hasMany(CharacterSectionContent::class);
+    }
+
     public function chapter(): BelongsToMany
     {
         return $this->belongsToMany(Chapter::class);
