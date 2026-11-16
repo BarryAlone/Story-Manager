@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-16 — API sekcji opisowych postaci
+
+- Zakres: chroniony CRUD definicji, atomowa zmiana kolejności, bezpieczne wymuszone usuwanie oraz odczyt, zapis i czyszczenie indywidualnych treści postaci.
+- Wynik: API zwraca wszystkie definicje w stabilnej kolejności wraz z treścią lub `null`, blokuje połączenia między projektami i oczyszcza HTML istniejącym serwisem opartym na `symfony/html-sanitizer`. `description_long` i frontend pozostają bez zmian.
+- Testy: test kontraktu API — 16 testów i 124 asercje; zestaw API, fundamentu, autoryzacji, postaci i obrazów — 65 testów i 445 asercji; pełny PHPUnit — 217 testów i 1415 asercji. Składnia PHP, Pint, lista tras, ścisła walidacja Composera i `git diff --check` zakończyły się powodzeniem.
+
 ## 2026-11-16 — Fundament sekcji opisowych postaci
 
 - Zakres: relacyjne definicje sekcji wspólne dla projektu, indywidualne treści postaci, relacje modeli, polityki własności oraz integralność i kaskady bazy.
