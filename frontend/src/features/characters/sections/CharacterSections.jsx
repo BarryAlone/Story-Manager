@@ -17,8 +17,11 @@ import useUnsavedSectionGuard, { UNSAVED_SECTION_MESSAGE } from './useUnsavedSec
 const CharacterSections = forwardRef(function CharacterSections({
   characterId,
   definitionStore,
+  galleryPosition,
+  galleryTocItem,
   managerButtonRef,
   onOpenManager,
+  renderGallery,
 }, ref) {
   const contentStore = useCharacterSectionContents(characterId);
   const syncDefinitions = contentStore.syncDefinitions;
@@ -123,21 +126,54 @@ const CharacterSections = forwardRef(function CharacterSections({
     )),
     [contentStore.sections, editingId],
   );
+  const articleLayout = useMemo(
+    () => buildSectionLayout(
+      articleSections,
+      contentStore.sections,
+      galleryPosition,
+      true,
+    ),
+    [articleSections, contentStore.sections, galleryPosition],
+  );
+  const tableOfContentsItems = useMemo(() => buildSectionLayout(
+    filledSections,
+    contentStore.sections,
+    galleryPosition,
+    Boolean(galleryTocItem),
+  ).map((item) => item.type === 'gallery'
+    ? {
+        href: `#${galleryTocItem.id}`,
+        key: 'gallery',
+        title: galleryTocItem.title,
+      }
+    : {
+        href: `#character-section-${item.section.id}`,
+        key: `section-${item.section.id}`,
+        title: item.section.title,
+      }), [contentStore.sections, filledSections, galleryPosition, galleryTocItem]);
 
   const openManager = () => {
     if (requestDiscard({ restoreFocus: false })) onOpenManager();
   };
 
   if (contentStore.isLoading) {
-    return <div className="character-sections-state" role="status">Ładowanie sekcji postaci…</div>;
+    return (
+      <>
+        <div className="character-sections-state" role="status">Ładowanie sekcji postaci…</div>
+        {renderGallery?.(1)}
+      </>
+    );
   }
 
   if (contentStore.error) {
     return (
-      <div className="character-sections-state character-sections-state--error" role="alert">
-        <p>{contentStore.error}</p>
-        <button type="button" onClick={contentStore.loadSections}>Spróbuj ponownie</button>
-      </div>
+      <>
+        <div className="character-sections-state character-sections-state--error" role="alert">
+          <p>{contentStore.error}</p>
+          <button type="button" onClick={contentStore.loadSections}>Spróbuj ponownie</button>
+        </div>
+        {renderGallery?.(1)}
+      </>
     );
   }
 
@@ -190,16 +226,26 @@ const CharacterSections = forwardRef(function CharacterSections({
         </div>
       )}
 
-      <CharacterSectionTableOfContents sections={filledSections} />
+      <CharacterSectionTableOfContents items={tableOfContentsItems} />
 
       <div className="character-sections__article">
-        {articleSections.map((section, sectionIndex) => {
+        {articleLayout.map((item, layoutIndex) => {
+          const sectionNumber = articleLayout
+            .slice(0, layoutIndex + 1)
+            .filter((layoutItem) => layoutItem.type === 'section' || galleryTocItem)
+            .length;
+
+          if (item.type === 'gallery') {
+            return <div key="gallery-layout-item">{renderGallery?.(sectionNumber)}</div>;
+          }
+
+          const section = item.section;
           const isEditing = Number(editingId) === Number(section.id);
           return (
             <section key={section.id} id={`character-section-${section.id}`} className="character-section" aria-labelledby={`character-section-title-${section.id}`}>
               <div className="character-section__heading">
                 <h2 id={`character-section-title-${section.id}`}>
-                  <span className="character-section__number">{sectionIndex + 1}.</span>
+                  <span className="character-section__number">{sectionNumber}.</span>
                   {section.title}
                 </h2>
                 {!isEditing && (
@@ -246,3 +292,27 @@ const CharacterSections = forwardRef(function CharacterSections({
 });
 
 export default CharacterSections;
+
+function buildSectionLayout(sections, allSections, galleryPosition, includeGallery) {
+  const items = sections.map((section) => ({
+    key: `section-${section.id}`,
+    section,
+    type: 'section',
+  }));
+
+  if (!includeGallery) return items;
+
+  const normalizedPosition = Math.min(
+    Math.max(Number(galleryPosition) || 0, 0),
+    allSections.length,
+  );
+  const sectionIdsBeforeGallery = new Set(
+    allSections.slice(0, normalizedPosition).map((section) => Number(section.id)),
+  );
+  const visiblePosition = sections.filter((section) => (
+    sectionIdsBeforeGallery.has(Number(section.id))
+  )).length;
+  items.splice(visiblePosition, 0, { key: 'gallery', type: 'gallery' });
+
+  return items;
+}

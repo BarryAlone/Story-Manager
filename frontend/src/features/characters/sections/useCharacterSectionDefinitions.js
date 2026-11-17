@@ -7,6 +7,7 @@ function emptyState(scopeKey) {
   return {
     definitions: [],
     error: '',
+    galleryPosition: 0,
     isLoading: Boolean(scopeKey),
     scopeKey,
   };
@@ -15,6 +16,7 @@ function emptyState(scopeKey) {
 export default function useCharacterSectionDefinitions(projectId) {
   const scopeKey = projectId ? `project:${projectId}` : null;
   const endpoint = projectId ? `/api/projects/${projectId}/character-section-definitions` : null;
+  const layoutEndpoint = projectId ? `/api/projects/${projectId}/character-section-layout` : null;
   const [state, setState] = useState(() => emptyState(scopeKey));
   const [isMutating, setIsMutating] = useState(false);
   const controllerRef = useRef(null);
@@ -36,7 +38,7 @@ export default function useCharacterSectionDefinitions(projectId) {
   }, []);
 
   const loadDefinitions = useCallback(async ({ preserve = false } = {}) => {
-    if (!scopeKey || !endpoint) {
+    if (!scopeKey || !layoutEndpoint) {
       controllerRef.current?.abort();
       setState(emptyState(null));
       return;
@@ -55,15 +57,16 @@ export default function useCharacterSectionDefinitions(projectId) {
     ));
 
     try {
-      const response = await apiFetch(endpoint, { signal: controller.signal });
+      const response = await apiFetch(layoutEndpoint, { signal: controller.signal });
       if (!response.ok) {
-        throw await characterSectionApiError(response, 'Nie udało się pobrać definicji sekcji.');
+        throw await characterSectionApiError(response, 'Nie udało się pobrać układu sekcji.');
       }
-      const definitions = await response.json();
+      const layout = await response.json();
       if (!isMountedRef.current || sequence !== sequenceRef.current) return;
       setState({
-        definitions: sortCharacterSections(definitions),
+        definitions: sortCharacterSections(layout.definitions || []),
         error: '',
+        galleryPosition: Number(layout.gallery_position || 0),
         isLoading: false,
         scopeKey: requestedScope,
       });
@@ -72,11 +75,12 @@ export default function useCharacterSectionDefinitions(projectId) {
       setState((current) => ({
         definitions: preserve && current.scopeKey === requestedScope ? current.definitions : [],
         error: error.message || 'Nie udało się pobrać definicji sekcji.',
+        galleryPosition: preserve && current.scopeKey === requestedScope ? current.galleryPosition : 0,
         isLoading: false,
         scopeKey: requestedScope,
       }));
     }
-  }, [endpoint, scopeKey]);
+  }, [layoutEndpoint, scopeKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,7 +93,11 @@ export default function useCharacterSectionDefinitions(projectId) {
     };
   }, [loadDefinitions]);
 
-  const runMutation = useCallback(async (request, updateDefinitions) => {
+  const runMutation = useCallback(async (
+    request,
+    updateDefinitions,
+    updateGalleryPosition = (current) => current.galleryPosition,
+  ) => {
     if (mutationRef.current) throw new Error('Poczekaj na zakończenie bieżącej operacji.');
 
     const requestedScope = scopeKey;
@@ -99,10 +107,18 @@ export default function useCharacterSectionDefinitions(projectId) {
     try {
       const result = await request();
       if (isMountedRef.current && stateRef.current.scopeKey === requestedScope) {
-        setState((current) => current.scopeKey !== requestedScope ? current : {
-          ...current,
-          definitions: sortCharacterSections(updateDefinitions(current.definitions, result)),
-          error: '',
+        setState((current) => {
+          if (current.scopeKey !== requestedScope) return current;
+          const definitions = sortCharacterSections(updateDefinitions(current.definitions, result));
+          return {
+            ...current,
+            definitions,
+            error: '',
+            galleryPosition: Math.min(
+              updateGalleryPosition(current, result, definitions),
+              definitions.length,
+            ),
+          };
         });
       }
       return result;
@@ -123,6 +139,9 @@ export default function useCharacterSectionDefinitions(projectId) {
       return response.json();
     },
     (definitions, created) => [...definitions, created],
+    (current) => current.galleryPosition === current.definitions.length
+      ? current.galleryPosition + 1
+      : current.galleryPosition,
   ), [endpoint, runMutation]);
 
   const updateDefinition = useCallback((definitionId, title) => runMutation(
@@ -153,6 +172,23 @@ export default function useCharacterSectionDefinitions(projectId) {
     (_definitions, reordered) => reordered,
   ), [endpoint, runMutation]);
 
+  const reorderLayout = useCallback((definitionIds, galleryPosition) => runMutation(
+    async () => {
+      const response = await apiFetch(layoutEndpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          definition_ids: definitionIds,
+          gallery_position: galleryPosition,
+        }),
+      });
+      if (!response.ok) throw await characterSectionApiError(response, 'Nie udało się zmienić układu sekcji.');
+      return response.json();
+    },
+    (_definitions, layout) => layout.definitions,
+    (_current, layout) => Number(layout.gallery_position),
+  ), [layoutEndpoint, runMutation]);
+
   const deleteDefinition = useCallback((definitionId, force = false) => runMutation(
     async () => {
       const response = await apiFetch(
@@ -165,6 +201,14 @@ export default function useCharacterSectionDefinitions(projectId) {
     (definitions, deletedId) => definitions.filter((definition) => (
       Number(definition.id) !== Number(deletedId)
     )),
+    (current, deletedId) => {
+      const deletedIndex = current.definitions.findIndex((definition) => (
+        Number(definition.id) === Number(deletedId)
+      ));
+      return deletedIndex >= 0 && deletedIndex < current.galleryPosition
+        ? current.galleryPosition - 1
+        : current.galleryPosition;
+    },
   ), [runMutation]);
 
   const currentState = state.scopeKey === scopeKey ? state : emptyState(scopeKey);
@@ -174,11 +218,13 @@ export default function useCharacterSectionDefinitions(projectId) {
     definitions: currentState.definitions,
     deleteDefinition,
     error: currentState.error,
+    galleryPosition: currentState.galleryPosition,
     isLoading: currentState.isLoading,
     isMutating,
     loadDefinitions,
     refreshDefinitions: () => loadDefinitions({ preserve: true }),
     reorderDefinitions,
+    reorderLayout,
     updateDefinition,
   };
 }

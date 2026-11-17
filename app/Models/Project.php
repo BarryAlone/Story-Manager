@@ -13,7 +13,19 @@ class Project extends Model
         'description',
         'description_long',
         'project_image',
+        'character_gallery_position',
     ];
+
+    protected $hidden = [
+        'character_gallery_position',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'character_gallery_position' => 'integer',
+        ];
+    }
 
     public function characters(): HasMany
     {

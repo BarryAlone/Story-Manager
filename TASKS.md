@@ -6,7 +6,6 @@
 
 ## Następne
 
-- [ ] Podłączyć galerię obrazów do szczegółów postaci w React SPA.
 - [ ] Wykonać finalny polish przestrzeni elementów świata i uporządkować jej arkusze CSS.
 - [ ] Dodać kierunkowość relacji jako osobny kontrakt danych i interfejs.
 
@@ -17,6 +16,7 @@
 
 ## Zakończone
 
+- [x] Podłączono galerię obrazów do wiki-like szczegółów postaci wraz z lightboxem i panelem zarządzania.
 - [x] Dodano backendowy fundament galerii postaci z podpisami, kolejnością, chronionym API i bezpiecznym cyklem życia plików.
 - [x] Zintegrowano sekcje opisowe postaci z wiki-like SPA i usunięto poprzednie pole długiego opisu postaci.
 - [x] Dodano backendowy fundament wspólnych definicji i indywidualnych treści sekcji opisowych postaci.
