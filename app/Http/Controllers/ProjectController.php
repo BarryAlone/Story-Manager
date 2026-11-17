@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CharacterGalleryImage;
 use App\Models\Project;
 use App\Models\WorldElement;
 use App\Services\PublicImageStorage;
@@ -13,28 +14,27 @@ use Throwable;
 
 class ProjectController extends Controller
 {
-    public function __construct(private readonly PublicImageStorage $imageStorage)
-    {
-    }
+    public function __construct(private readonly PublicImageStorage $imageStorage) {}
 
     public function index(Request $request)
     {
         $projects = $request->user()->projects()->get();
+
         return response()->json($projects, 200); // format json($zmienna Request, komunikat HTTP: 200 - OK)
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-        'name' => [
-            'required',
-            'string',
-            'max:255',
-            Rule::unique('projects')
-        ],
-        'description' => 'nullable|string',
-        'description_long' => 'nullable|string',
-        'project_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('projects'),
+            ],
+            'description' => 'nullable|string',
+            'description_long' => 'nullable|string',
+            'project_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $validated['user_id'] = $request->user()->id;
@@ -61,15 +61,15 @@ class ProjectController extends Controller
         $project = Project::findOrFail($id);
         Gate::authorize('update', $project);
         $validated = $request->validate([
-        'name' => [
-            'required',
-            'string',
-            'max:255',
-            Rule::unique('projects')->ignore($id) // added ignore($id to prevent unique validation for id in form 
-        ],
-        'description' => 'nullable|string',
-        'description_long' => 'nullable|string',
-        'project_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120'
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('projects')->ignore($id), // added ignore($id to prevent unique validation for id in form
+            ],
+            'description' => 'nullable|string',
+            'description_long' => 'nullable|string',
+            'project_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $oldImagePath = $project->project_image;
@@ -103,6 +103,10 @@ class ProjectController extends Controller
         $imagePaths = [
             $project->project_image,
             ...$project->characters()->whereNotNull('character_image')->pluck('character_image')->all(),
+            ...CharacterGalleryImage::query()
+                ->whereHas('character', fn ($query) => $query->where('project_id', $project->id))
+                ->pluck('image_path')
+                ->all(),
             ...$project->chapters()->whereNotNull('chapter_image')->pluck('chapter_image')->all(),
             ...$project->projectInspirations()->whereNotNull('image_path')->pluck('image_path')->all(),
             ...$project->events()->whereNotNull('event_image')->pluck('event_image')->all(),
@@ -123,9 +127,9 @@ class ProjectController extends Controller
     {
         $project = Project::findOrFail($id);
         Gate::authorize('view', $project);
-        
-            return response()->json([
-                'project' => $project
-            ], 200);
+
+        return response()->json([
+            'project' => $project,
+        ], 200);
     }
-} 
+}

@@ -32,6 +32,13 @@ class Character extends Model
         return $this->hasMany(CharacterSectionContent::class);
     }
 
+    public function galleryImages(): HasMany
+    {
+        return $this->hasMany(CharacterGalleryImage::class)
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
     public function chapter(): BelongsToMany
     {
         return $this->belongsToMany(Chapter::class);

@@ -47,6 +47,11 @@ class PublicImageStorage
         return $deleted;
     }
 
+    public function url(string $path): string
+    {
+        return Storage::disk('public')->url($path);
+    }
+
     /** @param array<int, string|null> $paths */
     public function deleteMany(array $paths): bool
     {
