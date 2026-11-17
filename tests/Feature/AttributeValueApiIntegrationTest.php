@@ -68,6 +68,7 @@ class AttributeValueApiIntegrationTest extends TestCase
 
         $response
             ->assertCreated()
+            ->assertJsonMissingPath('description_long')
             ->assertJsonPath("attribute_values.{$text->id}", 'Wysoka')
             ->assertJsonPath("attribute_values.{$number->id}", '62.500000');
 
@@ -75,8 +76,13 @@ class AttributeValueApiIntegrationTest extends TestCase
 
         $this->actingAs($user)->getJson("/api/characters/{$characterId}")
             ->assertOk()
+            ->assertJsonMissingPath('character.description_long')
             ->assertJsonPath("character.attribute_values.{$text->id}", 'Wysoka')
             ->assertJsonPath("character.attribute_values.{$number->id}", '62.500000');
+
+        $this->actingAs($user)->getJson("/api/projects/{$project->id}/characters")
+            ->assertOk()
+            ->assertJsonMissingPath('characters.0.description_long');
     }
 
     public function test_character_update_preserves_values_when_field_is_missing_and_empty_object_clears_them(): void

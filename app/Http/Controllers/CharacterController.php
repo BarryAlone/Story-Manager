@@ -37,7 +37,9 @@ class CharacterController extends Controller
         }
 
         return response()->json([
-            'characters' => $characters,
+            'characters' => $characters
+                ->map(fn (Character $character): array => $this->characterAttributes($character))
+                ->values(),
         ], 200);
     }
 
@@ -54,7 +56,6 @@ class CharacterController extends Controller
             ],
             'group_name' => 'nullable|string|max:128',
             'description' => 'nullable|string',
-            'description_long' => 'nullable|string',
             'character_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
@@ -114,7 +115,6 @@ class CharacterController extends Controller
             ],
             'group_name' => 'nullable|string|max:128',
             'description' => 'nullable|string',
-            'description_long' => 'nullable|string',
             'character_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
@@ -193,8 +193,23 @@ class CharacterController extends Controller
     private function characterResponse(Character $character): array
     {
         return [
-            ...$character->toArray(),
+            ...$this->characterAttributes($character),
             'attribute_values' => $this->attributeValues->mapFor($character),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function characterAttributes(Character $character): array
+    {
+        return [
+            'id' => $character->id,
+            'project_id' => $character->project_id,
+            'name' => $character->name,
+            'group_name' => $character->group_name,
+            'description' => $character->description,
+            'character_image' => $character->character_image,
+            'created_at' => $character->created_at,
+            'updated_at' => $character->updated_at,
         ];
     }
 }

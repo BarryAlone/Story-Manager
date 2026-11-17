@@ -44,6 +44,7 @@ class CharacterSectionFoundationTest extends TestCase
             'created_at',
             'updated_at',
         ]));
+        $this->assertFalse(Schema::hasColumn('characters', 'description_long'));
 
         $this->assertSame(
             [$firstWithSameOrder->id, $secondWithSameOrder->id, $later->id],

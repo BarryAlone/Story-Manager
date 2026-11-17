@@ -2,22 +2,28 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-17 — Usunięcie poprzedniego długiego opisu postaci
+
+- Zakres: usunięcie nieużywanego pola ze schematu postaci, modelu, walidacji i odpowiedzi API, danych przykładowych oraz dokumentacji po wdrożeniu dynamicznych sekcji.
+- Wynik: krótki opis `description` pozostał bez zmian, a długą treść postaci przechowują wyłącznie indywidualne treści globalnych definicji sekcji. Izolowane testy potwierdzają brak dawnej kolumny i pola w odpowiedziach API.
+- Testy: zakres postaci, sekcji, autoryzacji i obrazów — 65 testów i 450 asercji; pełny PHPUnit — 217 testów i 1420 asercji. Pint, ścisła walidacja Composera oraz `git diff --check` zakończyły się powodzeniem.
+
 ## 2026-11-17 — Sekcje opisowe postaci w SPA
 
 - Zakres: wiki-like prezentacja dynamicznych sekcji, automatyczny spis treści, edycja pojedynczej treści w TinyMCE oraz prawy panel zarządzania globalnymi definicjami.
-- Wynik: SPA pokazuje wyłącznie uzupełnione sekcje, pozwala rozpocząć treść pustej definicji, rozróżnia czyszczenie treści postaci od globalnego usuwania i chroni niezapisany szkic. Frontend przestał prezentować, edytować i wysyłać legacy `characters.description_long`; backendowe pole pozostaje do osobnego sprzątania.
+- Wynik: SPA pokazuje wyłącznie uzupełnione sekcje, pozwala rozpocząć treść pustej definicji, rozróżnia czyszczenie treści postaci od globalnego usuwania i chroni niezapisany szkic. Frontend przestał używać poprzedniego pola długiego opisu postaci.
 - Testy: lint i build React SPA, testy backendowe sekcji, postaci i autoryzacji, pełny PHPUnit oraz `git diff --check`.
 
 ## 2026-11-16 — API sekcji opisowych postaci
 
 - Zakres: chroniony CRUD definicji, atomowa zmiana kolejności, bezpieczne wymuszone usuwanie oraz odczyt, zapis i czyszczenie indywidualnych treści postaci.
-- Wynik: API zwraca wszystkie definicje w stabilnej kolejności wraz z treścią lub `null`, blokuje połączenia między projektami i oczyszcza HTML istniejącym serwisem opartym na `symfony/html-sanitizer`. `description_long` i frontend pozostają bez zmian.
+- Wynik: API zwraca wszystkie definicje w stabilnej kolejności wraz z treścią lub `null`, blokuje połączenia między projektami i oczyszcza HTML istniejącym serwisem opartym na `symfony/html-sanitizer`. Poprzednie pole długiego opisu i frontend pozostały wtedy bez zmian.
 - Testy: test kontraktu API — 16 testów i 124 asercje; zestaw API, fundamentu, autoryzacji, postaci i obrazów — 65 testów i 445 asercji; pełny PHPUnit — 217 testów i 1415 asercji. Składnia PHP, Pint, lista tras, ścisła walidacja Composera i `git diff --check` zakończyły się powodzeniem.
 
 ## 2026-11-16 — Fundament sekcji opisowych postaci
 
 - Zakres: relacyjne definicje sekcji wspólne dla projektu, indywidualne treści postaci, relacje modeli, polityki własności oraz integralność i kaskady bazy.
-- Wynik: definicje mają znormalizowane, unikalne tytuły i stabilną kolejność, a jedna postać może przechowywać najwyżej jedną treść danej sekcji. Brak rekordu oznacza pustą sekcję; API, frontend, sanitizacja i migracja `description_long` pozostają poza etapem.
+- Wynik: definicje mają znormalizowane, unikalne tytuły i stabilną kolejność, a jedna postać może przechowywać najwyżej jedną treść danej sekcji. Brak rekordu oznacza pustą sekcję; API, frontend, sanitizacja i sprzątanie poprzedniego pola pozostawały poza etapem.
 - Testy: test fundamentu — 12 testów i 34 asercje; zestaw postaci, autoryzacji, atrybutów i obrazów — 64 testy i 378 asercji; pełny PHPUnit — 201 testów i 1291 asercji. Składnia PHP, Pint, ścisła walidacja Composera i `git diff --check` zakończyły się powodzeniem.
 
 ## 2026-11-09 — Usunięcie poprzedniego systemu atrybutów

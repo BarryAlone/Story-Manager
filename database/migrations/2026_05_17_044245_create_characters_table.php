@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('name');
             $table->string('group_name')->nullable();
             $table->string('description')->nullable();
-            $table->text('description_long')->nullable();
             $table->string('character_image')->nullable();
             $table->timestamps();
         });

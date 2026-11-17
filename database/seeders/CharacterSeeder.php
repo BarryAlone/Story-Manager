@@ -17,7 +17,6 @@ class CharacterSeeder extends Seeder
             'name' => 'Bilbo Baggins',
             'group_name' => 'Drużyna pierścienia',
             'description' => 'Hobbit z Shire',
-            'description_long' => 'To jest pełny, długi opis postaci, który będzie się wyświetlał po wejściu w szczegóły.',
             'character_image' => null,
         ]);
 
@@ -26,7 +25,6 @@ class CharacterSeeder extends Seeder
             'name' => 'Thorin Dębowa Tarcza',
             'group_name' => 'Drużyna pierścienia',
             'description' => 'Książe Ereboru',
-            'description_long' => 'To jest pełny, długi opis postaci, który będzie się wyświetlał po wejściu w szczegóły.',
             'character_image' => null,
         ]);
 
@@ -35,7 +33,6 @@ class CharacterSeeder extends Seeder
             'name' => 'Gandalf Szary',
             'group_name' => 'Drużyna pierścienia',
             'description' => 'Potężny mag',
-            'description_long' => 'To jest pełny, długi opis postaci, który będzie się wyświetlał po wejściu w szczegóły.',
             'character_image' => null,
         ]);
     }
