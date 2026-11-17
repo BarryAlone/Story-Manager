@@ -83,6 +83,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/projects/{project}/character-section-definitions', [CharacterSectionDefinitionController::class, 'index']);
     Route::post('/projects/{project}/character-section-definitions', [CharacterSectionDefinitionController::class, 'store']);
     Route::patch('/projects/{project}/character-section-definitions/order', [CharacterSectionDefinitionController::class, 'reorder']);
+    Route::get('/projects/{project}/character-section-layout', [CharacterSectionDefinitionController::class, 'layout']);
+    Route::patch('/projects/{project}/character-section-layout', [CharacterSectionDefinitionController::class, 'reorderLayout']);
     Route::patch('/character-section-definitions/{definition}', [CharacterSectionDefinitionController::class, 'update']);
     Route::delete('/character-section-definitions/{definition}', [CharacterSectionDefinitionController::class, 'destroy']);
     Route::get('/characters/{character}/section-contents', [CharacterSectionContentController::class, 'index']);

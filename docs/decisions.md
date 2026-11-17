@@ -94,5 +94,6 @@
 - Dodatkowe obrazy są osobnymi rekordami `character_gallery_images` z opcjonalnym podpisem i technicznym `sort_order`; nie tworzymy albumów ani drugiego oznaczenia obrazu głównego.
 - Jedno żądanie dodaje jeden plik do katalogu `character-gallery/`. API zwraca publiczny URL, ale nie ujawnia wewnętrznej ścieżki dyskowej.
 - Zmiana kolejności przyjmuje dokładnie raz wszystkie identyfikatory galerii danej postaci i wykonuje zapis atomowo.
+- Położenie galerii pośród sekcji opisowych jest wspólnym ustawieniem projektu, ponieważ same definicje sekcji również są wspólne dla wszystkich postaci. `null` oznacza pozycję końcową, dzięki czemu nowe definicje nie są dodawane za galerią ustawioną na końcu.
 - Plik jest usuwany dopiero po udanym usunięciu rekordu. Usunięcie postaci lub projektu zbiera ścieżki galerii przed kaskadą bazy i sprząta wyłącznie należące do niego pliki.
 - Interfejs React galerii, masowe przesyłanie, miniatury serwerowe i użycie obrazu galerii jako portretu pozostają osobnymi etapami.

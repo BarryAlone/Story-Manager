@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Services\ChapterContentSanitizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class CharacterSectionApiTest extends TestCase
@@ -23,6 +24,11 @@ class CharacterSectionApiTest extends TestCase
 
         $this->getJson("/api/projects/{$project->id}/character-section-definitions")->assertUnauthorized();
         $this->postJson("/api/projects/{$project->id}/character-section-definitions", ['title' => 'Nowa'])->assertUnauthorized();
+        $this->getJson("/api/projects/{$project->id}/character-section-layout")->assertUnauthorized();
+        $this->patchJson("/api/projects/{$project->id}/character-section-layout", [
+            'definition_ids' => [$definition->id],
+            'gallery_position' => 0,
+        ])->assertUnauthorized();
         $this->getJson("/api/characters/{$character->id}/section-contents")->assertUnauthorized();
         $this->putJson("/api/characters/{$character->id}/section-contents/{$definition->id}", [
             'content' => '<p>Treść</p>',
@@ -39,6 +45,9 @@ class CharacterSectionApiTest extends TestCase
 
         $this->actingAs($stranger)
             ->getJson("/api/projects/{$project->id}/character-section-definitions")
+            ->assertNotFound();
+        $this->actingAs($stranger)
+            ->getJson("/api/projects/{$project->id}/character-section-layout")
             ->assertNotFound();
         $this->actingAs($stranger)
             ->patchJson("/api/character-section-definitions/{$definition->id}", ['title' => 'Obca'])
@@ -179,6 +188,137 @@ class CharacterSectionApiTest extends TestCase
             $this->assertDatabaseHas('character_section_definitions', ['id' => $first->id, 'sort_order' => 0]);
             $this->assertDatabaseHas('character_section_definitions', ['id' => $second->id, 'sort_order' => 1]);
         }
+    }
+
+    public function test_owner_can_place_gallery_between_sections_atomically(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->projectFor($user);
+        $first = $this->definitionFor($project, 'Pierwsza', 0);
+        $second = $this->definitionFor($project, 'Druga', 1);
+        $third = $this->definitionFor($project, 'Trzecia', 2);
+        $endpoint = "/api/projects/{$project->id}/character-section-layout";
+
+        $this->actingAs($user)
+            ->getJson($endpoint)
+            ->assertOk()
+            ->assertJsonPath('gallery_position', 3)
+            ->assertJsonPath('definitions.0.id', $first->id);
+
+        $this->actingAs($user)
+            ->patchJson($endpoint, [
+                'definition_ids' => [$third->id, $first->id, $second->id],
+                'gallery_position' => 1,
+            ])
+            ->assertOk()
+            ->assertJsonPath('gallery_position', 1)
+            ->assertJsonPath('definitions.0.id', $third->id)
+            ->assertJsonPath('definitions.1.id', $first->id)
+            ->assertJsonPath('definitions.2.id', $second->id);
+
+        $this->assertSame(1, $project->fresh()->character_gallery_position);
+        $this->assertDatabaseHas('character_section_definitions', ['id' => $third->id, 'sort_order' => 0]);
+        $this->assertDatabaseHas('character_section_definitions', ['id' => $first->id, 'sort_order' => 1]);
+        $this->assertDatabaseHas('character_section_definitions', ['id' => $second->id, 'sort_order' => 2]);
+    }
+
+    public function test_gallery_at_end_remains_at_end_after_creating_definition(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->projectFor($user);
+        $first = $this->definitionFor($project, 'Pierwsza', 0);
+        $endpoint = "/api/projects/{$project->id}/character-section-layout";
+
+        $this->actingAs($user)->patchJson($endpoint, [
+            'definition_ids' => [$first->id],
+            'gallery_position' => 1,
+        ])->assertOk();
+
+        $this->assertNull($project->fresh()->character_gallery_position);
+
+        $this->actingAs($user)
+            ->postJson("/api/projects/{$project->id}/character-section-definitions", ['title' => 'Druga'])
+            ->assertCreated();
+
+        $this->actingAs($user)
+            ->getJson($endpoint)
+            ->assertOk()
+            ->assertJsonPath('gallery_position', 2)
+            ->assertJsonCount(2, 'definitions');
+    }
+
+    public function test_layout_rejects_invalid_ids_and_gallery_position_without_partial_changes(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->projectFor($user, 'Pierwszy');
+        $otherProject = $this->projectFor($user, 'Drugi');
+        $first = $this->definitionFor($project, 'Pierwsza', 0);
+        $second = $this->definitionFor($project, 'Druga', 1);
+        $foreign = $this->definitionFor($otherProject, 'Obca', 0);
+        $endpoint = "/api/projects/{$project->id}/character-section-layout";
+
+        foreach ([
+            ['definition_ids' => [$first->id], 'gallery_position' => 0, 'field' => 'definition_ids'],
+            ['definition_ids' => [$first->id, $foreign->id], 'gallery_position' => 1, 'field' => 'definition_ids'],
+            ['definition_ids' => [$first->id, $second->id], 'gallery_position' => 3, 'field' => 'gallery_position'],
+        ] as $payload) {
+            $field = $payload['field'];
+            unset($payload['field']);
+            $this->actingAs($user)
+                ->patchJson($endpoint, $payload)
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors($field);
+
+            $this->assertDatabaseHas('character_section_definitions', ['id' => $first->id, 'sort_order' => 0]);
+            $this->assertDatabaseHas('character_section_definitions', ['id' => $second->id, 'sort_order' => 1]);
+            $this->assertNull($project->fresh()->character_gallery_position);
+        }
+    }
+
+    public function test_deleting_section_before_gallery_preserves_visual_position(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->projectFor($user);
+        $first = $this->definitionFor($project, 'Pierwsza', 0);
+        $second = $this->definitionFor($project, 'Druga', 1);
+        $third = $this->definitionFor($project, 'Trzecia', 2);
+        $project->update(['character_gallery_position' => 2]);
+
+        $this->actingAs($user)
+            ->deleteJson("/api/character-section-definitions/{$first->id}")
+            ->assertNoContent();
+
+        $this->assertSame(1, $project->fresh()->character_gallery_position);
+
+        $this->actingAs($user)
+            ->deleteJson("/api/character-section-definitions/{$third->id}")
+            ->assertNoContent();
+
+        $this->assertSame(1, $project->fresh()->character_gallery_position);
+        $this->assertDatabaseHas('character_section_definitions', ['id' => $second->id]);
+    }
+
+    public function test_layout_database_failure_rolls_back_definitions_and_gallery_position(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->projectFor($user);
+        $first = $this->definitionFor($project, 'Pierwsza', 0);
+        $second = $this->definitionFor($project, 'Druga', 1);
+        DB::statement(
+            'CREATE TRIGGER fail_character_layout BEFORE UPDATE OF character_gallery_position ON projects '
+            ."BEGIN SELECT RAISE(ABORT, 'forced layout failure'); END"
+        );
+
+        $this->actingAs($user)
+            ->patchJson("/api/projects/{$project->id}/character-section-layout", [
+                'definition_ids' => [$second->id, $first->id],
+                'gallery_position' => 0,
+            ])
+            ->assertServerError();
+
+        $this->assertDatabaseHas('character_section_definitions', ['id' => $first->id, 'sort_order' => 0]);
+        $this->assertDatabaseHas('character_section_definitions', ['id' => $second->id, 'sort_order' => 1]);
+        $this->assertNull($project->fresh()->character_gallery_position);
     }
 
     public function test_contents_count_and_safe_definition_deletion_contract(): void

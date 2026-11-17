@@ -44,6 +44,7 @@ class CharacterSectionFoundationTest extends TestCase
             'created_at',
             'updated_at',
         ]));
+        $this->assertTrue(Schema::hasColumn('projects', 'character_gallery_position'));
         $this->assertFalse(Schema::hasColumn('characters', 'description_long'));
 
         $this->assertSame(

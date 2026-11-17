@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-17 — Galeria postaci w React SPA
+
+- Zakres: responsywna galeria w układzie dynamicznych sekcji postaci, dostępny lightbox, prawy panel pojedynczego uploadu, podpisów, kolejności i usuwania oraz projektowe zarządzanie położeniem galerii.
+- Wynik: mutacje aktualizują galerię lokalnie bez przeładowania, opóźnione żądania nie mieszają postaci, lokalny plik jest walidowany i zwalniany, a zamykanie panelu chroni niezapisany obraz lub podpis. Manager sekcji traktuje galerię jako nieusuwalny element układu i zapisuje jej pozycję atomowo razem z kolejnością definicji.
+- Testy: lint i build React SPA zakończone powodzeniem; testy układu, sekcji i galerii — 45 testów i 297 asercji; pełny PHPUnit — 234 testy i 1558 asercji. Build zachowuje znane, nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-11-17 — Backendowy fundament galerii postaci
 
 - Zakres: relacyjna galeria dodatkowych obrazów postaci, chronione API listowania, pojedynczego przesyłania, zmiany podpisu, atomowego porządkowania i usuwania oraz sprzątanie plików przy usunięciu obrazu, postaci i projektu.

@@ -274,6 +274,15 @@
   background: #f8fafc;
 }
 
+.character-section-manager__list > li.character-section-manager__gallery {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.character-section-manager__gallery .character-section-manager__summary strong {
+  color: #1d4ed8;
+}
+
 .character-section-manager__summary {
   display: grid;
   min-width: 0;

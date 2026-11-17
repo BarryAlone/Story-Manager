@@ -106,6 +106,68 @@ class CharacterSectionDefinitionController extends Controller
         );
     }
 
+    public function layout(Project $project): JsonResponse
+    {
+        Gate::authorize('view', $project);
+
+        return response()->json($this->layoutResponse($project));
+    }
+
+    public function reorderLayout(Request $request, Project $project): JsonResponse
+    {
+        Gate::authorize('view', $project);
+        $validated = $request->validate([
+            'definition_ids' => ['required', 'array'],
+            'definition_ids.*' => ['required', 'integer'],
+            'gallery_position' => ['required', 'integer', 'min:0'],
+        ]);
+        $requestedIds = array_map('intval', $validated['definition_ids']);
+        $projectIds = $project->characterSectionDefinitions()
+            ->pluck('character_section_definitions.id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+        $uniqueRequestedIds = array_values(array_unique($requestedIds));
+        $sortedRequestedIds = $uniqueRequestedIds;
+        $sortedProjectIds = $projectIds;
+        sort($sortedRequestedIds);
+        sort($sortedProjectIds);
+
+        if (count($requestedIds) !== count($uniqueRequestedIds)
+            || $sortedRequestedIds !== $sortedProjectIds) {
+            throw ValidationException::withMessages([
+                'definition_ids' => [
+                    'Lista musi zawierać dokładnie raz wszystkie definicje sekcji projektu.',
+                ],
+            ]);
+        }
+
+        $galleryPosition = (int) $validated['gallery_position'];
+
+        if ($galleryPosition > count($requestedIds)) {
+            throw ValidationException::withMessages([
+                'gallery_position' => [
+                    'Pozycja galerii musi mieścić się w układzie sekcji projektu.',
+                ],
+            ]);
+        }
+
+        DB::transaction(function () use ($galleryPosition, $project, $requestedIds): void {
+            foreach ($requestedIds as $sortOrder => $definitionId) {
+                $project->characterSectionDefinitions()
+                    ->whereKey($definitionId)
+                    ->update(['sort_order' => $sortOrder]);
+            }
+
+            $project->update([
+                'character_gallery_position' => $galleryPosition === count($requestedIds)
+                    ? null
+                    : $galleryPosition,
+            ]);
+        });
+
+        return response()->json($this->layoutResponse($project->refresh()));
+    }
+
     public function destroy(
         Request $request,
         CharacterSectionDefinition $definition,
@@ -121,7 +183,25 @@ class CharacterSectionDefinitionController extends Controller
             ], 409);
         }
 
-        DB::transaction(fn () => $definition->delete());
+        DB::transaction(function () use ($definition): void {
+            $project = $definition->project;
+            $galleryPosition = $project->character_gallery_position;
+            $definitionPosition = $project->characterSectionDefinitions()
+                ->where(function ($query) use ($definition) {
+                    $query->where('sort_order', '<', $definition->sort_order)
+                        ->orWhere(function ($query) use ($definition) {
+                            $query->where('sort_order', $definition->sort_order)
+                                ->where('id', '<', $definition->id);
+                        });
+                })
+                ->count();
+
+            $definition->delete();
+
+            if ($galleryPosition !== null && $definitionPosition < $galleryPosition) {
+                $project->update(['character_gallery_position' => max(0, $galleryPosition - 1)]);
+            }
+        });
 
         return response()->noContent();
     }
@@ -191,5 +271,20 @@ class CharacterSectionDefinitionController extends Controller
         throw ValidationException::withMessages([
             'title' => [self::DUPLICATE_TITLE_MESSAGE],
         ]);
+    }
+
+    /** @return array{definitions: mixed, gallery_position: int} */
+    private function layoutResponse(Project $project): array
+    {
+        $definitions = $project->characterSectionDefinitions()->withCount('contents')->get();
+        $galleryPosition = min(
+            $project->character_gallery_position ?? $definitions->count(),
+            $definitions->count(),
+        );
+
+        return [
+            'definitions' => $definitions,
+            'gallery_position' => $galleryPosition,
+        ];
     }
 }

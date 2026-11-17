@@ -8,6 +8,10 @@ import './features/attributes/attributes.css';
 import CharacterDetailsContent from './features/characters/CharacterDetailsContent';
 import './features/characters/characterAttributes.css';
 import './features/characters/characterDetails.css';
+import CharacterGalleryManager from './features/characters/gallery/CharacterGalleryManager';
+import CharacterGallerySection from './features/characters/gallery/CharacterGallerySection';
+import './features/characters/gallery/characterGallery.css';
+import useCharacterGallery from './features/characters/gallery/useCharacterGallery';
 import CharacterSectionManager from './features/characters/sections/CharacterSectionManager';
 import CharacterSections from './features/characters/sections/CharacterSections';
 import './features/characters/sections/characterSections.css';
@@ -56,8 +60,11 @@ function CharacterDetailEditor({
   const [isAttributesPanelDirty, setIsAttributesPanelDirty] = useState(false);
   const [isSectionsPanelOpen, setIsSectionsPanelOpen] = useState(false);
   const [isSectionsPanelDirty, setIsSectionsPanelDirty] = useState(false);
+  const [isGalleryPanelOpen, setIsGalleryPanelOpen] = useState(false);
   const attributesButtonRef = useRef(null);
   const sectionsButtonRef = useRef(null);
+  const galleryButtonRef = useRef(null);
+  const galleryManagerRef = useRef(null);
   const sectionsRef = useRef(null);
   const { cancelPanelClose, closingPanel, startPanelClose } = usePanelTransition();
   const definitionStore = useAttributeDefinitions({
@@ -67,6 +74,7 @@ function CharacterDetailEditor({
     scopeKey: projectId ? `character-project:${projectId}` : null,
   });
   const sectionDefinitionStore = useCharacterSectionDefinitions(projectId);
+  const galleryStore = useCharacterGallery(character.id);
   const definitionsReady = !definitionStore.isLoading && !definitionStore.error;
   const currentAttributeValues = useMemo(
     () => buildAttributeValueMap(definitionStore.definitions, {
@@ -129,10 +137,26 @@ function CharacterDetailEditor({
     });
   };
 
+  const requestCloseGalleryPanel = () => {
+    if (galleryStore.isMutating || closingPanel === 'gallery') return;
+    if (!galleryManagerRef.current?.requestDiscard()) return;
+    startPanelClose('gallery', () => {
+      cancelPanelClose();
+      setIsGalleryPanelOpen(false);
+      window.requestAnimationFrame(() => galleryButtonRef.current?.focus({ preventScroll: true }));
+    });
+  };
+
   const openSectionsPanel = () => {
-    if (isAttributesPanelOpen || isSectionsPanelOpen) return;
+    if (isAttributesPanelOpen || isSectionsPanelOpen || isGalleryPanelOpen) return;
     setIsSectionsPanelDirty(false);
     setIsSectionsPanelOpen(true);
+  };
+
+  const openGalleryPanel = () => {
+    if (isAttributesPanelOpen || isSectionsPanelOpen || isGalleryPanelOpen) return;
+    if (!sectionsRef.current?.requestDiscard({ restoreFocus: false })) return;
+    setIsGalleryPanelOpen(true);
   };
 
   return (
@@ -156,7 +180,7 @@ function CharacterDetailEditor({
         onImageChange={handleImageChange}
         onInputChange={handleInputChange}
         onOpenAttributes={() => {
-          if (isSectionsPanelOpen || !sectionsRef.current?.requestDiscard({ restoreFocus: false })) return;
+          if (isSectionsPanelOpen || isGalleryPanelOpen || !sectionsRef.current?.requestDiscard({ restoreFocus: false })) return;
           setIsAttributesPanelDirty(false);
           setIsAttributesPanelOpen(true);
         }}
@@ -169,8 +193,23 @@ function CharacterDetailEditor({
             ref={sectionsRef}
             characterId={character.id}
             definitionStore={sectionDefinitionStore}
+            galleryPosition={sectionDefinitionStore.galleryPosition}
+            galleryTocItem={galleryStore.images.length > 0
+              ? { id: 'character-gallery', title: 'Galeria' }
+              : null}
             managerButtonRef={sectionsButtonRef}
             onOpenManager={openSectionsPanel}
+            renderGallery={(sectionNumber) => (
+              <CharacterGallerySection
+                error={galleryStore.error}
+                images={galleryStore.images}
+                isLoading={galleryStore.isLoading}
+                manageButtonRef={galleryButtonRef}
+                onManage={openGalleryPanel}
+                onRetry={galleryStore.loadImages}
+                sectionNumber={sectionNumber}
+              />
+            )}
           />
         )}
       />
@@ -196,6 +235,14 @@ function CharacterDetailEditor({
             onClose={requestCloseSectionsPanel}
             onDirtyChange={setIsSectionsPanelDirty}
             store={sectionDefinitionStore}
+          />
+        )}
+        {isGalleryPanelOpen && (
+          <CharacterGalleryManager
+            ref={galleryManagerRef}
+            isClosing={closingPanel === 'gallery'}
+            onClose={requestCloseGalleryPanel}
+            store={galleryStore}
           />
         )}
       </div>

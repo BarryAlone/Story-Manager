@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import usePanelDismiss from '../../panels/usePanelDismiss';
 
@@ -21,6 +21,16 @@ export default function CharacterSectionManager({
     editingId !== null
     && editingTitle !== (store.definitions.find((item) => Number(item.id) === Number(editingId))?.title || '')
   );
+  const layoutItems = useMemo(() => {
+    const items = store.definitions.map((definition) => ({
+      definition,
+      key: `section-${definition.id}`,
+      type: 'section',
+    }));
+    const galleryPosition = Math.min(Math.max(Number(store.galleryPosition) || 0, 0), items.length);
+    items.splice(galleryPosition, 0, { key: 'gallery', type: 'gallery' });
+    return items;
+  }, [store.definitions, store.galleryPosition]);
 
   usePanelDismiss({ disabled: disabled || isClosing, onOutsideClick: onClose, panelRef });
 
@@ -79,12 +89,16 @@ export default function CharacterSectionManager({
     }
   };
 
-  const moveDefinition = async (index, offset) => {
-    const reordered = [...store.definitions];
+  const moveLayoutItem = async (index, offset) => {
+    const reordered = [...layoutItems];
     const target = index + offset;
     if (target < 0 || target >= reordered.length) return;
     [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
-    const succeeded = await runAction(() => store.reorderDefinitions(reordered.map((item) => item.id)));
+    const definitionIds = reordered
+      .filter((item) => item.type === 'section')
+      .map((item) => item.definition.id);
+    const galleryPosition = reordered.findIndex((item) => item.type === 'gallery');
+    const succeeded = await runAction(() => store.reorderLayout(definitionIds, galleryPosition));
     if (!succeeded) store.refreshDefinitions();
   };
 
@@ -177,12 +191,26 @@ export default function CharacterSectionManager({
               </div>
             )}
 
-            {store.definitions.length === 0 ? (
-              <ManagerState text="Projekt nie ma jeszcze sekcji postaci." />
-            ) : (
-              <ol className="character-section-manager__list">
-                {store.definitions.map((definition, index) => (
-                  <li key={definition.id}>
+            <ol className="character-section-manager__list">
+              {layoutItems.map((item, index) => {
+                if (item.type === 'gallery') {
+                  return (
+                    <li key={item.key} className="character-section-manager__gallery">
+                      <div className="character-section-manager__summary">
+                        <strong>Galeria</strong>
+                        <span>Galeria obrazów każdej postaci</span>
+                      </div>
+                      <div className="character-section-manager__actions" aria-label="Zmień położenie galerii">
+                        <button type="button" aria-label="Przenieś galerię w górę" title="Przenieś w górę" onClick={() => moveLayoutItem(index, -1)} disabled={disabled || index === 0}>↑</button>
+                        <button type="button" aria-label="Przenieś galerię w dół" title="Przenieś w dół" onClick={() => moveLayoutItem(index, 1)} disabled={disabled || index === layoutItems.length - 1}>↓</button>
+                      </div>
+                    </li>
+                  );
+                }
+
+                const definition = item.definition;
+                return (
+                  <li key={item.key}>
                     {Number(editingId) === Number(definition.id) ? (
                       <form className="character-section-manager__rename" onSubmit={saveDefinition}>
                         <label htmlFor={`character-section-title-${definition.id}`}>Nazwa sekcji</label>
@@ -212,8 +240,8 @@ export default function CharacterSectionManager({
                           <span>{definition.contents_count} {Number(definition.contents_count) === 1 ? 'uzupełniona postać' : 'uzupełnionych postaci'}</span>
                         </div>
                         <div className="character-section-manager__actions" aria-label={`Akcje sekcji ${definition.title}`}>
-                          <button type="button" aria-label="Przenieś w górę" title="Przenieś w górę" onClick={() => moveDefinition(index, -1)} disabled={disabled || index === 0}>↑</button>
-                          <button type="button" aria-label="Przenieś w dół" title="Przenieś w dół" onClick={() => moveDefinition(index, 1)} disabled={disabled || index === store.definitions.length - 1}>↓</button>
+                          <button type="button" aria-label="Przenieś w górę" title="Przenieś w górę" onClick={() => moveLayoutItem(index, -1)} disabled={disabled || index === 0}>↑</button>
+                          <button type="button" aria-label="Przenieś w dół" title="Przenieś w dół" onClick={() => moveLayoutItem(index, 1)} disabled={disabled || index === layoutItems.length - 1}>↓</button>
                           <button
                             type="button"
                             onClick={() => {
@@ -232,9 +260,9 @@ export default function CharacterSectionManager({
                       </>
                     )}
                   </li>
-                ))}
-              </ol>
-            )}
+                );
+              })}
+            </ol>
           </>
         )}
       </div>
