@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-17 — Backendowy fundament galerii postaci
+
+- Zakres: relacyjna galeria dodatkowych obrazów postaci, chronione API listowania, pojedynczego przesyłania, zmiany podpisu, atomowego porządkowania i usuwania oraz sprzątanie plików przy usunięciu obrazu, postaci i projektu.
+- Wynik: portret `character_image` pozostał niezależny, odpowiedzi galerii zwracają publiczne URL-e bez ścieżek dyskowych, cudze zasoby są ukrywane odpowiedzią `404`, a błędy bazy nie pozostawiają nowo przesłanych plików.
+- Testy: test galerii — 12 testów i 87 asercji; regresja galerii, obrazów, postaci, autoryzacji, sekcji i atrybutów — 77 testów i 537 asercji; pełny PHPUnit — 229 testów i 1507 asercji. Pint, ścisła walidacja Composera i kontrola pięciu chronionych tras zakończyły się powodzeniem.
+
 ## 2026-11-17 — Usunięcie poprzedniego długiego opisu postaci
 
 - Zakres: usunięcie nieużywanego pola ze schematu postaci, modelu, walidacji i odpowiedzi API, danych przykładowych oraz dokumentacji po wdrożeniu dynamicznych sekcji.

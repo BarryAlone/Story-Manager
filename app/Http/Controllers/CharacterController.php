@@ -156,9 +156,12 @@ class CharacterController extends Controller
         $character = Character::findOrFail($id);
         Gate::authorize('delete', $character);
 
-        $imagePath = $character->character_image;
+        $imagePaths = [
+            $character->character_image,
+            ...$character->galleryImages()->pluck('image_path')->all(),
+        ];
         DB::transaction(fn () => $character->delete());
-        $this->imageStorage->delete($imagePath);
+        $this->imageStorage->deleteMany($imagePaths);
 
         return response()->json(['message' => 'Postać usunięta'], 200);
     }

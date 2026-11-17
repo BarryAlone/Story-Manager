@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ChapterStructureController;
 use App\Http\Controllers\CharacterController;
+use App\Http\Controllers\CharacterGalleryImageController;
 use App\Http\Controllers\CharacterRelationshipController;
 use App\Http\Controllers\CharacterSectionContentController;
 use App\Http\Controllers\CharacterSectionDefinitionController;
@@ -70,6 +71,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/characters/{id}', [CharacterController::class, 'update']);
     Route::get('/projects/{project}/characters/{id}', [CharacterController::class, 'showInProject']);
     Route::get('/characters/{id}', [CharacterController::class, 'show']);
+
+    // Character gallery
+    Route::get('/characters/{character}/gallery-images', [CharacterGalleryImageController::class, 'index']);
+    Route::post('/characters/{character}/gallery-images', [CharacterGalleryImageController::class, 'store']);
+    Route::patch('/characters/{character}/gallery-images/order', [CharacterGalleryImageController::class, 'reorder']);
+    Route::patch('/character-gallery-images/{galleryImage}', [CharacterGalleryImageController::class, 'update']);
+    Route::delete('/character-gallery-images/{galleryImage}', [CharacterGalleryImageController::class, 'destroy']);
 
     // Character sections
     Route::get('/projects/{project}/character-section-definitions', [CharacterSectionDefinitionController::class, 'index']);

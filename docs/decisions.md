@@ -87,3 +87,12 @@
 - Zmiana kolejności przyjmuje dokładnie raz wszystkie identyfikatory definicji projektu i wykonuje aktualizację atomowo.
 - Dynamiczne sekcje są jedyną formą długiej treści postaci. Poprzednie pole długiego opisu zostało usunięte ze schematu, modelu, API i SPA bez migracji danych deweloperskich.
 - „Wyczyść treść” usuwa zawartość jednej definicji tylko dla bieżącej postaci. „Usuń sekcję” usuwa globalną definicję projektu, a przy istniejących treściach wymaga osobnego świadomego wymuszenia.
+
+## Galeria postaci
+
+- `character_image` pozostaje pojedynczym portretem postaci i nie jest częścią galerii ani jej kolejności.
+- Dodatkowe obrazy są osobnymi rekordami `character_gallery_images` z opcjonalnym podpisem i technicznym `sort_order`; nie tworzymy albumów ani drugiego oznaczenia obrazu głównego.
+- Jedno żądanie dodaje jeden plik do katalogu `character-gallery/`. API zwraca publiczny URL, ale nie ujawnia wewnętrznej ścieżki dyskowej.
+- Zmiana kolejności przyjmuje dokładnie raz wszystkie identyfikatory galerii danej postaci i wykonuje zapis atomowo.
+- Plik jest usuwany dopiero po udanym usunięciu rekordu. Usunięcie postaci lub projektu zbiera ścieżki galerii przed kaskadą bazy i sprząta wyłącznie należące do niego pliki.
+- Interfejs React galerii, masowe przesyłanie, miniatury serwerowe i użycie obrazu galerii jako portretu pozostają osobnymi etapami.
