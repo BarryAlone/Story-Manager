@@ -14,7 +14,6 @@ class Character extends Model
         'name',
         'group_name',
         'description',
-        'description_long',
         'character_image',
     ];
 

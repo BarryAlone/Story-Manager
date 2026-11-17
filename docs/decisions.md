@@ -85,5 +85,5 @@
 - Treść sekcji przechowuje długi HTML oczyszczany przed zapisem przez ten sam serwis oparty na `symfony/html-sanitizer`, który obsługuje treść rozdziałów. Surowy payload ma limit 2 000 000 znaków, a HTML pozbawiony rzeczywistej treści jest odrzucany odpowiedzią `422`.
 - Zwykłe usunięcie używanej definicji jest blokowane odpowiedzią `409`; jawne `force=true` usuwa definicję i wszystkie jej treści kaskadowo. Usunięcie treści konkretnej postaci jest idempotentne i nie usuwa globalnej definicji.
 - Zmiana kolejności przyjmuje dokładnie raz wszystkie identyfikatory definicji projektu i wykonuje aktualizację atomowo.
-- Dynamiczne sekcje są jedyną formą długiej treści prezentowaną i edytowaną przez SPA. `characters.description_long` pozostaje tymczasowo wyłącznie jako backendowe pole legacy do osobnego usunięcia; frontend nie wysyła go w nowych żądaniach.
+- Dynamiczne sekcje są jedyną formą długiej treści postaci. Poprzednie pole długiego opisu zostało usunięte ze schematu, modelu, API i SPA bez migracji danych deweloperskich.
 - „Wyczyść treść” usuwa zawartość jednej definicji tylko dla bieżącej postaci. „Usuń sekcję” usuwa globalną definicję projektu, a przy istniejących treściach wymaga osobnego świadomego wymuszenia.

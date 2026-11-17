@@ -16,7 +16,7 @@
 
 ## Zakończone
 
-- [x] Zintegrowano sekcje opisowe postaci z wiki-like SPA, zastępując frontendowe użycie `description_long` dynamiczną strukturą i indywidualnymi treściami.
+- [x] Zintegrowano sekcje opisowe postaci z wiki-like SPA i usunięto poprzednie pole długiego opisu postaci.
 - [x] Dodano backendowy fundament wspólnych definicji i indywidualnych treści sekcji opisowych postaci.
 - [x] Dodano chronione API definicji i treści sekcji postaci z porządkowaniem, bezpiecznym usuwaniem i sanitizacją HTML.
 - [x] Utworzono bazową strukturę backendu i API dla głównych zasobów.
