@@ -16,7 +16,6 @@ function formValues(character) {
   return {
     attributeValues: character?.attribute_values || {},
     description: character?.description || '',
-    descriptionLong: character?.description_long || '',
     groupName: character?.group_name || '',
     image: null,
     name: character?.name || '',
@@ -60,7 +59,6 @@ export default function CharacterForm({
   const isDirty = values.name !== initialValues.name
     || values.groupName !== initialValues.groupName
     || values.description !== initialValues.description
-    || values.descriptionLong !== initialValues.descriptionLong
     || Boolean(values.image)
     || !attributeValueMapsEqual(
       normalizedAttributeValues,
@@ -154,7 +152,6 @@ export default function CharacterForm({
     formData.append('name', values.name);
     formData.append('group_name', values.groupName || '');
     formData.append('description', values.description || '');
-    formData.append('description_long', values.descriptionLong || '');
     appendCharacterAttributeValues(
       formData,
       definitionsReady ? normalizedAttributeValues : undefined,
@@ -271,16 +268,6 @@ export default function CharacterForm({
           value={values.description}
           disabled={isSaving || isLoading}
           onChange={(event) => updateValue('description', event.target.value)}
-        />
-      </label>
-
-      <label htmlFor="character-description-long">
-        Długi opis <span>(opcjonalnie)</span>
-        <textarea
-          id="character-description-long"
-          value={values.descriptionLong}
-          disabled={isSaving || isLoading}
-          onChange={(event) => updateValue('descriptionLong', event.target.value)}
         />
       </label>
 

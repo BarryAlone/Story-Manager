@@ -8,6 +8,10 @@ import './features/attributes/attributes.css';
 import CharacterDetailsContent from './features/characters/CharacterDetailsContent';
 import './features/characters/characterAttributes.css';
 import './features/characters/characterDetails.css';
+import CharacterSectionManager from './features/characters/sections/CharacterSectionManager';
+import CharacterSections from './features/characters/sections/CharacterSections';
+import './features/characters/sections/characterSections.css';
+import useCharacterSectionDefinitions from './features/characters/sections/useCharacterSectionDefinitions';
 import useCharacterDetails from './features/characters/useCharacterDetails';
 import usePanelTransition from './features/panels/usePanelTransition';
 import './features/world/worldElementPanel.css';
@@ -22,7 +26,6 @@ const INITIAL_EDITING_FIELDS = {
   name: false,
   group_name: false,
   description: false,
-  description_long: false,
   image: false,
   attribute_values: false,
 };
@@ -32,7 +35,6 @@ function characterForm(character) {
     name: character?.name || '',
     group_name: character?.group_name || '',
     description: character?.description || '',
-    description_long: character?.description_long || '',
     imageFile: null,
   };
 }
@@ -52,7 +54,11 @@ function CharacterDetailEditor({
   const [editingFields, setEditingFields] = useState(INITIAL_EDITING_FIELDS);
   const [isAttributesPanelOpen, setIsAttributesPanelOpen] = useState(false);
   const [isAttributesPanelDirty, setIsAttributesPanelDirty] = useState(false);
+  const [isSectionsPanelOpen, setIsSectionsPanelOpen] = useState(false);
+  const [isSectionsPanelDirty, setIsSectionsPanelDirty] = useState(false);
   const attributesButtonRef = useRef(null);
+  const sectionsButtonRef = useRef(null);
+  const sectionsRef = useRef(null);
   const { cancelPanelClose, closingPanel, startPanelClose } = usePanelTransition();
   const definitionStore = useAttributeDefinitions({
     collectionEndpoint: projectId
@@ -60,6 +66,7 @@ function CharacterDetailEditor({
       : null,
     scopeKey: projectId ? `character-project:${projectId}` : null,
   });
+  const sectionDefinitionStore = useCharacterSectionDefinitions(projectId);
   const definitionsReady = !definitionStore.isLoading && !definitionStore.error;
   const currentAttributeValues = useMemo(
     () => buildAttributeValueMap(definitionStore.definitions, {
@@ -111,6 +118,23 @@ function CharacterDetailEditor({
     });
   };
 
+  const requestCloseSectionsPanel = () => {
+    if (sectionDefinitionStore.isMutating || closingPanel === 'sections') return;
+    if (isSectionsPanelDirty && !window.confirm('Masz niezapisane zmiany. Czy chcesz je odrzucić?')) return;
+    startPanelClose('sections', () => {
+      cancelPanelClose();
+      setIsSectionsPanelOpen(false);
+      setIsSectionsPanelDirty(false);
+      window.requestAnimationFrame(() => sectionsButtonRef.current?.focus({ preventScroll: true }));
+    });
+  };
+
+  const openSectionsPanel = () => {
+    if (isAttributesPanelOpen || isSectionsPanelOpen) return;
+    setIsSectionsPanelDirty(false);
+    setIsSectionsPanelOpen(true);
+  };
+
   return (
     <>
       <CharacterDetailsContent
@@ -132,6 +156,7 @@ function CharacterDetailEditor({
         onImageChange={handleImageChange}
         onInputChange={handleInputChange}
         onOpenAttributes={() => {
+          if (isSectionsPanelOpen || !sectionsRef.current?.requestDiscard({ restoreFocus: false })) return;
           setIsAttributesPanelDirty(false);
           setIsAttributesPanelOpen(true);
         }}
@@ -139,6 +164,15 @@ function CharacterDetailEditor({
         onSave={handleSaveChanges}
         projectId={projectId}
         saveError={saveError}
+        sectionsContent={(
+          <CharacterSections
+            ref={sectionsRef}
+            characterId={character.id}
+            definitionStore={sectionDefinitionStore}
+            managerButtonRef={sectionsButtonRef}
+            onOpenManager={openSectionsPanel}
+          />
+        )}
       />
 
       <div className="world-element-panel-layer character-attribute-panel-layer">
@@ -153,6 +187,15 @@ function CharacterDetailEditor({
             panelTitle="Atrybuty postaci"
             store={definitionStore}
             usageLabels={CHARACTER_USAGE_LABELS}
+          />
+        )}
+        {isSectionsPanelOpen && (
+          <CharacterSectionManager
+            disabled={sectionDefinitionStore.isMutating || closingPanel === 'sections'}
+            isClosing={closingPanel === 'sections'}
+            onClose={requestCloseSectionsPanel}
+            onDirtyChange={setIsSectionsPanelDirty}
+            store={sectionDefinitionStore}
           />
         )}
       </div>

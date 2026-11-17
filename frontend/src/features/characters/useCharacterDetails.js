@@ -65,7 +65,6 @@ export default function useCharacterDetails({ characterId, projectId }) {
     formData.append('name', form.name);
     formData.append('group_name', form.group_name || '');
     formData.append('description', form.description || '');
-    formData.append('description_long', form.description_long || '');
     appendCharacterAttributeValues(formData, attributeValues);
     if (form.imageFile) formData.append('character_image', form.imageFile);
     formData.append('_method', 'PUT');
