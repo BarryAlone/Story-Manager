@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Editor } from '@tinymce/tinymce-react';
 
 import editIcon from '../../assets/icons/pencil.png';
 import { backendUrl } from '../../api';
@@ -26,6 +25,7 @@ export default function CharacterDetailsContent({
   onReset,
   onSave,
   saveError,
+  sectionsContent,
 }) {
   const imageUrl = character.character_image
     ? backendUrl(`/storage/${character.character_image}`)
@@ -130,50 +130,7 @@ export default function CharacterDetailsContent({
             </div>
           </header>
 
-          <section
-            className={`character-wiki__history${editingFields.description_long ? '' : ' character-wiki__editable'}`}
-            aria-labelledby="character-history-title"
-            onClick={(event) => beginEditingFromSurface(event, 'description_long')}
-          >
-            <div className="character-wiki__section-heading">
-              <h2 id="character-history-title">Historia postaci</h2>
-              <EditButton label="Edytuj historię postaci" onClick={() => onEditField('description_long')} />
-            </div>
-
-            {editingFields.description_long ? (
-              <div className="character-wiki__editor">
-                <Editor
-                  apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-                  value={form.description_long}
-                  onEditorChange={(content) => onInputChange('description_long', content)}
-                  init={{
-                    height: 'calc(100vh - 260px)',
-                    menubar: false,
-                    plugins: [
-                      'advlist autolink lists link charmap preview anchor',
-                      'searchreplace visualblocks code fullscreen',
-                      'insertdatetime table code help wordcount',
-                    ],
-                    toolbar:
-                      'undo redo | formatselect | bold italic underline strikethrough | '
-                      + 'alignleft aligncenter alignright | bullist numlist outdent indent | '
-                      + 'blockquote | link | removeformat | code',
-                    content_style: 'body { font-family: Inter, system-ui, sans-serif; font-size: 14px; }',
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="character-wiki__history-content">
-                {character.description_long ? (
-                  <div dangerouslySetInnerHTML={{ __html: character.description_long }} />
-                ) : (
-                  <p className="character-wiki__empty-text">
-                    Brak historii postaci. Użyj akcji edycji, aby dodać tekst.
-                  </p>
-                )}
-              </div>
-            )}
-          </section>
+          {sectionsContent}
 
           {saveError && <p className="character-form__error" role="alert">{saveError}</p>}
           {isEditing && (

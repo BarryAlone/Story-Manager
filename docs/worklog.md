@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-17 — Sekcje opisowe postaci w SPA
+
+- Zakres: wiki-like prezentacja dynamicznych sekcji, automatyczny spis treści, edycja pojedynczej treści w TinyMCE oraz prawy panel zarządzania globalnymi definicjami.
+- Wynik: SPA pokazuje wyłącznie uzupełnione sekcje, pozwala rozpocząć treść pustej definicji, rozróżnia czyszczenie treści postaci od globalnego usuwania i chroni niezapisany szkic. Frontend przestał prezentować, edytować i wysyłać legacy `characters.description_long`; backendowe pole pozostaje do osobnego sprzątania.
+- Testy: lint i build React SPA, testy backendowe sekcji, postaci i autoryzacji, pełny PHPUnit oraz `git diff --check`.
+
 ## 2026-11-16 — API sekcji opisowych postaci
 
 - Zakres: chroniony CRUD definicji, atomowa zmiana kolejności, bezpieczne wymuszone usuwanie oraz odczyt, zapis i czyszczenie indywidualnych treści postaci.
