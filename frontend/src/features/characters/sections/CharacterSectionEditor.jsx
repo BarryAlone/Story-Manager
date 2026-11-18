@@ -14,6 +14,9 @@ const SECTION_CONTENT_STYLE = `
   blockquote { margin-left: 0; padding-left: 1rem; border-left: 3px solid #cbd5e1; }
 `;
 
+const SECTION_EDITOR_TOOLBAR =
+  'undo redo | blocks | bold italic underline | bullist numlist | blockquote link | removeformat';
+
 export default function CharacterSectionEditor({
   draft,
   error,
@@ -34,11 +37,15 @@ export default function CharacterSectionEditor({
         onInit={(_event, editor) => {
           editor.focus();
         }}
-        init={richTextEditorConfig({
-          contentStyle: SECTION_CONTENT_STYLE,
-          height: 420,
-          resize: true,
-        })}
+        init={{
+          ...richTextEditorConfig({
+            contentStyle: SECTION_CONTENT_STYLE,
+            height: 420,
+            resize: true,
+          }),
+          elementpath: false,
+          toolbar: SECTION_EDITOR_TOOLBAR,
+        }}
       />
 
       {error && <p className="character-section-editor__error" role="alert">{error}</p>}

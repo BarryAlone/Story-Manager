@@ -176,7 +176,10 @@ function CharacterDetailEditor({
           clearFieldError(`attribute_values.${definitionId}`);
           setAttributeValueDraft((current) => ({ ...current, [definitionId]: value }));
         }}
-        onEditField={(field) => setEditingFields((current) => ({ ...current, [field]: true }))}
+        onEditField={(field, source = true) => setEditingFields((current) => ({
+          ...current,
+          [field]: field === 'name' ? source : true,
+        }))}
         onImageChange={handleImageChange}
         onInputChange={handleInputChange}
         onOpenAttributes={() => {
