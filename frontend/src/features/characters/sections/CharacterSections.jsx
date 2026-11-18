@@ -87,6 +87,11 @@ const CharacterSections = forwardRef(function CharacterSections({
     setEditorError('');
   }, [contentStore.isMutating, editingId, requestDiscard]);
 
+  const beginEditFromSurface = useCallback((event, section) => {
+    if (event.target.closest('button, a, input, textarea, select, [contenteditable="true"], .tox-tinymce')) return;
+    beginEdit(section);
+  }, [beginEdit]);
+
   const save = async (section) => {
     if (contentStore.isMutating || !draft.trim()) return;
     setEditorError('');
@@ -120,12 +125,7 @@ const CharacterSections = forwardRef(function CharacterSections({
     () => contentStore.sections.filter((section) => !section.content?.trim()),
     [contentStore.sections],
   );
-  const articleSections = useMemo(
-    () => contentStore.sections.filter((section) => (
-      Boolean(section.content?.trim()) || Number(editingId) === Number(section.id)
-    )),
-    [contentStore.sections, editingId],
-  );
+  const articleSections = contentStore.sections;
   const articleLayout = useMemo(
     () => buildSectionLayout(
       articleSections,
@@ -136,7 +136,7 @@ const CharacterSections = forwardRef(function CharacterSections({
     [articleSections, contentStore.sections, galleryPosition],
   );
   const tableOfContentsItems = useMemo(() => buildSectionLayout(
-    filledSections,
+    contentStore.sections,
     contentStore.sections,
     galleryPosition,
     Boolean(galleryTocItem),
@@ -150,7 +150,7 @@ const CharacterSections = forwardRef(function CharacterSections({
         href: `#character-section-${item.section.id}`,
         key: `section-${item.section.id}`,
         title: item.section.title,
-      }), [contentStore.sections, filledSections, galleryPosition, galleryTocItem]);
+      }), [contentStore.sections, galleryPosition, galleryTocItem]);
 
   const openManager = () => {
     if (requestDiscard({ restoreFocus: false })) onOpenManager();
@@ -242,7 +242,13 @@ const CharacterSections = forwardRef(function CharacterSections({
           const section = item.section;
           const isEditing = Number(editingId) === Number(section.id);
           return (
-            <section key={section.id} id={`character-section-${section.id}`} className="character-section" aria-labelledby={`character-section-title-${section.id}`}>
+            <section
+              key={section.id}
+              id={`character-section-${section.id}`}
+              className={`character-section${isEditing ? '' : ' character-section--editable'}`}
+              aria-labelledby={`character-section-title-${section.id}`}
+              onClick={isEditing ? undefined : (event) => beginEditFromSurface(event, section)}
+            >
               <div className="character-section__heading">
                 <h2 id={`character-section-title-${section.id}`}>
                   <span className="character-section__number">{sectionNumber}.</span>
@@ -258,7 +264,10 @@ const CharacterSections = forwardRef(function CharacterSections({
                     className="character-wiki__edit-button"
                     aria-label={`Edytuj sekcję: ${section.title}`}
                     title={`Edytuj sekcję: ${section.title}`}
-                    onClick={() => beginEdit(section)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      beginEdit(section);
+                    }}
                   >
                     <img src={editIcon} alt="" />
                   </button>
@@ -281,7 +290,11 @@ const CharacterSections = forwardRef(function CharacterSections({
                   title={section.title}
                 />
               ) : (
-                <div className="character-section__content" dangerouslySetInnerHTML={{ __html: section.content }} />
+                section.content?.trim() ? (
+                  <div className="character-section__content" dangerouslySetInnerHTML={{ __html: section.content }} />
+                ) : (
+                  <p className="character-section__empty-content">Kliknij, aby uzupełnić tę sekcję.</p>
+                )
               )}
             </section>
           );

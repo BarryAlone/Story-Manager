@@ -1,6 +1,6 @@
 .character-wiki {
   width: 100%;
-  max-width: 1380px;
+  max-width: 1650px;
   margin: 0 auto;
   color: #1f2937;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -17,7 +17,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
   align-items: start;
-  gap: clamp(28px, 4vw, 58px);
+  gap: 0;
 }
 
 .character-wiki__article {
@@ -263,17 +263,33 @@
   position: fixed;
   z-index: 10;
   top: 95px;
-  right: max(30px, calc((100vw - 1460px) / 2));
+  right: max(30px, calc((100vw - 1650px) / 2));
   width: 320px;
   box-sizing: border-box;
   max-height: calc(100vh - 125px);
-  overflow-y: auto;
+  overflow-y: scroll;
   scrollbar-gutter: stable;
   border: 1px solid #dbe2ea;
   border-radius: 10px;
   background: #fff;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
   scrollbar-width: thin;
+}
+
+.character-wiki__infobox::-webkit-scrollbar {
+  width: 7px;
+}
+
+.character-wiki__infobox::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.character-wiki__infobox::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.5);
+  background-clip: padding-box;
 }
 
 .character-wiki__portrait {
@@ -464,12 +480,14 @@
   font: inherit;
   font-size: 0.7rem;
   font-weight: 650;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease, transform 140ms ease;
 }
 
 .character-wiki .character-detail__attributes-manage:hover:not(:disabled) {
-  border-color: #93c5fd;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border-color: #cbd5e1;
+  background: #fff;
+  color: #475569;
+  transform: scale(1.04);
 }
 
 .character-wiki .character-detail__attributes-manage:disabled {
@@ -543,8 +561,8 @@
 
 .character-wiki__infobox .character-wiki__editable:hover,
 .character-wiki__infobox .character-wiki__editable:focus-within {
-  background-color: rgba(239, 246, 255, 0.62);
-  box-shadow: inset 3px 0 0 rgba(96, 165, 250, 0.62);
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .character-detail-state {
@@ -566,6 +584,8 @@
     order: -1;
     width: auto;
     max-height: none;
+    overflow-y: visible;
+    scrollbar-gutter: auto;
   }
 
   .character-wiki__portrait-preview,

@@ -41,10 +41,12 @@ export default function CharacterDetailsContent({
   const lightboxCloseButtonRef = useRef(null);
   const wasImagePreviewOpenRef = useRef(false);
   const isEditing = Object.values(editingFields).some(Boolean);
-  const beginEditingFromSurface = (event, field, enabled = true) => {
+  const isArticleNameEditing = editingFields.name === 'article';
+  const isInfoboxNameEditing = editingFields.name === 'infobox';
+  const beginEditingFromSurface = (event, field, enabled = true, source = true) => {
     if (!enabled || editingFields[field]) return;
     if (event.target.closest('button, a, input, textarea, select, [contenteditable="true"], .tox-tinymce')) return;
-    onEditField(field);
+    onEditField(field, source);
   };
 
   useEffect(() => () => {
@@ -91,10 +93,10 @@ export default function CharacterDetailsContent({
         <main className="character-wiki__article">
           <header className="character-wiki__article-header">
             <div
-              className={`character-wiki__title-row${editingFields.name ? '' : ' character-wiki__editable'}`}
-              onClick={(event) => beginEditingFromSurface(event, 'name')}
+              className={`character-wiki__title-row${isArticleNameEditing ? '' : ' character-wiki__editable'}`}
+              onClick={(event) => beginEditingFromSurface(event, 'name', true, 'article')}
             >
-              {editingFields.name ? (
+              {isArticleNameEditing ? (
                 <input
                   className="character-wiki__title-input"
                   type="text"
@@ -105,7 +107,7 @@ export default function CharacterDetailsContent({
               ) : (
                 <h1>{character.name}</h1>
               )}
-              <EditButton label="Edytuj nazwę postaci" onClick={() => onEditField('name')} />
+              <EditButton label="Edytuj nazwę postaci" onClick={() => onEditField('name', 'article')} />
             </div>
 
             <div
@@ -152,10 +154,10 @@ export default function CharacterDetailsContent({
 
         <aside className="character-wiki__infobox" aria-label={`Informacje o postaci: ${character.name}`}>
           <div
-            className={`character-wiki__infobox-title${editingFields.name ? '' : ' character-wiki__editable'}`}
-            onClick={(event) => beginEditingFromSurface(event, 'name')}
+            className={`character-wiki__infobox-title${isInfoboxNameEditing ? '' : ' character-wiki__editable'}`}
+            onClick={(event) => beginEditingFromSurface(event, 'name', true, 'infobox')}
           >
-            {editingFields.name ? (
+            {isInfoboxNameEditing ? (
               <input
                 type="text"
                 value={form.name}
@@ -165,7 +167,7 @@ export default function CharacterDetailsContent({
             ) : (
               <h2 title={character.name}>{character.name}</h2>
             )}
-            <EditButton label="Edytuj nazwę postaci" onClick={() => onEditField('name')} />
+            <EditButton label="Edytuj nazwę postaci" onClick={() => onEditField('name', 'infobox')} />
           </div>
 
           <div className="character-wiki__portrait">
@@ -241,7 +243,7 @@ export default function CharacterDetailsContent({
                 >
                   Zarządzaj atrybutami
                 </button>
-                {definitionsReady && definitionStore.definitions.length > 0 && !editingFields.attribute_values && (
+                {definitionsReady && definitionStore.definitions.length > 0 && (
                   <EditButton label="Edytuj wartości atrybutów" onClick={() => onEditField('attribute_values')} />
                 )}
               </div>

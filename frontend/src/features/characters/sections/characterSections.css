@@ -50,6 +50,20 @@
   color: #b91c1c !important;
 }
 
+.character-sections__toolbar > [data-panel-trigger] {
+  border-color: #cbd5e1;
+  background: #fff;
+  color: #475569;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.character-sections__toolbar > [data-panel-trigger]:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background: #fff;
+  color: #475569;
+  transform: scale(1.04);
+}
+
 .character-sections-state {
   display: grid;
   min-height: 150px;
@@ -100,7 +114,12 @@
 
 .character-section {
   margin-top: 30px;
+  border-radius: 8px;
   scroll-margin-top: 92px;
+}
+
+.character-section--editable {
+  cursor: pointer;
 }
 
 .character-section:first-child {
@@ -142,7 +161,8 @@
 }
 
 .character-section__heading:hover > .character-wiki__edit-button,
-.character-section__heading:focus-within > .character-wiki__edit-button {
+.character-section__heading:focus-within > .character-wiki__edit-button,
+.character-section--editable:hover .character-section__heading > .character-wiki__edit-button {
   opacity: 1;
 }
 
@@ -152,6 +172,14 @@
   color: #334155;
   font-size: 0.96rem;
   line-height: 1.75;
+}
+
+.character-section__empty-content {
+  margin: 0;
+  padding: 18px 2px 4px;
+  color: #94a3b8;
+  font-size: 0.86rem;
+  font-style: italic;
 }
 
 .character-section__content > :first-child {

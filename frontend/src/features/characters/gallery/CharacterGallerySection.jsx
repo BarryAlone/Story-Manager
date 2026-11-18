@@ -19,6 +19,11 @@ export default function CharacterGallerySection({
     window.requestAnimationFrame(() => lastTriggerRef.current?.focus({ preventScroll: true }));
   };
 
+  const openManagerFromSurface = (event) => {
+    if (event.target.closest('button, a, input, textarea, select, [contenteditable="true"], .character-gallery-lightbox')) return;
+    onManage();
+  };
+
   if (isLoading) {
     return <p className="character-gallery-state" role="status">Ładowanie galerii…</p>;
   }
@@ -43,7 +48,12 @@ export default function CharacterGallerySection({
   }
 
   return (
-    <section id="character-gallery" className="character-gallery" aria-labelledby="character-gallery-title">
+    <section
+      id="character-gallery"
+      className="character-gallery character-gallery--editable"
+      aria-labelledby="character-gallery-title"
+      onClick={openManagerFromSurface}
+    >
       <div className="character-gallery__heading">
         <h2 id="character-gallery-title">
           <span className="character-section__number">{sectionNumber}.</span>
