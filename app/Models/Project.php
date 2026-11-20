@@ -65,6 +65,16 @@ class Project extends Model
         return $this->hasMany(ProjectInspiration::class);
     }
 
+    public function projectNotes(): HasMany
+    {
+        return $this->hasMany(ProjectNote::class);
+    }
+
+    public function projectChecklistItems(): HasMany
+    {
+        return $this->hasMany(ProjectChecklistItem::class);
+    }
+
     public function worldElementCategories(): HasMany
     {
         return $this->hasMany(WorldElementCategory::class);

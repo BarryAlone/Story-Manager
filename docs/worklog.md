@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-20 — Backendowy fundament notatek projektu
+
+- Zakres: osobne notatki projektu z sanityzowanym HTML-em i przypinaniem oraz wspólna checklista z terminami, stanem wykonania, filtrowaniem i kolejnością.
+- Wynik: dodano relacyjne modele, kaskady projektu, polityki `404`, chronione API, częściowe aktualizacje notatek pod przyszły autosave oraz atomowe porządkowanie aktywnych i wykonanych zadań. Istniejące `chapters.notes` pozostało niezależne.
+- Testy: testy nowego modułu — 14 testów i 121 asercji; testy modułu, rozdziałów i autoryzacji — 57 testów i 520 asercji; pełny PHPUnit — 248 testów i 1679 asercji. Pint, ścisła walidacja Composera, kontrola tras i `git diff --check` zakończone powodzeniem.
+
 ## 2026-11-17 — Galeria postaci w React SPA
 
 - Zakres: responsywna galeria w układzie dynamicznych sekcji postaci, dostępny lightbox, prawy panel pojedynczego uploadu, podpisów, kolejności i usuwania oraz projektowe zarządzanie położeniem galerii.
