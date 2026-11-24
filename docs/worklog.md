@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-21 — Notatki projektu i checklista w React SPA
+
+- Zakres: nawigacja modułu, widoki listy i boardu, uproszczony edytor TinyMCE z częściowym autosave oraz wspólna checklista projektu z terminami, filtrowaniem, ukończeniem i kolejnością.
+- Wynik: notatki są tworzone, wyszukiwane, przypinane i usuwane bez przeładowania, a bezpieczne przejścia kończą bieżący zapis i ignorują odpowiedzi poprzedniego projektu. Checklista aktualizuje aktywne i wykonane zadania lokalnie oraz zapisuje pełną kolejność właściwej grupy przez atomowy endpoint.
+- Testy: lint i build React SPA zakończone powodzeniem; regresja notatek, checklisty, rozdziałów i autoryzacji — 57 testów i 520 asercji; pełny PHPUnit — 248 testów i 1679 asercji. Build zachowuje znane, nieblokujące ostrzeżenie o chunku większym niż 500 kB.
+
 ## 2026-11-20 — Backendowy fundament notatek projektu
 
 - Zakres: osobne notatki projektu z sanityzowanym HTML-em i przypinaniem oraz wspólna checklista z terminami, stanem wykonania, filtrowaniem i kolejnością.

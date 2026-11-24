@@ -16,6 +16,7 @@
 
 ## Zakończone
 
+- [x] Dodano frontend notatek projektu z widokami listy i boardu, autosave oraz wspólną checklistą „Do zrobienia”.
 - [x] Dodano backendowy fundament notatek projektu i wspólnej checklisty „Do zrobienia”.
 - [x] Podłączono galerię obrazów do wiki-like szczegółów postaci wraz z lightboxem i panelem zarządzania.
 - [x] Dodano backendowy fundament galerii postaci z podpisami, kolejnością, chronionym API i bezpiecznym cyklem życia plików.
