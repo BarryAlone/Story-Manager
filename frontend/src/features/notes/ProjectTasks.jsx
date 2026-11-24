@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import useProjectChecklist from './useProjectChecklist';
+import useProjectTasks from './useProjectTasks';
 
 const FILTERS = [
   ['active', 'Aktywne'],
@@ -14,7 +14,7 @@ function todayDate() {
   return new Date(now.getTime() - offset).toISOString().slice(0, 10);
 }
 
-function ChecklistItem({
+function ProjectTaskItem({
   canMoveDown,
   canMoveUp,
   item,
@@ -24,42 +24,42 @@ function ChecklistItem({
   onToggle,
   onUpdate,
 }) {
-  const [content, setContent] = useState(item.content);
+  const [title, setTitle] = useState(item.title);
   const [dueDate, setDueDate] = useState(item.due_date || '');
-  const isDirty = content !== item.content || dueDate !== (item.due_date || '');
+  const isDirty = title !== item.title || dueDate !== (item.due_date || '');
   const isOverdue = !item.is_completed && item.due_date && item.due_date < todayDate();
 
   const save = async () => {
-    if (!isDirty || !content.trim()) return;
+    if (!isDirty || !title.trim()) return;
     try {
-      await onUpdate(item.id, { content, due_date: dueDate || null });
+      await onUpdate(item.id, { title, due_date: dueDate || null });
     } catch {
       // Komunikat jest prezentowany przez hook.
     }
   };
 
   return (
-    <li className={`project-checklist-item${item.is_completed ? ' is-completed' : ''}${isOverdue ? ' is-overdue' : ''}`}>
+    <li className={`project-tasks-item${item.is_completed ? ' is-completed' : ''}${isOverdue ? ' is-overdue' : ''}`}>
       <input
         type="checkbox"
         checked={item.is_completed}
         onChange={() => onToggle(item).catch(() => {})}
         disabled={isPending}
-        aria-label={item.is_completed ? `Otwórz ponownie: ${item.content}` : `Oznacz jako wykonane: ${item.content}`}
+        aria-label={item.is_completed ? `Otwórz ponownie: ${item.title}` : `Oznacz jako wykonane: ${item.title}`}
       />
-      <div className="project-checklist-item__fields">
+      <div className="project-tasks-item__fields">
         <input
           type="text"
-          value={content}
+          value={title}
           maxLength={500}
-          onChange={(event) => setContent(event.target.value)}
+          onChange={(event) => setTitle(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               event.preventDefault();
               save();
             }
           }}
-          aria-label="Treść zadania"
+          aria-label="Tytuł zadania"
           disabled={isPending}
         />
         <label>
@@ -71,11 +71,11 @@ function ChecklistItem({
             disabled={isPending}
           />
         </label>
-        {isOverdue && <span className="project-checklist-item__overdue">Po terminie</span>}
+        {isOverdue && <span className="project-tasks-item__overdue">Po terminie</span>}
       </div>
-      <div className="project-checklist-item__actions">
+      <div className="project-tasks-item__actions">
         {isDirty && (
-          <button type="button" onClick={save} disabled={isPending || !content.trim()}>
+          <button type="button" onClick={save} disabled={isPending || !title.trim()}>
             Zapisz
           </button>
         )}
@@ -83,7 +83,7 @@ function ChecklistItem({
           type="button"
           onClick={() => onMove(item, -1).catch(() => {})}
           disabled={isPending || !canMoveUp}
-          aria-label={`Przesuń zadanie „${item.content}” w górę`}
+          aria-label={`Przesuń zadanie „${item.title}” w górę`}
           title="Przesuń w górę"
         >
           ↑
@@ -92,7 +92,7 @@ function ChecklistItem({
           type="button"
           onClick={() => onMove(item, 1).catch(() => {})}
           disabled={isPending || !canMoveDown}
-          aria-label={`Przesuń zadanie „${item.content}” w dół`}
+          aria-label={`Przesuń zadanie „${item.title}” w dół`}
           title="Przesuń w dół"
         >
           ↓
@@ -102,7 +102,7 @@ function ChecklistItem({
           className="is-danger"
           onClick={() => onDelete(item)}
           disabled={isPending}
-          aria-label={`Usuń zadanie „${item.content}”`}
+          aria-label={`Usuń zadanie „${item.title}”`}
         >
           Usuń
         </button>
@@ -111,9 +111,9 @@ function ChecklistItem({
   );
 }
 
-export default function ProjectChecklist({ projectId }) {
+export default function ProjectTasks({ projectId }) {
   const [filter, setFilter] = useState('active');
-  const [newContent, setNewContent] = useState('');
+  const [newTitle, setNewTitle] = useState('');
   const {
     createItem,
     deleteItem,
@@ -127,7 +127,7 @@ export default function ProjectChecklist({ projectId }) {
     pendingIds,
     toggleItem,
     updateItem,
-  } = useProjectChecklist(projectId);
+  } = useProjectTasks(projectId);
 
   const visibleItems = useMemo(() => {
     if (filter === 'active') return groups.active;
@@ -137,17 +137,17 @@ export default function ProjectChecklist({ projectId }) {
 
   const addItem = async (event) => {
     event.preventDefault();
-    if (!newContent.trim() || pendingIds.has('create')) return;
+    if (!newTitle.trim() || pendingIds.has('create')) return;
     try {
-      await createItem(newContent);
-      setNewContent('');
+      await createItem(newTitle);
+      setNewTitle('');
     } catch {
       // Komunikat jest prezentowany przez hook.
     }
   };
 
   const confirmDelete = async (item) => {
-    if (!window.confirm(`Usunąć zadanie „${item.content}”?`)) return;
+    if (!window.confirm(`Usunąć zadanie „${item.title}”?`)) return;
     try {
       await deleteItem(item.id);
     } catch {
@@ -155,7 +155,7 @@ export default function ProjectChecklist({ projectId }) {
     }
   };
 
-  if (isLoading) return <div className="project-notes-state">Ładowanie checklisty…</div>;
+  if (isLoading) return <div className="project-notes-state">Ładowanie zadań…</div>;
   if (loadError) {
     return (
       <div className="project-notes-state is-error" role="alert">
@@ -166,28 +166,28 @@ export default function ProjectChecklist({ projectId }) {
   }
 
   return (
-    <section className="project-checklist" aria-labelledby="project-checklist-title">
-      <header className="project-checklist__toolbar">
+    <section className="project-tasks" aria-labelledby="project-tasks-title">
+      <header className="project-tasks__toolbar">
         <div>
-          <h2 id="project-checklist-title">Do zrobienia</h2>
+          <h2 id="project-tasks-title">Do zrobienia</h2>
           <span>{items.length} {items.length === 1 ? 'zadanie' : 'zadań'}</span>
         </div>
-        <form onSubmit={addItem} className="project-checklist__add">
-          <label className="sr-only" htmlFor="new-checklist-item">Nowe zadanie</label>
+        <form onSubmit={addItem} className="project-tasks__add">
+          <label className="sr-only" htmlFor="new-project-task">Nowe zadanie</label>
           <input
-            id="new-checklist-item"
+            id="new-project-task"
             type="text"
-            value={newContent}
+            value={newTitle}
             maxLength={500}
-            onChange={(event) => setNewContent(event.target.value)}
+            onChange={(event) => setNewTitle(event.target.value)}
             placeholder="Dodaj zadanie…"
             disabled={pendingIds.has('create')}
           />
-          <button type="submit" disabled={!newContent.trim() || pendingIds.has('create')}>
+          <button type="submit" disabled={!newTitle.trim() || pendingIds.has('create')}>
             {pendingIds.has('create') ? 'Dodawanie…' : 'Dodaj'}
           </button>
         </form>
-        <div className="project-checklist__filters" aria-label="Filtr zadań">
+        <div className="project-tasks__filters" aria-label="Filtr zadań">
           {FILTERS.map(([value, label]) => (
             <button
               key={value}
@@ -202,20 +202,20 @@ export default function ProjectChecklist({ projectId }) {
         </div>
       </header>
 
-      {operationError && <div className="project-checklist__error" role="alert">{operationError}</div>}
+      {operationError && <div className="project-tasks__error" role="alert">{operationError}</div>}
 
       {visibleItems.length === 0 ? (
         <div className="project-notes-empty">
-          {items.length === 0 ? 'Dodaj pierwsze zadanie do wspólnej checklisty projektu.' : 'Brak zadań w tym widoku.'}
+          {items.length === 0 ? 'Dodaj pierwsze zadanie projektu.' : 'Brak zadań w tym widoku.'}
         </div>
       ) : (
-        <ul className="project-checklist__list">
+        <ul className="project-tasks__list">
           {visibleItems.map((item) => {
             const group = item.is_completed ? groups.completed : groups.active;
             const index = group.findIndex((entry) => entry.id === item.id);
             return (
-              <ChecklistItem
-                key={`${item.id}-${item.content}-${item.due_date || ''}`}
+              <ProjectTaskItem
+                key={`${item.id}-${item.title}-${item.due_date || ''}`}
                 item={item}
                 isPending={pendingIds.has(item.id) || pendingIds.has(`order-${item.id}`)}
                 canMoveUp={index > 0}

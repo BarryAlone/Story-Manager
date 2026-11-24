@@ -70,9 +70,9 @@ class Project extends Model
         return $this->hasMany(ProjectNote::class);
     }
 
-    public function projectChecklistItems(): HasMany
+    public function tasks(): HasMany
     {
-        return $this->hasMany(ProjectChecklistItem::class);
+        return $this->hasMany(ProjectTask::class);
     }
 
     public function worldElementCategories(): HasMany

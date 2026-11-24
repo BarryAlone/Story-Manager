@@ -36,13 +36,13 @@
 }
 
 .project-notes-toolbar__title h1,
-.project-checklist__toolbar h2 {
+.project-tasks__toolbar h2 {
   margin: 0;
   font-size: 20px;
 }
 
 .project-notes-toolbar__title span,
-.project-checklist__toolbar > div:first-child span {
+.project-tasks__toolbar > div:first-child span {
   color: var(--notes-muted);
   font-size: 13px;
 }
@@ -81,7 +81,7 @@
 .project-notes-primary,
 .project-notes-empty button,
 .project-notes-state button,
-.project-checklist__add button {
+.project-tasks__add button {
   min-height: 38px;
   padding: 7px 14px;
   border: 1px solid #1d4ed8;
@@ -104,7 +104,7 @@
 }
 
 .project-notes-page__error,
-.project-checklist__error {
+.project-tasks__error {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -377,7 +377,7 @@
 
 .project-note-editor__actions button,
 .project-note-editor__error button,
-.project-checklist-item__actions button {
+.project-tasks-item__actions button {
   min-height: 34px;
   padding: 5px 10px;
   border: 1px solid #cbd5e1;
@@ -388,7 +388,7 @@
 }
 
 .project-note-editor__actions .is-danger,
-.project-checklist-item__actions .is-danger {
+.project-tasks-item__actions .is-danger {
   color: #b91c1c;
 }
 
@@ -499,13 +499,13 @@
   height: 100%;
 }
 
-.project-checklist {
+.project-tasks {
   min-height: 0;
   overflow-y: auto;
   padding: 24px clamp(18px, 4vw, 56px) 50px;
 }
 
-.project-checklist__toolbar {
+.project-tasks__toolbar {
   display: grid;
   grid-template-columns: auto minmax(260px, 1fr) auto;
   align-items: center;
@@ -514,19 +514,19 @@
   margin: 0 auto 20px;
 }
 
-.project-checklist__toolbar > div:first-child {
+.project-tasks__toolbar > div:first-child {
   display: flex;
   align-items: baseline;
   gap: 8px;
 }
 
-.project-checklist__add {
+.project-tasks__add {
   display: flex;
   min-width: 0;
   gap: 8px;
 }
 
-.project-checklist__add input {
+.project-tasks__add input {
   min-width: 0;
   height: 40px;
   flex: 1;
@@ -535,7 +535,7 @@
   border-radius: 9px;
 }
 
-.project-checklist__filters {
+.project-tasks__filters {
   display: inline-flex;
   padding: 3px;
   border: 1px solid #d8e0eb;
@@ -543,7 +543,7 @@
   background: #e9eef5;
 }
 
-.project-checklist__filters button {
+.project-tasks__filters button {
   padding: 7px 10px;
   border: 0;
   border-radius: 7px;
@@ -552,20 +552,20 @@
   cursor: pointer;
 }
 
-.project-checklist__filters button.is-active {
+.project-tasks__filters button.is-active {
   background: #fff;
   color: #172033;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
 }
 
-.project-checklist__error {
+.project-tasks__error {
   max-width: 1120px;
   margin: 0 auto 12px;
   border: 1px solid #fecaca;
   border-radius: 8px;
 }
 
-.project-checklist__list {
+.project-tasks__list {
   display: grid;
   max-width: 1120px;
   margin: 0 auto;
@@ -574,7 +574,7 @@
   gap: 8px;
 }
 
-.project-checklist-item {
+.project-tasks-item {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr) auto;
   align-items: center;
@@ -585,21 +585,21 @@
   background: #fff;
 }
 
-.project-checklist-item.is-completed {
+.project-tasks-item.is-completed {
   background: #f8fafc;
   color: #7c8799;
 }
 
-.project-checklist-item.is-completed input[type='text'] {
+.project-tasks-item.is-completed input[type='text'] {
   color: #7c8799;
   text-decoration: line-through;
 }
 
-.project-checklist-item.is-overdue {
+.project-tasks-item.is-overdue {
   border-color: #f5b8b8;
 }
 
-.project-checklist-item__fields {
+.project-tasks-item__fields {
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(160px, 1fr) auto auto;
@@ -607,7 +607,7 @@
   gap: 10px;
 }
 
-.project-checklist-item__fields > input {
+.project-tasks-item__fields > input {
   min-width: 0;
   padding: 7px 8px;
   border: 1px solid transparent;
@@ -615,13 +615,13 @@
   background: transparent;
 }
 
-.project-checklist-item__fields > input:hover,
-.project-checklist-item__fields > input:focus {
+.project-tasks-item__fields > input:hover,
+.project-tasks-item__fields > input:focus {
   border-color: #cbd5e1;
   background: #fff;
 }
 
-.project-checklist-item__fields label {
+.project-tasks-item__fields label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -629,20 +629,20 @@
   font-size: 12px;
 }
 
-.project-checklist-item__fields input[type='date'] {
+.project-tasks-item__fields input[type='date'] {
   padding: 6px;
   border: 1px solid #cbd5e1;
   border-radius: 7px;
   background: #fff;
 }
 
-.project-checklist-item__overdue {
+.project-tasks-item__overdue {
   color: #b91c1c;
   font-size: 12px;
   font-weight: 650;
 }
 
-.project-checklist-item__actions {
+.project-tasks-item__actions {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -658,11 +658,11 @@
     justify-content: space-between;
   }
 
-  .project-checklist__toolbar {
+  .project-tasks__toolbar {
     grid-template-columns: 1fr auto;
   }
 
-  .project-checklist__add {
+  .project-tasks__add {
     grid-column: 1 / -1;
     grid-row: 2;
   }
@@ -724,34 +724,34 @@
     overflow: visible;
   }
 
-  .project-checklist {
+  .project-tasks {
     overflow: visible;
   }
 
-  .project-checklist__toolbar {
+  .project-tasks__toolbar {
     display: flex;
     align-items: stretch;
     flex-direction: column;
   }
 
-  .project-checklist__filters {
+  .project-tasks__filters {
     align-self: flex-start;
   }
 
-  .project-checklist-item {
+  .project-tasks-item {
     grid-template-columns: 24px minmax(0, 1fr);
     align-items: start;
   }
 
-  .project-checklist-item__fields {
+  .project-tasks-item__fields {
     grid-template-columns: 1fr;
   }
 
-  .project-checklist-item__fields label {
+  .project-tasks-item__fields label {
     justify-content: space-between;
   }
 
-  .project-checklist-item__actions {
+  .project-tasks-item__actions {
     grid-column: 2;
     flex-wrap: wrap;
   }

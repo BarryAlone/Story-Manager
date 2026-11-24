@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { isAbortError, projectChecklistApi } from './notesApi';
+import { isAbortError, projectTasksApi } from './notesApi';
 
 function sortItems(items) {
   return [...items].sort((first, second) => {
@@ -9,7 +9,7 @@ function sortItems(items) {
   });
 }
 
-export default function useProjectChecklist(projectId) {
+export default function useProjectTasks(projectId) {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -35,12 +35,12 @@ export default function useProjectChecklist(projectId) {
     setItems([]);
 
     try {
-      const loadedItems = await projectChecklistApi.list(requestedProjectId, controller.signal);
+      const loadedItems = await projectTasksApi.list(requestedProjectId, controller.signal);
       if (sequence !== sequenceRef.current || currentProjectIdRef.current !== requestedProjectId) return;
       setItems(sortItems(loadedItems));
     } catch (error) {
       if (isAbortError(error) || sequence !== sequenceRef.current) return;
-      setLoadError(error.message || 'Nie udało się pobrać checklisty.');
+      setLoadError(error.message || 'Nie udało się pobrać zadań.');
     } finally {
       if (sequence === sequenceRef.current) setIsLoading(false);
     }
@@ -74,9 +74,9 @@ export default function useProjectChecklist(projectId) {
     }
   }, []);
 
-  const createItem = useCallback((content) => runOperation('create', async () => {
+  const createItem = useCallback((title) => runOperation('create', async () => {
     const requestedProjectId = projectId;
-    const created = await projectChecklistApi.create(requestedProjectId, { content });
+    const created = await projectTasksApi.create(requestedProjectId, { title });
     if (currentProjectIdRef.current === requestedProjectId) {
       setItems((current) => sortItems([...current, created]));
     }
@@ -85,7 +85,7 @@ export default function useProjectChecklist(projectId) {
 
   const updateItem = useCallback((itemId, values) => runOperation(itemId, async () => {
     const requestedProjectId = projectId;
-    const updated = await projectChecklistApi.update(itemId, values);
+    const updated = await projectTasksApi.update(itemId, values);
     if (currentProjectIdRef.current === requestedProjectId) {
       setItems((current) => sortItems(current.map((item) => item.id === itemId ? updated : item)));
     }
@@ -94,7 +94,7 @@ export default function useProjectChecklist(projectId) {
 
   const toggleItem = useCallback((item) => runOperation(item.id, async () => {
     const requestedProjectId = projectId;
-    const updated = await projectChecklistApi.setCompletion(item.id, !item.is_completed);
+    const updated = await projectTasksApi.setCompletion(item.id, !item.is_completed);
     if (currentProjectIdRef.current === requestedProjectId) {
       setItems((current) => sortItems(current.map((entry) => entry.id === item.id ? updated : entry)));
     }
@@ -103,7 +103,7 @@ export default function useProjectChecklist(projectId) {
 
   const deleteItem = useCallback((itemId) => runOperation(itemId, async () => {
     const requestedProjectId = projectId;
-    await projectChecklistApi.remove(itemId);
+    await projectTasksApi.remove(itemId);
     if (currentProjectIdRef.current === requestedProjectId) {
       setItems((current) => current.filter((item) => item.id !== itemId));
     }
@@ -119,7 +119,7 @@ export default function useProjectChecklist(projectId) {
 
     const reordered = [...group];
     [reordered[currentIndex], reordered[targetIndex]] = [reordered[targetIndex], reordered[currentIndex]];
-    const updatedGroup = await projectChecklistApi.reorder(
+    const updatedGroup = await projectTasksApi.reorder(
       requestedProjectId,
       status,
       reordered.map((entry) => entry.id),

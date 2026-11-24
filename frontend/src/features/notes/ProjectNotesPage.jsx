@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import NoteBoard from './NoteBoard';
 import NoteEditor from './NoteEditor';
 import NoteList from './NoteList';
-import ProjectChecklist from './ProjectChecklist';
+import ProjectTasks from './ProjectTasks';
 import useProjectNotes from './useProjectNotes';
 import './projectNotes.css';
 
@@ -168,9 +168,9 @@ export default function ProjectNotesPage() {
           </button>
           <button
             type="button"
-            className={mode === 'checklist' ? 'is-active' : ''}
-            aria-pressed={mode === 'checklist'}
-            onClick={() => changeMode('checklist')}
+            className={mode === 'tasks' ? 'is-active' : ''}
+            aria-pressed={mode === 'tasks'}
+            onClick={() => changeMode('tasks')}
           >
             Do zrobienia
           </button>
@@ -213,8 +213,8 @@ export default function ProjectNotesPage() {
         </div>
       )}
 
-      {mode === 'checklist' ? (
-        <ProjectChecklist projectId={projectId} />
+      {mode === 'tasks' ? (
+        <ProjectTasks projectId={projectId} />
       ) : isLoading ? (
         <div className="project-notes-state">Ładowanie notatek…</div>
       ) : loadError ? (

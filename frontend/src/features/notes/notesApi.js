@@ -72,18 +72,18 @@ export const projectNotesApi = {
   },
 };
 
-export const projectChecklistApi = {
+export const projectTasksApi = {
   list(projectId, signal) {
     return jsonRequest(
-      `/api/projects/${projectId}/checklist-items?status=all`,
+      `/api/projects/${projectId}/tasks?status=all`,
       { signal },
-      'Nie udało się pobrać checklisty.',
+      'Nie udało się pobrać zadań.',
     );
   },
 
   create(projectId, values, signal) {
     return jsonRequest(
-      `/api/projects/${projectId}/checklist-items`,
+      `/api/projects/${projectId}/tasks`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,7 +96,7 @@ export const projectChecklistApi = {
 
   update(itemId, values, signal) {
     return jsonRequest(
-      `/api/project-checklist-items/${itemId}`,
+      `/api/project-tasks/${itemId}`,
       {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -109,7 +109,7 @@ export const projectChecklistApi = {
 
   setCompletion(itemId, isCompleted, signal) {
     return jsonRequest(
-      `/api/project-checklist-items/${itemId}/completion`,
+      `/api/project-tasks/${itemId}/completion`,
       {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -122,11 +122,11 @@ export const projectChecklistApi = {
 
   reorder(projectId, status, itemIds, signal) {
     return jsonRequest(
-      `/api/projects/${projectId}/checklist-items/order`,
+      `/api/projects/${projectId}/tasks/order`,
       {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, item_ids: itemIds }),
+        body: JSON.stringify({ status, task_ids: itemIds }),
         signal,
       },
       'Nie udało się zmienić kolejności zadań.',
@@ -135,7 +135,7 @@ export const projectChecklistApi = {
 
   remove(itemId, signal) {
     return jsonRequest(
-      `/api/project-checklist-items/${itemId}`,
+      `/api/project-tasks/${itemId}`,
       { method: 'DELETE', signal },
       'Nie udało się usunąć zadania.',
     );
