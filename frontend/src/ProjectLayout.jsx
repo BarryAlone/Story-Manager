@@ -16,6 +16,7 @@ function ProjectLayout() {
   const isFullscreenView = isCharacterList || [
     `/project/${projectId}/inspirations`,
     `/project/${projectId}/world-elements`,
+    `/project/${projectId}/notes`,
   ].includes(location.pathname);
   const [projectName, setProjectName] = useState('Ładowanie...');
 
@@ -105,6 +106,10 @@ function ProjectLayout() {
         <NavLink to={`/project/${projectId}/world-elements`} title="Elementy świata" className="sidebar-icon">
           {({ isActive }) => <WorldElementsIcon isActive={isActive} />}
         </NavLink>
+
+        <NavLink to={`/project/${projectId}/notes`} title="Notatki" className="sidebar-icon">
+          {({ isActive }) => <NotesIcon isActive={isActive} />}
+        </NavLink>
         
       </nav>
 
@@ -186,6 +191,28 @@ function WorldElementsIcon({ isActive }) {
     >
       <circle cx="12" cy="12" r="9" />
       <path d="M3 12h18M12 3c2.3 2.5 3.5 5.5 3.5 9S14.3 18.5 12 21M12 3C9.7 5.5 8.5 8.5 8.5 12S9.7 18.5 12 21" />
+    </svg>
+  );
+}
+
+function NotesIcon({ isActive }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-label="Notatki"
+      style={{
+        width: '32px',
+        height: '32px',
+        opacity: isActive ? 1 : 0.4,
+        fill: 'none',
+        stroke: 'currentColor',
+        strokeWidth: 1.8,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+      }}
+    >
+      <path d="M5 3h14v18H5z" />
+      <path d="M8 8h8M8 12h8M8 16h5" />
     </svg>
   );
 }
