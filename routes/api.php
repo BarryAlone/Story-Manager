@@ -10,10 +10,10 @@ use App\Http\Controllers\CharacterRelationshipController;
 use App\Http\Controllers\CharacterSectionContentController;
 use App\Http\Controllers\CharacterSectionDefinitionController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ProjectChecklistItemController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectInspirationController;
 use App\Http\Controllers\ProjectNoteController;
+use App\Http\Controllers\ProjectTaskController;
 use App\Http\Controllers\WorldElementCategoryController;
 use App\Http\Controllers\WorldElementController;
 use Illuminate\Http\Request;
@@ -63,14 +63,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/project-notes/{projectNote}', [ProjectNoteController::class, 'update']);
     Route::delete('/project-notes/{projectNote}', [ProjectNoteController::class, 'destroy']);
 
-    // Project checklist
-    Route::get('/projects/{project}/checklist-items', [ProjectChecklistItemController::class, 'index']);
-    Route::post('/projects/{project}/checklist-items', [ProjectChecklistItemController::class, 'store']);
-    Route::patch('/projects/{project}/checklist-items/order', [ProjectChecklistItemController::class, 'reorder']);
-    Route::get('/project-checklist-items/{checklistItem}', [ProjectChecklistItemController::class, 'show']);
-    Route::patch('/project-checklist-items/{checklistItem}', [ProjectChecklistItemController::class, 'update']);
-    Route::patch('/project-checklist-items/{checklistItem}/completion', [ProjectChecklistItemController::class, 'setCompletion']);
-    Route::delete('/project-checklist-items/{checklistItem}', [ProjectChecklistItemController::class, 'destroy']);
+    // Project tasks
+    Route::get('/projects/{project}/tasks', [ProjectTaskController::class, 'index']);
+    Route::post('/projects/{project}/tasks', [ProjectTaskController::class, 'store']);
+    Route::patch('/projects/{project}/tasks/order', [ProjectTaskController::class, 'reorder']);
+    Route::get('/project-tasks/{projectTask}', [ProjectTaskController::class, 'show']);
+    Route::patch('/project-tasks/{projectTask}', [ProjectTaskController::class, 'update']);
+    Route::patch('/project-tasks/{projectTask}/completion', [ProjectTaskController::class, 'setCompletion']);
+    Route::delete('/project-tasks/{projectTask}', [ProjectTaskController::class, 'destroy']);
 
     // Chapter
     Route::get('/chapters', [ChapterController::class, 'index']);

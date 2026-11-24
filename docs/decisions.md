@@ -19,13 +19,14 @@
 - Listy domenowe są filtrowane według zalogowanego użytkownika, a operacje na konkretnym zasobie są sprawdzane przez Policies.
 - Dostęp zalogowanego użytkownika do cudzego zasobu zwraca `404`, aby nie ujawniać jego istnienia. Kod `403` pozostaje dla przyszłych przypadków, w których istnienie zasobu jest jawne, ale rola nie pozwala na daną operację.
 
-## Notatki projektu i checklista
+## Notatki i zadania projektu
 
 - Zwykłe notatki projektu są osobnymi rekordami `project_notes`; nie zastępują i nie modyfikują pola `chapters.notes`. Ewentualna przyszła integracja obu mechanizmów wymaga osobnej decyzji.
 - Treść notatki projektu jest sanityzowanym HTML-em obsługiwanym przez ten sam serwis co treść rozdziałów i sekcji postaci. Lista zwraca lekkie metadane, a pełna treść jest pobierana z endpointu szczegółów.
 - `PATCH` notatki ma semantykę częściowej aktualizacji: pola pominięte pozostają bez zmian, dzięki czemu kontrakt nadaje się do przyszłego autosave.
-- Checklista jest wspólna dla projektu i niezależna od notatek. Moment wykonania przechowuje `completed_at`, a kolejność techniczna — `sort_order`.
-- Aktywne zadania są zawsze prezentowane przed wykonanymi. Każda z tych grup ma własną kolejność; jej zapis wymaga kompletnej listy identyfikatorów grupy i odbywa się transakcyjnie.
+- `ProjectTask` jest pełnoprawnym zasobem projektu. Może istnieć samodzielnie albo opcjonalnie należeć do jednej `ProjectNote` z tego samego projektu.
+- Usunięcie notatki ustawia `project_note_id` jej zadań na `null`; nie usuwa zadań. Przypisanie nie wpływa na stan ani kolejność zadania.
+- Moment wykonania zadania przechowuje `completed_at`, a kolejność techniczna — `sort_order`. Aktywne zadania są zawsze prezentowane przed wykonanymi. Każda z tych grup ma własną kolejność; jej zapis wymaga kompletnej listy identyfikatorów grupy i odbywa się transakcyjnie.
 
 ## Warstwa interfejsu
 

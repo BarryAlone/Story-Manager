@@ -2,6 +2,12 @@
 
 Kolejne wpisy należy dodawać na początku pliku według układu: data, zakres, wynik i testy.
 
+## 2026-11-24 — Pełnoprawne zadania projektu
+
+- Zakres: migracja poprzednich wpisów checklisty do `project_tasks`, relacja zadania z opcjonalną notatką, nowy chroniony kontrakt API oraz przełączenie istniejącego widoku „Do zrobienia” na tytuły i endpointy zadań.
+- Wynik: zadanie ma tytuł, opcjonalną sanityzowaną treść HTML, termin, stan i stabilną kolejność; może istnieć samodzielnie lub należeć do notatki tego samego projektu. Usunięcie notatki odłącza zadania, a migracja zachowuje dotychczasową krótką treść jako tytuł.
+- Testy: test migracji oraz testy notatek i zadań — 13 testów i 117 asercji; regresja z rozdziałami i autoryzacją — 56 testów i 516 asercji; pełny PHPUnit — 247 testów i 1675 asercji. Lint i build React SPA, Pint, ścisła walidacja Composera, kontrola tras oraz `git diff --check` zakończone powodzeniem.
+
 ## 2026-11-21 — Notatki projektu i checklista w React SPA
 
 - Zakres: nawigacja modułu, widoki listy i boardu, uproszczony edytor TinyMCE z częściowym autosave oraz wspólna checklista projektu z terminami, filtrowaniem, ukończeniem i kolejnością.
